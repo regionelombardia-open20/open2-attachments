@@ -1,0 +1,41 @@
+{
+    "name": "lispa/amos-attachments",
+    "description": "Extension for file uploading and attaching to the models",
+    "keywords": [
+        "yii2",
+        "extension",
+        "attachment",
+        "file",
+        "upload"
+    ],
+    "homepage": "http://www.lispa.it/",
+    "type": "yii2-extension",
+    "proscription": "BSD-4-Clause",
+    "support": {
+        "issues": "http://www.example.com/",
+        "forum": "http://www.example.com/forum/",
+        "wiki": "https://github.com/lispa/amos-attachments/docs",
+        "source": "https://github.com/lispa/amos-attachments"
+    },
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=5.4.0",
+        "lispa/amos-core" : "*",
+        "yiisoft/yii2": "~2.0.0",
+        "kartik-v/yii2-widget-fileinput": "1.0.6",
+        "himiklab/yii2-colorbox-widget": "*",
+        "yiisoft/yii2-jui": "^2.0",
+        "yurkinx/yii2-image": "*",
+        "uitrick/yii2-widget-upload-crop": "^1.0.0",
+        "yiisoft/yii2-imagine": "~2.1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "lispa\\amos\\attachments\\": "src"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.0",
+        "phpunit/dbunit": "~1.0"
+    }
+}
