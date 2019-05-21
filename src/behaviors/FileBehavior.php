@@ -13,6 +13,7 @@ namespace lispa\amos\attachments\behaviors;
 
 use lispa\amos\attachments\FileModule;
 use lispa\amos\attachments\FileModuleTrait;
+use lispa\amos\attachments\models\AttachGalleryImage;
 use lispa\amos\attachments\models\File;
 use lispa\amos\core\views\toolbars\StatsToolbarPanels;
 use yii\base\Behavior;
@@ -108,9 +109,9 @@ class FileBehavior extends Behavior
 
         if ($fileValidator) {
             if ($fileValidator->maxFiles == 1) {
-                return $this->hasOneFile($name);
+                return isset($this->overrideAttributes[$name]) && is_array($this->overrideAttributes[$name]) ? reset($this->overrideAttributes[$name]) : $this->hasOneFile($name);
             } else {
-                return $this->hasMultipleFiles($name);
+                return isset($this->overrideAttributes[$name]) ? $this->overrideAttributes[$name] :  $this->hasMultipleFiles($name);
             }
         }
 
@@ -184,7 +185,6 @@ class FileBehavior extends Behavior
                 }
             }
         }
-
         return $fileAttributes;
     }
 
@@ -252,6 +252,13 @@ class FileBehavior extends Behavior
         //Crop data
         $cropData = \Yii::$app->request->post("{$attribute}_data");
 
+        //Upload file from gallery
+        $csrf = \Yii::$app->request->post("_csrf-backend");
+        $dataImage = \Yii::$app->session->get($csrf);
+        if(!empty($dataImage)) {
+            $this->saveFileFormGallery($attribute, $csrf, $dataImage);
+        }
+
         foreach ($files as $file) {
             if ($fileValidator && $fileValidator->maxFiles == 1 && file_exists($file->tempName)) {
                 //Drop to make space for new image
@@ -266,7 +273,7 @@ class FileBehavior extends Behavior
                 continue;
             }
         }
-        
+
         if ($this->owner->isNewRecord) {
             return true;
         }
@@ -314,50 +321,50 @@ class FileBehavior extends Behavior
     protected function cropImage(UploadedFile $file, $data)
     {
         //if temp file from post attributes is still present, the cropped image has to be saved
-       if(file_exists($file->tempName)) {
-           //The image file to be cropped
-           $image = Image::getImagine()->open($file->tempName);
+        if(file_exists($file->tempName)) {
+            //The image file to be cropped
+            $image = Image::getImagine()->open($file->tempName);
 
-           // rendering information about crop of ONE option
-           $cropInfo = Json::decode($data);
-           //$cropInfo['dWidth'] = (int)$cropInfo['dWidth']; //new width image
-           //$cropInfo['dHeight'] = (int)$cropInfo['dHeight']; //new height image
-           $cropInfo['x'] = abs($cropInfo['x']); //begin position of frame crop by X
-           $cropInfo['y'] = abs($cropInfo['y']); //begin position of frame crop by Y
-           $cropInfo['width'] = (int)$cropInfo['width']; //width of cropped image
-           $cropInfo['height'] = (int)$cropInfo['height']; //height of cropped image
-           // Properties bolow we don't use in this example
-           //$cropInfo['ratio'] = $cropInfo['ratio'] == 0 ? 1.0 : (float)$cropInfo['ratio']; //ratio image.
+            // rendering information about crop of ONE option
+            $cropInfo = Json::decode($data);
+            //$cropInfo['dWidth'] = (int)$cropInfo['dWidth']; //new width image
+            //$cropInfo['dHeight'] = (int)$cropInfo['dHeight']; //new height image
+            $cropInfo['x'] = abs($cropInfo['x']); //begin position of frame crop by X
+            $cropInfo['y'] = abs($cropInfo['y']); //begin position of frame crop by Y
+            $cropInfo['width'] = (int)$cropInfo['width']; //width of cropped image
+            $cropInfo['height'] = (int)$cropInfo['height']; //height of cropped image
+            // Properties bolow we don't use in this example
+            //$cropInfo['ratio'] = $cropInfo['ratio'] == 0 ? 1.0 : (float)$cropInfo['ratio']; //ratio image.
 
-           /*//delete old images
-           $oldImages = FileHelper::findFiles($file->tempName, [
-               'only' => [
-                   $this->id . '.*',
-                   'thumb_' . $this->id . '.*',
-               ],
-           ]);
+            /*//delete old images
+            $oldImages = FileHelper::findFiles($file->tempName, [
+                'only' => [
+                    $this->id . '.*',
+                    'thumb_' . $this->id . '.*',
+                ],
+            ]);
 
-           for ($i = 0; $i != count($oldImages); $i++) {
-               @unlink($oldImages[$i]);
-           }*/
+            for ($i = 0; $i != count($oldImages); $i++) {
+                @unlink($oldImages[$i]);
+            }*/
 
-           //saving thumbnail
-           //$newSizeThumb = new Box($cropInfo['dWidth'], $cropInfo['dHeight']);
-           $cropSizeThumb = new Box($cropInfo['width'], $cropInfo['height']); //frame size of crop
-           $cropPointThumb = new Point($cropInfo['x'], $cropInfo['y']);
-           $pathThumbImage = $file->tempName . '_thumb_' . $file->name;//$file->tempName;
+            //saving thumbnail
+            //$newSizeThumb = new Box($cropInfo['dWidth'], $cropInfo['dHeight']);
+            $cropSizeThumb = new Box($cropInfo['width'], $cropInfo['height']); //frame size of crop
+            $cropPointThumb = new Point($cropInfo['x'], $cropInfo['y']);
+            $pathThumbImage = $file->tempName . '_thumb_' . $file->name;//$file->tempName;
 
-           $image
-               //->resize($newSizeThumb)
-               ->crop($cropPointThumb, $cropSizeThumb)
-               ->save($pathThumbImage, ['quality' => 100]);
+            $image
+                //->resize($newSizeThumb)
+                ->crop($cropPointThumb, $cropSizeThumb)
+                ->save($pathThumbImage, ['quality' => 100]);
 
-           @unlink($file->tempName);
-           rename($pathThumbImage, $file->tempName);
+            @unlink($file->tempName);
+            rename($pathThumbImage, $file->tempName);
 
-           //saving original
-           //$this->image->saveAs(Yii::getAlias('@path/to/save/image') . $this->id . '.' . $this->image->getExtension());
-       }
+            //saving original
+            //$this->image->saveAs(Yii::getAlias('@path/to/save/image') . $this->id . '.' . $this->image->getExtension());
+        }
     }
 
     /**
@@ -642,4 +649,33 @@ class FileBehavior extends Behavior
     {
         return StatsToolbarPanels::getDocumentsPanel($this->owner, $this->getFileCount());
     }
+
+    /**
+     * @param $attribute
+     * @param $csrf
+     * @param $dataImage
+     * @return bool
+     * @throws \Exception
+     */
+    private function saveFileFormGallery($attribute, $csrf, $dataImage){
+        $idGalleryImage = $dataImage['id'];
+        $galleryAttribute = $dataImage['attribute'];
+
+        if($attribute == $galleryAttribute){
+            $imageGallery = AttachGalleryImage::findOne($idGalleryImage);
+            if ($imageGallery) {
+                $filePath = $imageGallery->attachImage->getPath();
+                if(file_exists($filePath)) {
+                    $this->deleteAttachments($this->owner, $attribute);
+                    if($this->getModule()->attachFile($filePath, $this->owner, $attribute, false)){
+                        \Yii::$app->session->remove($csrf);
+                        return true;
+                    }
+                } else {
+                    return false;
+                }
+            }
+        }
+    }
+
 }

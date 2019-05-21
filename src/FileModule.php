@@ -47,6 +47,10 @@ class FileModule extends AmosModule
 
     public $config = [];
 
+    public $disableGallery = true;
+
+    public $enableSingleGallery = true;
+
     /**
      * @var null|\amos\statistics\models\AttachmentsStatsInterface
      */
@@ -102,8 +106,12 @@ class FileModule extends AmosModule
         }
 
         $userDirPath = $this->getTempPath() . DIRECTORY_SEPARATOR . $sessionId . $suffix;
+        
+        //Try dir creation
+        FileHelper::createDirectory($userDirPath, 0777);
 
-        if(!FileHelper::createDirectory($userDirPath, 0777)) {
+        //Check if the dir has been created
+        if(!is_dir($userDirPath)) {
             throw new \Exception("Unable to create Upload Direcotory '{$userDirPath}'");
         }
 
@@ -139,62 +147,86 @@ class FileModule extends AmosModule
      * @throws \Exception
      * @throws \yii\base\InvalidConfigException
      */
-    public function attachFile($filePath, $owner, $attribute = 'file', $dropOriginFile = true)
+    public function attachFile($filePath, $owner, $attribute = 'file', $dropOriginFile = true, $saveWithoutModel = false)
     {
-        if (!$owner->id) {
-            throw new \Exception(FileModule::t('amosattachments', 'Owner must have id when you attach file'));
+        if(!$saveWithoutModel) {
+            if (!$owner->id) {
+                throw new \Exception(FileModule::t('amosattachments', 'Owner must have id when you attach file'));
+            }
         }
 
         if (!file_exists($filePath)) {
             throw new \Exception(FileModule::t('amosattachments', 'File not exist :') . $filePath);
         }
 
-        //SystemMd5Sum
-        if (strtoupper(PHP_OS) == 'WINNT') {
-            $fileHash = md5(file_get_contents($filePath));
-        } else {
-            $escapedFilePath = escapeshellarg(str_replace(" ", "\\ ", $filePath));
-            exec("md5sum {$escapedFilePath}", $fileHash);
-
-            $filesize = filesize($filePath);
-            $fileHash = md5(reset($fileHash). $filesize);
-        }
+        //File infos
         $fileType = pathinfo($filePath, PATHINFO_EXTENSION);
         $fileName = pathinfo($filePath, PATHINFO_FILENAME);
+        $dirName = pathinfo($filePath, PATHINFO_DIRNAME);
+
+        //Create a clen name for file
+        $cleanName = preg_replace("([\.]{2,})", '_',preg_replace("([^\w\d\-_~,;\[\]\(\).])", '_', $fileName));
+
+        //New location for thge file
+        $cleanFilePath = $dirName .DIRECTORY_SEPARATOR.$cleanName.'.'.$fileType;
+
+        //Rename current file to avoid any problem
+        rename($filePath, $cleanFilePath);
+
+        //SystemMd5Sum
+        if (strtoupper(PHP_OS) == 'WINNT') {
+            $fileHash = md5(file_get_contents($cleanFilePath));
+        } else {
+            $escapedFilePath = escapeshellarg($cleanFilePath);
+            exec("md5sum {$escapedFilePath}", $fileHash);
+
+            $filesize = filesize($cleanFilePath);
+            $fileHash = md5(reset($fileHash). $filesize);
+        }
+
+        //New file infos
         $newFileName = $fileHash . '.' . $fileType;
         $fileDirPath = $this->getFilesDirPath($fileHash);
 
         $newFilePath = $fileDirPath . DIRECTORY_SEPARATOR . $newFileName;
 
-        if (!file_exists($filePath)) {
-            throw new \Exception(FileModule::t('amosattachments', 'Cannot copy file! ') . $filePath . FileModule::t('amosattachments', ' to ') . $newFilePath);
+        if (!file_exists($cleanFilePath)) {
+            throw new \Exception(FileModule::t('amosattachments', 'Cannot copy file! ') . $cleanFilePath . FileModule::t('amosattachments', ' to ') . $newFilePath);
         }
+
+        if($saveWithoutModel){
+            $ownerId = null;
+        } else {
+            $ownerId = $owner->id;
+        }
+
+        $ownerClass = $this->getClass($owner);
 
         $exists = File::findOne([
             'hash' => $fileHash,
-            'itemId' => $owner->id,
+            'itemId' => $ownerId,
             'attribute' => $attribute,
-            'model' => $owner->className()
+            'model' => $ownerClass
         ]);
 
         if (!$exists) {
 
-            copy($filePath, $newFilePath);
+            copy($cleanFilePath, $newFilePath);
 
             $file = new File();
 
             $file->name = $fileName;
-            $file->model = $this->getClass($owner);
-            $file->itemId = $owner->id;
+            $file->model = $ownerClass;
+            $file->itemId = $ownerId;
             $file->hash = $fileHash;
-            $file->size = filesize($filePath);
+            $file->size = filesize($cleanFilePath);
             $file->type = $fileType;
-            $file->mime = FileHelper::getMimeType($filePath);
+            $file->mime = FileHelper::getMimeType($cleanFilePath);
             $file->attribute = $attribute;
 
             if ($file->save()) {
                 if($dropOriginFile) {
-                    unlink($filePath);
+                    unlink($cleanFilePath);
                 }
 
                 try {
@@ -226,7 +258,7 @@ class FileModule extends AmosModule
             }
         } else {
             if($dropOriginFile) {
-                unlink($filePath);
+                unlink($cleanFilePath);
             }
             return $exists;
         }
@@ -278,7 +310,7 @@ class FileModule extends AmosModule
     }
 
     /**
-     * @param \yii\base\Object $obj
+     * @param \yii\base\BaseObject $obj
      * @return string
      */
     public function getClass($obj)

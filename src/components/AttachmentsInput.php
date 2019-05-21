@@ -29,6 +29,7 @@ class AttachmentsInput extends FileInput
     use FileModuleTrait;
 
     public $attribute; // TODO verificarne la reale utilità
+    public $asyncMode = false;
 
     /**
      * @throws InvalidConfigException
@@ -48,12 +49,24 @@ class AttachmentsInput extends FileInput
 
         $fileValidatorForAttribute = $this->model->getFileValidator($this->attribute);
 
+        //Async mode triggers the upload for model mode to multiselect files
+        if ($this->asyncMode) {
+            //Url to upload files
+            $this->pluginOptions['uploadUrl'] = Url::toRoute([
+                '/file/file/upload-for-record',
+                'attribute' => $this->attribute,
+                'model' => get_class($this->model),
+                'id' => get_class($this->model->id)
+            ]);
+
+            //Async mode
+            $this->pluginOptions['uploadAsync'] = false;
+        }
+
         $this->pluginOptions = array_replace(
             [
-                'uploadUrl' => Url::toRoute(['/file/file/upload', 'attribute' => $this->attribute, 'model' => get_class($this->model)]),
                 'initialPreview' => $initials,
                 'initialPreviewConfig' => $this->model->isNewRecord ? [] : $this->model->getInitialPreviewConfigByAttributeName($this->attribute),
-                'uploadAsync' => false,
                 //'otherActionButtons' => '<button class="download-file btn-xs btn-default" title="download" {dataKey}><i class="glyphicon glyphicon-download"></i></button>',
                 'overwriteInitial' => false,
                 'initialPreviewCount' => $initialCount,
@@ -96,6 +109,7 @@ class AttachmentsInput extends FileInput
                                                                   {caption}
                                                                   <div class=\"input-group-btn\">
                                                                     {cancel}
+                                                                    {upload}
                                                                     {browse}
                                                                   </div>
                                                                 </div>";

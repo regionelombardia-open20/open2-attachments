@@ -58,6 +58,7 @@ $this->registerJs($js, \yii\web\View::POS_READY);
 ModuleAttachmentsAsset::register($this);
 
 $attachament = $crop->model->{$crop->attribute};
+
 ?>
     <div class="uploadcrop attachment-uploadcrop" id="cropInput_<?= $crop->attribute; ?>">
         <?= $crop->form->field($crop->model, $crop->attribute)->fileInput()->label(FileModule::t('amosattachments', '#attach_label'), ['title' => FileModule::t('amosattachments', '#attach_label_title')]); ?>
@@ -66,7 +67,7 @@ $attachament = $crop->model->{$crop->attribute};
         <div class="preview-pane <?= (!is_null($crop->defaultPreviewImage)) ? 'image-find' : '' ?>">
             <?php $closeButtonClass = is_null($crop->defaultPreviewImage) ? ' hidden' : '';
             echo Html::a(AmosIcons::show('close', ['class' => 'btn btn-icon']), 'javascript:void(0)', [
-                'class' => 'deleteImageCrop '. $closeButtonClass,
+                'class' => 'deleteImageCrop ' . $closeButtonClass,
                 'title' => FileModule::t('amosattachments', '#attach_delete_image_crop'),
                 'data' => [
                     'id' => $attachament ? $attachament->id : null,
@@ -111,6 +112,12 @@ $attachament = $crop->model->{$crop->attribute};
         </div>
         <?php Modal::end(); ?>
     </div>
+
+<?php // SELECTION FROM GALLERY
+if ($crop->enableUploadFromGallery) {
+    echo \lispa\amos\attachments\components\GalleryInput::widget(['attribute' => $crop->attribute]);
+}
+?>
 
 <?php
 UploadCropAsset::register($this);

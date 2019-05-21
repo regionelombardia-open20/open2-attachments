@@ -132,14 +132,14 @@ class FileRefs extends ActiveRecord
      * @return bool|string
      */
     public static function getHashByAttachFile(File $attachFile, $crop, $protected = true) {
-        $result = FileRefs::findOne([
+        $result = FileRefs::find()->andWhere([
             'attach_file_id' => $attachFile->id,
             'model' => $attachFile->model,
             'item_id' => $attachFile->itemId,
             'attribute' => $attachFile->attribute,
             'crop' => $crop,
             'protected' => $protected
-        ]);
+        ])->one();
 
         if($result && $result->id) {
             return $result->hash;

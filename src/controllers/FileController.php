@@ -57,6 +57,7 @@ class FileController extends Controller
                     [
                         'actions' => [
                             'upload-files',
+                            'upload-for-record',
                         ],
                         'allow' => true,
                         'roles' => ['@'],
@@ -383,6 +384,10 @@ class FileController extends Controller
 
         Yii::$app->response->format = Response::FORMAT_JSON;
         return [];
+    }
+
+    public function actionUploadForRecord() {
+        //
     }
     
     

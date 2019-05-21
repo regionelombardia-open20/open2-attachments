@@ -29,7 +29,7 @@ class FileImport extends Component
      * @param $filePath string Path on filesystem
      * @return bool|array File format or Array with error
      */
-    public function importFileForModel($modelSpecific, $attribute, $filePath)
+    public function importFileForModel($modelSpecific, $attribute, $filePath, $dropOriginFile = true)
     {
         $module = Yii::$app->getModule(FileModule::getModuleName());
 
@@ -44,7 +44,7 @@ class FileImport extends Component
         $file['type'] = mime_content_type($filePath);
         $file['size'] = filesize($filePath);
 
-        if ($module->attachFile($filePath, $modelSpecific, $attribute)) {
+        if ($module->attachFile($filePath, $modelSpecific, $attribute,$dropOriginFile)) {
             $result['uploadedFiles'] = [$filePath];
             return $result;
         } else {

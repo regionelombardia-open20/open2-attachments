@@ -13,7 +13,7 @@ IMPORT STYLE-CUSTOM
 .attachments-list {
   .attachment-list-item {
     border-bottom: 1px solid @white-color;
-    &:last-child{
+    &:last-child {
       margin-bottom: @margin-default;
     }
   }
@@ -107,9 +107,56 @@ IMPORT STYLE-CUSTOM
       top: 3px;
       right: 15px;
     }
-    &.image-find{
+    &.image-find {
       position: relative;
       padding: 10px 30px 0 0;
+    }
+  }
+}
+
+//---------------------------------------
+// ATTACHMENT INPUT GALLERY
+//---------------------------------------
+.modal-gallery-container {
+  margin: @margin-min 0;
+  .open-modal-gallery {
+    text-decoration: none;
+  }
+}
+
+.modal-utility.attachment-gallery-modal {
+  .modal-body {
+    > div {
+      padding: 0;
+      h3 {
+        background-color: @light-background-color;
+        text-transform: uppercase;
+        margin: 0 0 @margin-default;
+        padding: @padding-medium;
+      }
+      &.images {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        > div {
+          width: 20%;
+          padding: 0;
+          > .link-image {
+            transition: all .3s ease-in-out;
+            overflow: hidden;
+            display: block;
+            border: 2px solid transparent;
+            position: relative;
+            z-index: 1;
+            &:hover {
+              border-color: @primary-color;
+              transform: scale(1.1);
+              opacity: 1;
+              z-index: 2;
+            }
+          }
+        }
+      }
     }
   }
 }

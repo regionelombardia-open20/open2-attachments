@@ -9,8 +9,8 @@
 namespace lispa\amos\attachments\models;
 
 
-use yii\base\Object;
+use yii\base\BaseObject;
 
-class EmptyContentModel extends Object{
+class EmptyContentModel extends BaseObject{
     public $id = 1;
 }

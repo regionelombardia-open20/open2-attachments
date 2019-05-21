@@ -37,6 +37,9 @@ class CropInput extends InputWidget
     /** @var string */
     var $defaultPreviewImage = NULL;
 
+    /** @var boolean */
+    var $enableUploadFromGallery = true;
+
     /**
      * only call this method after a form closing and
      *    when user hasn't used in the widget call the parameter $form
@@ -63,6 +66,12 @@ class CropInput extends InputWidget
      */
     public function run()
     {
+        $fileModule = \Yii::$app->getModule('attachments');
+        if($fileModule){
+            if($fileModule->disableGallery){
+                $this->enableUploadFromGallery = false;
+            }
+        }
         if ((property_exists($this->model, $this->attribute) || isset($this->model->{$this->attribute})) && $this->model->{$this->attribute}) {
             if (is_null($this->defaultPreviewImage)) {
                 $this->defaultPreviewImage = $this->model->{$this->attribute}->url;
