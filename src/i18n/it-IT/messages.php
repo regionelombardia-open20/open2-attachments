@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\comments\i18n\it-IT
+ * @package    open20\amos\comments\i18n\it-IT
  * @category   CategoryName
  */
 
@@ -27,6 +27,7 @@ return [
     '#crop_title' => 'Crop image',
     'Date upload' => 'Carica data',
     'Delete' => 'Cancella',
+    '#encrypted' => 'Criptato',
     'Error' => 'Errore',
     'File name' => 'Nome file',
     'File not exist :' => 'Il file non esiste :',

@@ -1,17 +1,17 @@
 <?php
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    @vendor/lispa/amos-attachments/src/views 
+ * @package    @vendor/open20/amos-attachments/src/views 
  */
 /**
 * @var yii\web\View $this
-* @var lispa\amos\attachments\models\AttachGallery $model
+* @var open20\amos\attachments\models\AttachGallery $model
 */
 
-$this->title = \lispa\amos\attachments\FileModule::t('amoscore', 'Create gallery');
+$this->title = \open20\amos\attachments\FileModule::t('amoscore', 'Create gallery');
 $this->params['breadcrumbs'][] = ['label' => '', 'url' => ['/attachments']];
 $this->params['breadcrumbs'][] = ['label' => Yii::t('amoscore', 'Attach Gallery'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;

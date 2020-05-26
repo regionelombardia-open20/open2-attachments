@@ -1,26 +1,26 @@
 <?php
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    @vendor/lispa/amos-attachments/src/views 
+ * @package    @vendor/open20/amos-attachments/src/views 
  */
-use lispa\amos\core\helpers\Html;
-use lispa\amos\core\forms\ActiveForm;
+use open20\amos\core\helpers\Html;
+use open20\amos\core\forms\ActiveForm;
 use kartik\builder\Form;
 use kartik\datecontrol\DateControl;
-use lispa\amos\core\forms\Tabs;
-use lispa\amos\core\forms\CloseSaveButtonWidget;
+use open20\amos\core\forms\Tabs;
+use open20\amos\core\forms\CloseSaveButtonWidget;
 use yii\helpers\Url;
 use kartik\select2\Select2;
 use yii\helpers\ArrayHelper;
-use lispa\amos\core\icons\AmosIcons;
+use open20\amos\core\icons\AmosIcons;
 use yii\bootstrap\Modal;
 
 /**
 * @var yii\web\View $this
-* @var lispa\amos\attachments\models\AttachGalleryCategory $model
+* @var open20\amos\attachments\models\AttachGalleryCategory $model
 * @var yii\widgets\ActiveForm $form
 */
 ?>

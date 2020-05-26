@@ -1,15 +1,15 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments
+ * @package    open20\amos\attachments
  * @category   CategoryName
  */
 
-namespace lispa\amos\attachments\components;
+namespace open20\amos\attachments\components;
 
 use yii\widgets\InputWidget;
 use Yii;
@@ -105,7 +105,7 @@ class CropInput extends InputWidget
             'viewMode' => 2,
             'dashed' => FALSE,
             'zoomable' => FALSE,
-            'rotatable' => FALSE
+            'rotatable' => true
         ];
 
         $this->jcropOptions = array_merge($default_jcropOptions, $this->jcropOptions);

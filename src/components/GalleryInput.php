@@ -1,21 +1,21 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments
+ * @package    open20\amos\attachments
  * @category   CategoryName
  */
 
-namespace lispa\amos\attachments\components;
+namespace open20\amos\attachments\components;
 
-use lispa\amos\attachments\FileModule;
-use lispa\amos\attachments\models\AttachGallery;
-use lispa\amos\attachments\models\AttachGalleryCategory;
-use lispa\amos\core\icons\AmosIcons;
-use lispa\amos\layout\assets\SpinnerWaitAsset;
+use open20\amos\attachments\FileModule;
+use open20\amos\attachments\models\AttachGallery;
+use open20\amos\attachments\models\AttachGalleryCategory;
+use open20\amos\core\icons\AmosIcons;
+use open20\amos\layout\assets\SpinnerWaitAsset;
 use yii\base\InvalidConfigException;
 use yii\base\Widget;
 use yii\widgets\InputWidget;
@@ -70,14 +70,14 @@ class GalleryInput extends Widget
         $this->registerAssets($galleryId, $attribute);
 
         return "<div class='loading' hidden></div>" .
-            \lispa\amos\core\helpers\Html::tag('div',
-                \lispa\amos\core\helpers\Html::a(
+            \open20\amos\core\helpers\Html::tag('div',
+                \open20\amos\core\helpers\Html::a(
                     AmosIcons::show('collection-image') . FileModule::t('amosattachments', '#choose_image_from_gallery'), '#', [
                     'class' => 'open-modal-gallery',
                 ]),
                 ['class' => 'modal-gallery-container']
             )
-            . \lispa\amos\core\utilities\ModalUtility::amosModal([
+            . \open20\amos\core\utilities\ModalUtility::amosModal([
                 'id' => 'attach-gallery-' . $attribute,
                 'modalBodyContent' => '',
                 'modalClassSize' => 'modal-lg',

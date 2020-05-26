@@ -1,21 +1,21 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments\controllers 
+ * @package    open20\amos\attachments\controllers 
  */
  
-namespace lispa\amos\attachments\controllers;
+namespace open20\amos\attachments\controllers;
 
 /**
  * Class AttachGalleryCategoryController 
  * This is the class for controller "AttachGalleryCategoryController".
- * @package lispa\amos\attachments\controllers 
+ * @package open20\amos\attachments\controllers 
  */
-class AttachGalleryCategoryController extends \lispa\amos\attachments\controllers\base\AttachGalleryCategoryController
+class AttachGalleryCategoryController extends \open20\amos\attachments\controllers\base\AttachGalleryCategoryController
 {
 
 }

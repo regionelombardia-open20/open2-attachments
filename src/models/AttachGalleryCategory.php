@@ -1,6 +1,15 @@
 <?php
 
-namespace lispa\amos\attachments\models;
+/**
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    Open20Package
+ * @category   CategoryName
+ */
+
+namespace open20\amos\attachments\models;
 
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -8,7 +17,7 @@ use yii\helpers\ArrayHelper;
 /**
  * This is the model class for table "attach_gallery_category".
  */
-class AttachGalleryCategory extends \lispa\amos\attachments\models\base\AttachGalleryCategory
+class AttachGalleryCategory extends \open20\amos\attachments\models\base\AttachGalleryCategory
 {
     public function representingColumn()
     {
@@ -27,6 +36,7 @@ class AttachGalleryCategory extends \lispa\amos\attachments\models\base\AttachGa
      * Returns the text hint for the specified attribute.
      * @param string $attribute the attribute name
      * @return string the attribute hint
+     * @see attributeHints
      */
     public function getAttributeHint($attribute)
     {

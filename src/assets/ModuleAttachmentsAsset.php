@@ -1,21 +1,22 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news
+ * @package    open20\amos\news
  * @category   CategoryName
  */
 
-namespace lispa\amos\attachments\assets;
+namespace open20\amos\attachments\assets;
 
 use yii\web\AssetBundle;
+use open20\amos\core\widget\WidgetAbstract;
 
 class ModuleAttachmentsAsset extends AssetBundle
 {
-    public $sourcePath = '@vendor/lispa/amos-attachments/src/assets/web';
+    public $sourcePath = '@vendor/open20/amos-attachments/src/assets/web';
 
     public $css = [
         'less/attachments.less',
@@ -28,10 +29,15 @@ class ModuleAttachmentsAsset extends AssetBundle
     public function init()
     {
         $moduleL = \Yii::$app->getModule('layout');
+
+        if(!empty(\Yii::$app->params['dashboardEngine']) && \Yii::$app->params['dashboardEngine'] == WidgetAbstract::ENGINE_ROWS){
+            $this->css = ['less/attachments_fullsize.less'];
+        }
+
         if(!empty($moduleL)){
-            $this->depends [] = 'lispa\amos\layout\assets\BaseAsset';
+            $this->depends [] = 'open20\amos\layout\assets\BaseAsset';
         }else{
-            $this->depends [] = 'lispa\amos\core\views\assets\AmosCoreAsset';
+            $this->depends [] = 'open20\amos\core\views\assets\AmosCoreAsset';
         }
         parent::init();
     }

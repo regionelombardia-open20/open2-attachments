@@ -1,23 +1,25 @@
 <?php
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments
+ * @package    open20\amos\attachments
  * @category   CategoryName
  *
  * @var \yii\web\View $this
- * @var \lispa\amos\attachments\components\CropInput $crop
+ * @var \open20\amos\attachments\components\CropInput $crop
+ * @var string $inputField
  */
 
 use yii\bootstrap\Modal;
 use yii\helpers\Html;
 use yii\helpers\Json;
-use lispa\amos\attachments\FileModule;
-use lispa\amos\attachments\assets\ModuleAttachmentsAsset;
+use open20\amos\attachments\FileModule;
+use open20\amos\attachments\assets\ModuleAttachmentsAsset;
 use uitrick\yii2\widget\upload\crop\UploadCropAsset;
-use lispa\amos\core\icons\AmosIcons;
+
+use open20\amos\core\icons\AmosIcons;
 
 $inputId = Html::getInputId($crop->model, $crop->attribute);
 $moduleName = FileModule::getModuleName();
@@ -45,6 +47,11 @@ jQuery('.deleteImageCrop', '#cropInput_{$crop->attribute}').on('click', function
     }, function(result) {
         //TODO
     }, 'json');
+});
+
+jQuery('.modal-body .tools>.rotate_{$crop->attribute}', '#cropInput_{$crop->attribute}').on('click', function() {
+    var data = jQuery(this).data();
+    $('.modal-body .cropper-wrapper>img', '#cropInput_{$crop->attribute}').cropper(data.type, data.option);
 });
 
 //On new image selected
@@ -109,13 +116,25 @@ $attachament = $crop->model->{$crop->attribute};
             <div class="col-md-3">
                 <div class="cropper-preview preview-lg"></div>
             </div>
+            <div class="btn-group tools">
+                <button type="button" class="btn btn-primary rotate_<?= $crop->attribute ?>" data-type="rotate" data-option="-90" title="Rotate Left">
+                    <span class="docs-tooltip" data-animation="false">
+                        <?= AmosIcons::show('rotate-left', ['class' => 'btn btn-primary']); ?>
+                    </span>
+                </button>
+                <button type="button" class="btn btn-primary rotate_<?= $crop->attribute ?>" data-type="rotate" data-option="90" title="Rotate Right">
+                    <span class="docs-tooltip" data-animation="false">
+                        <?= AmosIcons::show('rotate-right', ['class' => 'btn btn-primary']); ?>
+                    </span>
+                </button>
+            </div>
         </div>
         <?php Modal::end(); ?>
     </div>
 
 <?php // SELECTION FROM GALLERY
 if ($crop->enableUploadFromGallery) {
-    echo \lispa\amos\attachments\components\GalleryInput::widget(['attribute' => $crop->attribute]);
+    echo \open20\amos\attachments\components\GalleryInput::widget(['attribute' => $crop->attribute]);
 }
 ?>
 

@@ -1,27 +1,27 @@
 <?php
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments\controllers\base
+ * @package    open20\amos\attachments\controllers\base
  */
 
-namespace lispa\amos\attachments\controllers\base;
+namespace open20\amos\attachments\controllers\base;
 
-use lispa\amos\attachments\FileModule;
-use lispa\amos\attachments\widgets\icons\WidgetIconGalleryDashboard;
-use lispa\amos\dashboard\controllers\TabDashboardControllerTrait;
+use open20\amos\attachments\FileModule;
+use open20\amos\attachments\widgets\icons\WidgetIconGalleryDashboard;
+use open20\amos\dashboard\controllers\TabDashboardControllerTrait;
 use Yii;
-use lispa\amos\attachments\models\AttachGalleryCategory;
-use lispa\amos\attachments\models\search\AttachGalleryCategorySearch;
-use lispa\amos\core\controllers\CrudController;
-use lispa\amos\core\module\BaseAmosModule;
+use open20\amos\attachments\models\AttachGalleryCategory;
+use open20\amos\attachments\models\search\AttachGalleryCategorySearch;
+use open20\amos\core\controllers\CrudController;
+use open20\amos\core\module\BaseAmosModule;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
-use lispa\amos\core\icons\AmosIcons;
-use lispa\amos\core\helpers\Html;
-use lispa\amos\core\helpers\T;
+use open20\amos\core\icons\AmosIcons;
+use open20\amos\core\helpers\Html;
+use open20\amos\core\helpers\T;
 use yii\helpers\Url;
 
 
@@ -29,10 +29,10 @@ use yii\helpers\Url;
  * Class AttachGalleryCategoryController
  * AttachGalleryCategoryController implements the CRUD actions for AttachGalleryCategory model.
  *
- * @property \lispa\amos\attachments\models\AttachGalleryCategory $model
- * @property \lispa\amos\attachments\models\search\AttachGalleryCategorySearch $modelSearch
+ * @property \open20\amos\attachments\models\AttachGalleryCategory $model
+ * @property \open20\amos\attachments\models\search\AttachGalleryCategorySearch $modelSearch
  *
- * @package lispa\amos\attachments\controllers\base
+ * @package open20\amos\attachments\controllers\base
  */
 class AttachGalleryCategoryController extends CrudController
 {
@@ -230,7 +230,7 @@ class AttachGalleryCategoryController extends CrudController
     }
 
     /**
-     * Set a view param used in \lispa\amos\core\forms\CreateNewButtonWidget
+     * Set a view param used in \open20\amos\core\forms\CreateNewButtonWidget
      */
     private function setCreateNewBtnLabel()
     {

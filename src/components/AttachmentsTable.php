@@ -1,20 +1,20 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments
+ * @package    open20\amos\attachments
  * @category   CategoryName
  */
 
-namespace lispa\amos\attachments\components;
+namespace open20\amos\attachments\components;
 
-use lispa\amos\attachments\behaviors\FileBehavior;
-use lispa\amos\attachments\FileModule;
-use lispa\amos\attachments\FileModuleTrait;
-use lispa\amos\attachments\models\File;
+use open20\amos\attachments\behaviors\FileBehavior;
+use open20\amos\attachments\FileModule;
+use open20\amos\attachments\FileModuleTrait;
+use open20\amos\attachments\models\File;
 use yii\base\InvalidConfigException;
 use yii\bootstrap\Widget;
 use yii\data\ActiveDataProvider;
@@ -25,7 +25,7 @@ use yii\helpers\Url;
 
 /**
  * Class AttachmentsTable
- * @package lispa\amos\attachments\components
+ * @package open20\amos\attachments\components
  */
 class AttachmentsTable extends Widget
 {

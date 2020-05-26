@@ -1,14 +1,14 @@
 <?php
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    @vendor/lispa/amos-attachments/src/views 
+ * @package    @vendor/open20/amos-attachments/src/views 
  */
 /**
 * @var yii\web\View $this
-* @var lispa\amos\attachments\models\AttachGalleryCategory $model
+* @var open20\amos\attachments\models\AttachGalleryCategory $model
 */
 
 $this->title = Yii::t('amoscore', 'Aggiorna', [

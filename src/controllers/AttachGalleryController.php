@@ -1,19 +1,19 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments\controllers 
+ * @package    open20\amos\attachments\controllers 
  */
  
-namespace lispa\amos\attachments\controllers;
-use lispa\amos\attachments\models\AttachGallery;
-use lispa\amos\attachments\models\AttachGalleryCategory;
-use lispa\amos\attachments\models\AttachGalleryImage;
-use lispa\amos\dashboard\controllers\TabDashboardControllerTrait;
-use lispa\amos\layout\Module;
+namespace open20\amos\attachments\controllers;
+use open20\amos\attachments\models\AttachGallery;
+use open20\amos\attachments\models\AttachGalleryCategory;
+use open20\amos\attachments\models\AttachGalleryImage;
+use open20\amos\dashboard\controllers\TabDashboardControllerTrait;
+use open20\amos\layout\Module;
 use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
@@ -23,9 +23,9 @@ use Yii;
 /**
  * Class AttachGalleryController 
  * This is the class for controller "AttachGalleryController".
- * @package lispa\amos\attachments\controllers 
+ * @package open20\amos\attachments\controllers 
  */
-class AttachGalleryController extends \lispa\amos\attachments\controllers\base\AttachGalleryController
+class AttachGalleryController extends \open20\amos\attachments\controllers\base\AttachGalleryController
 {
 
     /**
@@ -67,7 +67,7 @@ class AttachGalleryController extends \lispa\amos\attachments\controllers\base\A
         if($gallery) {
             $images = $gallery->attachGalleryImages;
             $categories = AttachGalleryCategory::find()->orderBy('default_order ASC')->all();
-            return $this->renderAjax('@vendor/lispa/amos-attachments/src/components/views/gallery-view', [
+            return $this->renderAjax('@vendor/open20/amos-attachments/src/components/views/gallery-view', [
                 'attribute' => $attribute,
                 'images' => $images,
                 'gallery' => $gallery,
@@ -83,7 +83,7 @@ class AttachGalleryController extends \lispa\amos\attachments\controllers\base\A
      */
     public function actionSingleGallery(){
 
-       // $this->setUpLayout('form');
+        $this->setUpLayout('form');
         $this->model = $this->findModel(1);
         $this->setCreateNewBtnLabelSingle();
 
@@ -111,7 +111,7 @@ class AttachGalleryController extends \lispa\amos\attachments\controllers\base\A
     }
 
     /**
-     * Set a view param used in \lispa\amos\core\forms\CreateNewButtonWidget
+     * Set a view param used in \open20\amos\core\forms\CreateNewButtonWidget
      */
     private function setCreateNewBtnLabelSingle()
     {

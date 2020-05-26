@@ -1,6 +1,15 @@
 <?php
-use lispa\amos\core\migration\AmosMigrationWidgets;
-use lispa\amos\dashboard\models\AmosWidgets;
+
+/**
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    Open20Package
+ * @category   CategoryName
+ */
+use open20\amos\core\migration\AmosMigrationWidgets;
+use open20\amos\dashboard\models\AmosWidgets;
 
 
 /**
@@ -16,13 +25,13 @@ class m181212_122042_add_widgets_single_gallery extends AmosMigrationWidgets
     {
         $this->widgets = [
             [
-                'classname' => \lispa\amos\attachments\widgets\icons\WidgetIconSingleGallery::className(),
+                'classname' => \open20\amos\attachments\widgets\icons\WidgetIconSingleGallery::className(),
                 'type' => AmosWidgets::TYPE_ICON,
                 'module' => self::MODULE_NAME,
                 'status' => AmosWidgets::STATUS_ENABLED,
                 'dashboard_visible' => 0,
                 'default_order' => 10,
-                'child_of' =>  \lispa\amos\attachments\widgets\icons\WidgetIconGalleryDashboard::className(),
+                'child_of' =>  \open20\amos\attachments\widgets\icons\WidgetIconGalleryDashboard::className(),
             ],
 
         ];

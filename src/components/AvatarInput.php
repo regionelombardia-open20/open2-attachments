@@ -1,19 +1,19 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments\components
+ * @package    open20\amos\attachments\components
  * @category   CategoryName
  */
 
-namespace lispa\amos\attachments\components;
+namespace open20\amos\attachments\components;
 
 use kartik\widgets\FileInput;
-use lispa\amos\attachments\FileModule;
-use lispa\amos\attachments\FileModuleTrait;
+use open20\amos\attachments\FileModule;
+use open20\amos\attachments\FileModuleTrait;
 use yii\base\InvalidConfigException;
 use yii\helpers\FileHelper;
 use yii\helpers\Url;
@@ -22,7 +22,7 @@ use yii\jui\JuiAsset;
 /**
  * Class AvatarInput
  * @property FileActiveRecord $model
- * @package lispa\amos\attachments\components
+ * @package open20\amos\attachments\components
  */
 class AvatarInput extends FileInput
 {

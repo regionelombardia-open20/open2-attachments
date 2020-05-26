@@ -1,5 +1,14 @@
 <?php
-use lispa\amos\core\migration\AmosMigrationPermissions;
+
+/**
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    Open20Package
+ * @category   CategoryName
+ */
+use open20\amos\core\migration\AmosMigrationPermissions;
 use yii\rbac\Permission;
 
 
@@ -17,21 +26,21 @@ class m181203_105016_attach_gallery_permissions_widgets extends AmosMigrationPer
 
         return [
                 [
-                    'name' => \lispa\amos\attachments\widgets\icons\WidgetIconGalleryDashboard::className(),
+                    'name' => \open20\amos\attachments\widgets\icons\WidgetIconGalleryDashboard::className(),
                     'type' => Permission::TYPE_PERMISSION,
                     'description' => 'Permesso widget Gallery dashboard',
                     'ruleName' => null,
                     'parent' => ['ATTACH_GALLERY_ADMINISTRATOR']
                 ],
                 [
-                    'name' => \lispa\amos\attachments\widgets\icons\WidgetIconGallery::className(),
+                    'name' => \open20\amos\attachments\widgets\icons\WidgetIconGallery::className(),
                     'type' => Permission::TYPE_PERMISSION,
                     'description' => 'Permesso widget Gallery',
                     'ruleName' => null,
                     'parent' => ['ATTACH_GALLERY_ADMINISTRATOR']
                 ],
                 [
-                    'name' => \lispa\amos\attachments\widgets\icons\WidgetIconCategory::className(),
+                    'name' => \open20\amos\attachments\widgets\icons\WidgetIconCategory::className(),
                     'type' => Permission::TYPE_PERMISSION,
                     'description' => 'Permesso widget Gallery category',
                     'ruleName' => null,

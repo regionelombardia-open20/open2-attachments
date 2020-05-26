@@ -1,21 +1,21 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments
+ * @package    open20\amos\attachments
  * @category   CategoryName
  */
 
-namespace lispa\amos\attachments\behaviors;
+namespace open20\amos\attachments\behaviors;
 
-use lispa\amos\attachments\FileModule;
-use lispa\amos\attachments\FileModuleTrait;
-use lispa\amos\attachments\models\AttachGalleryImage;
-use lispa\amos\attachments\models\File;
-use lispa\amos\core\views\toolbars\StatsToolbarPanels;
+use open20\amos\attachments\FileModule;
+use open20\amos\attachments\FileModuleTrait;
+use open20\amos\attachments\models\AttachGalleryImage;
+use open20\amos\attachments\models\File;
+use open20\amos\core\views\toolbars\StatsToolbarPanels;
 use yii\base\Behavior;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
@@ -65,6 +65,11 @@ class FileBehavior extends Behavior
     private $overrideAttributes = [];
 
     /**
+     * @var array $encryptedAttributes
+     */
+    public $encryptedAttributes = [];
+
+    /**
      * Add files attributes as avaiable property for Getter
      * @return bool
      */
@@ -108,10 +113,14 @@ class FileBehavior extends Behavior
         $fileValidator = $this->getFileValidator($name);
 
         if ($fileValidator) {
+            if(isset($this->overrideAttributes[$name])) {
+                return $this->overrideAttributes[$name];
+            }
+
             if ($fileValidator->maxFiles == 1) {
-                return isset($this->overrideAttributes[$name]) && is_array($this->overrideAttributes[$name]) ? reset($this->overrideAttributes[$name]) : $this->hasOneFile($name);
+                return $this->hasOneFile($name);
             } else {
-                return isset($this->overrideAttributes[$name]) ? $this->overrideAttributes[$name] :  $this->hasMultipleFiles($name);
+                return $this->hasMultipleFiles($name);
             }
         }
 
@@ -286,7 +295,7 @@ class FileBehavior extends Behavior
         }
 
         foreach (FileHelper::findFiles($userTempDir) as $file) {
-            if (!$this->getModule()->attachFile($file, $this->owner, $attribute)) {
+            if (!$this->getModule()->attachFile($file, $this->owner, $attribute, true, false, (in_array($attribute, $this->encryptedAttributes)))) {
                 $this->owner->addError($attribute, 'File upload failed.');
                 return true;
             }
@@ -327,6 +336,10 @@ class FileBehavior extends Behavior
 
             // rendering information about crop of ONE option
             $cropInfo = Json::decode($data);
+
+            if(isset($cropInfo['rotate'])) {
+                $image->rotate($cropInfo['rotate']);
+            }
             //$cropInfo['dWidth'] = (int)$cropInfo['dWidth']; //new width image
             //$cropInfo['dHeight'] = (int)$cropInfo['dHeight']; //new height image
             $cropInfo['x'] = abs($cropInfo['x']); //begin position of frame crop by X
@@ -547,11 +560,11 @@ class FileBehavior extends Behavior
                 if (substr(FileHelper::getMimeType($file), 0, 5) === 'image') {
                     $initialPreview[] = Html::img(['/' . FileModule::getModuleName() . '/file/download-temp', 'filename' => basename($file)], ['class' => 'file-preview-image']);
                 } else {
-                    $initialPreview[] = Html::beginTag('div', ['class' => 'file-preview-other']) .
-                        Html::beginTag('span', ['class' => 'file-other-icon']) .
-                        Html::tag('i', '', ['class' => 'glyphicon glyphicon-file']) .
-                        Html::endTag('span') .
-                        Html::endTag('div');
+                    $initialPreview[] = Html::beginTag('div', ['class' => 'file-preview-other']) 
+                        . Html::beginTag('span', ['class' => 'file-other-icon']) 
+                        . Html::tag('i', '', ['class' => 'glyphicon glyphicon-file']) 
+                        . Html::endTag('span') 
+                        . Html::endTag('div');
                 }
             }
         }
@@ -565,17 +578,17 @@ class FileBehavior extends Behavior
                 if (substr($file->mime, 0, 5) === 'image') {
                     $initialPreview[] = Html::img($file->getUrl($size), ['class' => 'file-preview-image']);
                 } else {
-                    $initialPreview[] = Html::beginTag('div', ['class' => 'file-preview-other']) .
-                        Html::beginTag('span', ['class' => 'file-other-icon']) .
-                        Html::tag('i', '', ['class' => 'glyphicon glyphicon-file']) .
-                        Html::endTag('span') .
-                        Html::endTag('div');
+                    $initialPreview[] = Html::beginTag('div', ['class' => 'file-preview-other']) 
+                        . Html::beginTag('span', ['class' => 'file-other-icon']) 
+                        . Html::tag('i', '', ['class' => 'glyphicon glyphicon-file']) 
+                        . Html::endTag('span') 
+                        . Html::endTag('div');
                 }
             }
             return $initialPreview;
-        } else {
-            return [];
         }
+        
+        return [];
     }
 
     /**

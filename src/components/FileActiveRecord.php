@@ -1,17 +1,17 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments
+ * @package    open20\amos\attachments
  * @category   CategoryName
  */
 
-namespace lispa\amos\attachments\components;
+namespace open20\amos\attachments\components;
 
-use lispa\amos\attachments\models\File;
+use open20\amos\attachments\models\File;
 use yii\db\ActiveRecord;
 
 /**

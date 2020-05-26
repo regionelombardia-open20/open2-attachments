@@ -1,25 +1,25 @@
 <?php
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments\controllers\base
+ * @package    open20\amos\attachments\controllers\base
  */
 
-namespace lispa\amos\attachments\controllers\base;
+namespace open20\amos\attachments\controllers\base;
 
-use lispa\amos\attachments\models\AttachGallery;
+use open20\amos\attachments\models\AttachGallery;
 use Yii;
-use lispa\amos\attachments\models\AttachGalleryImage;
-use lispa\amos\attachments\models\search\AttachGalleryImageSearch;
-use lispa\amos\core\controllers\CrudController;
-use lispa\amos\core\module\BaseAmosModule;
+use open20\amos\attachments\models\AttachGalleryImage;
+use open20\amos\attachments\models\search\AttachGalleryImageSearch;
+use open20\amos\core\controllers\CrudController;
+use open20\amos\core\module\BaseAmosModule;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
-use lispa\amos\core\icons\AmosIcons;
-use lispa\amos\core\helpers\Html;
-use lispa\amos\core\helpers\T;
+use open20\amos\core\icons\AmosIcons;
+use open20\amos\core\helpers\Html;
+use open20\amos\core\helpers\T;
 use yii\helpers\Url;
 
 
@@ -27,10 +27,10 @@ use yii\helpers\Url;
  * Class AttachGalleryImageController
  * AttachGalleryImageController implements the CRUD actions for AttachGalleryImage model.
  *
- * @property \lispa\amos\attachments\models\AttachGalleryImage $model
- * @property \lispa\amos\attachments\models\search\AttachGalleryImageSearch $modelSearch
+ * @property \open20\amos\attachments\models\AttachGalleryImage $model
+ * @property \open20\amos\attachments\models\search\AttachGalleryImageSearch $modelSearch
  *
- * @package lispa\amos\attachments\controllers\base
+ * @package open20\amos\attachments\controllers\base
  */
 class AttachGalleryImageController extends CrudController
 {

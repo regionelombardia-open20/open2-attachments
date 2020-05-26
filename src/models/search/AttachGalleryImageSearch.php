@@ -1,14 +1,23 @@
 <?php
 
-namespace lispa\amos\attachments\models\search;
+/**
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    Open20Package
+ * @category   CategoryName
+ */
+
+namespace open20\amos\attachments\models\search;
 
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use lispa\amos\attachments\models\AttachGalleryImage;
+use open20\amos\attachments\models\AttachGalleryImage;
 
 /**
- * AttachGalleryImageSearch represents the model behind the search form about `lispa\amos\attachments\models\AttachGalleryImage`.
+ * AttachGalleryImageSearch represents the model behind the search form about `open20\amos\attachments\models\AttachGalleryImage`.
  */
 class AttachGalleryImageSearch extends AttachGalleryImage
 {

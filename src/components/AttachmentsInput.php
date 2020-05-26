@@ -1,19 +1,21 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments
+ * @package    open20\amos\attachments
  * @category   CategoryName
  */
 
-namespace lispa\amos\attachments\components;
+namespace open20\amos\attachments\components;
 
+use open20\amos\core\helpers\Html;
+use open20\amos\core\icons\AmosIcons;
 use kartik\widgets\FileInput;
-use lispa\amos\attachments\FileModule;
-use lispa\amos\attachments\FileModuleTrait;
+use open20\amos\attachments\FileModule;
+use open20\amos\attachments\FileModuleTrait;
 use yii\base\InvalidConfigException;
 use yii\helpers\FileHelper;
 use yii\helpers\Url;
@@ -30,6 +32,7 @@ class AttachmentsInput extends FileInput
 
     public $attribute; // TODO verificarne la reale utilità
     public $asyncMode = false;
+    public $enableGoogleDrive = false;
 
     /**
      * @throws InvalidConfigException
@@ -44,8 +47,16 @@ class AttachmentsInput extends FileInput
 
         FileHelper::removeDirectory($this->getModule()->getUserDirPath($this->attribute)); // Delete all uploaded files in past
 
-        $initials = $this->model->isNewRecord ? [] : $this->model->getInitialPreviewByAttributeName($this->attribute, 'original');
+        $initials = $this->model->isNewRecord 
+            ? [] 
+            : $this->model->getInitialPreviewByAttributeName(
+                $this->attribute, 
+                ['width' => 326, 'height' => 348, 'quality' => 80]
+            )
+        ;
+        
         $initialCount = count($initials);
+        $driveButton = '';
 
         $fileValidatorForAttribute = $this->model->getFileValidator($this->attribute);
 
@@ -61,6 +72,11 @@ class AttachmentsInput extends FileInput
 
             //Async mode
             $this->pluginOptions['uploadAsync'] = false;
+        }
+
+
+        if($this->enableGoogleDrive) {
+                $driveButton = Html::button(AmosIcons::show('google-drive'), ['id' => 'auth', 'class' => 'btn btn-primary']);
         }
 
         $this->pluginOptions = array_replace(
@@ -100,6 +116,7 @@ class AttachmentsInput extends FileInput
             $this->pluginOptions
         );
 
+
         if ($this->pluginOptions['showPreview'] == false) {
             $this->pluginOptions['elErrorContainer'] = '#errorDropUpload-' . $this->attribute;
             $this->pluginOptions['layoutTemplates']['main1'] = "<div id=\"errorDropUpload-{$this->attribute}\"></div>
@@ -110,14 +127,24 @@ class AttachmentsInput extends FileInput
                                                                   <div class=\"input-group-btn\">
                                                                     {cancel}
                                                                     {upload}
-                                                                    {browse}
+                                                                    {browse}" . $driveButton . "
                                                                   </div>
                                                                 </div>";
 
             $this->pluginOptions['layoutTemplates']['main2'] = "<div id=\"errorDropUpload -{$this->attribute}\"></div>
                                                                 {preview}
                                                                 <div class=\"kv-upload-progress hide\"></div>
-                                                                {remove}{cancel}\n{upload}\n{browse}";
+                                                                {remove}{cancel}\n{upload}\n{browse}" . $driveButton;
+        } else {
+            $this->pluginOptions['layoutTemplates']['main1'] = '{preview}
+                <div class="kv-upload-progress kv-hidden"></div><div class="clearfix"></div>
+                <div class="input-group {class}">
+                  {caption}
+                <div class="input-group-btn input-group-append"> {remove}{cancel}{upload}{browse}'. $driveButton.'
+                 </div>
+                </div>';
+            $this->pluginOptions['layoutTemplates']['main2'] = '{preview}<div class="kv-upload-progress kv-hidden"></div><div class="clearfix"></div>
+               {remove}{cancel}{upload}{browse}'. $driveButton.'';
         }
 
         $fileAttribute = $this->pluginOptions['maxFileCount'] != 1 ? '[]' : '';
@@ -126,7 +153,8 @@ class AttachmentsInput extends FileInput
             $this->options,
             [
                 //'id' => $this->id,
-                'model' => $this->model,
+                //'model' => $this->model,  COMMENTATO perchè si rompeva, essendo che viene passato il model come attributo tel tag input
+
                 'attribute' => $this->attribute,
                 'name' => $this->attribute . $fileAttribute,
                 'multiple' => true

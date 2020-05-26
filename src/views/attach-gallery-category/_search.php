@@ -1,18 +1,18 @@
 <?php
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    @vendor/lispa/amos-attachments/src/views 
+ * @package    @vendor/open20/amos-attachments/src/views 
  */
-use lispa\amos\core\helpers\Html;
+use open20\amos\core\helpers\Html;
 use yii\widgets\ActiveForm;
 use kartik\datecontrol\DateControl;
 
 /**
 * @var yii\web\View $this
-* @var lispa\amos\attachments\models\search\AttachGalleryCategorySearch $model
+* @var open20\amos\attachments\models\search\AttachGalleryCategorySearch $model
 * @var yii\widgets\ActiveForm $form
 */
 

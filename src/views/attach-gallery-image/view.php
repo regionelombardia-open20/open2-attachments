@@ -1,10 +1,10 @@
 <?php
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    @vendor/lispa/amos-attachments/src/views 
+ * @package    @vendor/open20/amos-attachments/src/views 
  */
 use yii\helpers\Html;
 use yii\widgets\DetailView;
@@ -13,7 +13,7 @@ use yii\helpers\Url;
 
 /**
 * @var yii\web\View $this
-* @var lispa\amos\attachments\models\AttachGalleryImage $model
+* @var open20\amos\attachments\models\AttachGalleryImage $model
 */
 
 $this->title = strip_tags($model);

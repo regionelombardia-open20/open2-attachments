@@ -1,18 +1,18 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments
+ * @package    open20\amos\attachments
  * @category   CategoryName
  */
 
-use \lispa\amos\attachments\FileModule;
+use \open20\amos\attachments\FileModule;
 use himiklab\colorbox\Colorbox;
 
-\lispa\amos\attachments\assets\ModuleAttachmentsAsset::register($this);
+\open20\amos\attachments\assets\ModuleAttachmentsAsset::register($this);
 
 if($viewFilesCounter) {
     $this->registerJs(<<<JS
@@ -48,10 +48,10 @@ JS
     <?php foreach ($filesList as $file) : ?>
 
         <div class="attachment-list-item col-xs-12 nop">
-            <div class="attachment-list-item-name pull-left">
+            <div class="attachment-list-item-name">
                 <?= $file['filename']; ?>
             </div>
-            <div class="attachment-list-item-action pull-right">
+            <div class="attachment-list-item-action">
                 <?= $file['preview']; ?>
                 <?= $file['downloadButton']; ?>
                 <?= $file['deleteButton']; ?>

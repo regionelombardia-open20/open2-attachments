@@ -1,0 +1,215 @@
+/**
+IMPORT AMOS-LAYOUT VARIABLES and UTILITY
+ */
+@import (optional) "../../vendor/open20/amos-layout/src/assets/resources/base/less/v2/variables.less";
+@import (optional) "../../vendor/open20/amos-layout/src/assets/resources/base/less/v2/utility.less";
+/**
+IMPORT STYLE-CUSTOM
+ */
+@import (optional) "../../backend/web/less/style_custom.less";
+
+//---------------------------------------
+// ATTACHMENTS LIST widget
+//---------------------------------------
+.attachments-list {
+  .attachment-list-item {
+    border-bottom: 1px solid @white-color;
+    .flexbox;
+    .flexbox-row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 0;
+
+    &:last-child {
+      margin-bottom: @margin-default;
+    }
+  }
+}
+
+//---------------------------------------
+// CROP IMAGE
+// original class uploadcrop (not remove)
+//---------------------------------------
+.attachment-uploadcrop.uploadcrop {
+  margin-bottom: 0;
+  min-height: auto;
+
+  .form-group {
+    margin-top: 0px;
+
+    /* override amos-layout */
+    label {
+      &.control-label {
+        /* override uploadcrop.css */
+        text-align: left;
+        padding: 6px @padding-default;
+        position: relative;
+        width: 84%;
+        float: left;
+
+        /* same as amos-layout .input-style */
+        border: 1px solid @border-color-default;
+        border-bottom-color: darken(@border-color-default, 25%);
+        -webkit-border-radius: 0;
+        -moz-border-radius: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background: @white-color;
+
+        /* same as amos-layout .amos-font-form */
+        font-size: 10px;
+        font-weight: bold;
+        letter-spacing: 0.7px;
+        font-family: inherit;
+        line-height: 20px;
+        color: @secondary-color;
+
+        &::after {
+          content: '\e914';
+          font-family: dashboard;
+          position: absolute;
+          right: -43px;
+          font-size: 1.5em;
+          bottom: -1px;
+          /* same as amos-layout .btn */
+          color: @primary-color;
+          background: contrast(@primary-color);
+          border: 1px solid darken(@primary-color, 10%);
+          padding: 6px 12px;
+
+          border-top-right-radius: 5px;
+          border-bottom-right-radius: 5px;
+
+        }
+
+        &:hover {
+          &::after {
+            background: @primary-color;
+            color: contrast(@primary-color);
+          }
+        }
+
+      }
+    }
+  }
+
+  .modal-body,
+  .modal-header,
+  .modal-footer {
+    padding: 15px 0;
+
+    .cropper-wrapper {
+      margin-top: 0;
+    }
+
+    .cropper-preview {
+      margin: 0 @margin-default;
+    }
+  }
+
+  &.cropper-done {
+    /* override uploadcrop.css */
+    min-height: 150px;
+
+    .preview-pane {
+      /* override uploadcrop.css */
+      position: relative;
+    }
+  }
+
+  .preview-pane {
+
+    /* override uploadcrop.css */
+    .am {
+      position: absolute;
+      top: 3px;
+      right: 15px;
+    }
+
+    &.image-find {
+      position: relative;
+      padding: 10px 30px 0 0;
+    }
+  }
+}
+
+//---------------------------------------
+// ATTACHMENT INPUT GALLERY
+//---------------------------------------
+.modal-gallery-container {
+  margin: @margin-min 0;
+
+  .open-modal-gallery {
+    text-decoration: none;
+  }
+}
+
+.modal-utility.attachment-gallery-modal {
+  .modal-body {
+    >div {
+      padding: 0;
+
+      h3 {
+        background-color: @light-background-color;
+        text-transform: uppercase;
+        margin: 0 0 @margin-default;
+        padding: @padding-medium;
+      }
+
+      &.images {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+
+        >div {
+          width: 20%;
+          padding: 0;
+
+          >.link-image {
+            transition: all .3s ease-in-out;
+            overflow: hidden;
+            display: block;
+            border: 2px solid transparent;
+            position: relative;
+            z-index: 1;
+
+            &:hover {
+              border-color: @primary-color;
+              transform: scale(1.1);
+              opacity: 1;
+              z-index: 2;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+//---------------------------------------
+// ATTACHMENT INPUT WIDGET
+//---------------------------------------
+.file-input .file-caption-main .input-group-btn {
+  .glyphicon {
+    font-size: 16px;
+    line-height: normal;
+    position: relative;
+    top: 5px;
+  }
+
+  .am {
+    font-size: 18px;
+    line-height: normal
+  }
+
+  >button {
+    +.btn.btn-primary {
+      height: 45px;
+
+      +.btn.btn-primary {
+        height: 45px;
+        margin-top: 0;
+      }
+    }
+  }
+}

@@ -1,20 +1,24 @@
 <?php
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments
+ * @package    open20\amos\attachments
  * @category   CategoryName
  *
  * @var \yii\web\View $this
- * @var \lispa\amos\attachments\components\GalleryInput $widget
- * @var \lispa\amos\attachments\models\AttachGallery $gallery
- * @var \lispa\amos\attachments\models\AttachGalleryImage [] $images
- * @var \lispa\amos\attachments\models\AttachGalleryCategory [] $categories
+ * @var \open20\amos\attachments\components\GalleryInput $widget
+ * @var \open20\amos\attachments\models\AttachGallery $gallery
+ * @var \open20\amos\attachments\models\AttachGalleryImage [] $images
+ * @var \open20\amos\attachments\models\AttachGalleryCategory [] $categories
  */
 
-use lispa\amos\attachments\FileModule;
+use open20\amos\attachments\FileModule;
+if(preg_match('/^[a-zA-Z]+$/', $attribute) == 0){
+    $attribute = '';
+}
+
 
 $js = <<<JS
     // Add the preview of the image and set in session the id of the file to attach

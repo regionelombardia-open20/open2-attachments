@@ -1,20 +1,20 @@
 <?php
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    @vendor/lispa/amos-attachments/src/views
+ * @package    @vendor/open20/amos-attachments/src/views
  */
 
-use lispa\amos\core\helpers\Html;
-use lispa\amos\core\views\DataProviderView;
+use open20\amos\core\helpers\Html;
+use open20\amos\core\views\DataProviderView;
 use yii\widgets\Pjax;
 
 /**
  * @var yii\web\View $this
  * @var yii\data\ActiveDataProvider $dataProvider
- * @var lispa\amos\attachments\models\search\AttachGalleryImageSearch $model
+ * @var open20\amos\attachments\models\search\AttachGalleryImageSearch $model
  */
 
 $this->title = Yii::t('amoscore', 'Attach Gallery Image');
@@ -54,7 +54,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 'name',
                 'description:striptags',
                 [
-                    'class' => 'lispa\amos\core\views\grid\ActionColumn',
+                    'class' => 'open20\amos\core\views\grid\ActionColumn',
                 ],
             ],
         ],

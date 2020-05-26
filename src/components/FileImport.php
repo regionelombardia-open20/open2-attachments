@@ -1,24 +1,24 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments
+ * @package    open20\amos\attachments
  * @category   CategoryName
  */
 
-namespace lispa\amos\attachments\components;
+namespace open20\amos\attachments\components;
 
-use lispa\amos\attachments\FileModule;
+use open20\amos\attachments\FileModule;
 use Yii;
 use yii\base\Component;
 use yii\db\ActiveRecord;
 
 /**
  * Class FileImport
- * @package lispa\amos\attachments\components
+ * @package open20\amos\attachments\components
  */
 class FileImport extends Component
 {

@@ -1,18 +1,19 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments
+ * @package    open20\amos\attachments
  * @category   CategoryName
  */
 
-namespace lispa\amos\attachments\models;
+namespace open20\amos\attachments\models;
 
-use lispa\amos\attachments\FileModule;
-use lispa\amos\attachments\FileModuleTrait;
+use open20\amos\attachments\FileModule;
+use open20\amos\attachments\FileModuleTrait;
+use open20\amos\core\record\Record;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\helpers\Url;
@@ -32,7 +33,7 @@ use yii\helpers\Url;
  * @property integer $sort
  * @property File $attachFile
  */
-class FileRefs extends ActiveRecord
+class FileRefs extends Record
 {
     use FileModuleTrait;
 
@@ -132,6 +133,11 @@ class FileRefs extends ActiveRecord
      * @return bool|string
      */
     public static function getHashByAttachFile(File $attachFile, $crop, $protected = true) {
+        // Custom crops values?
+        if (is_array($crop)) {
+            $crop = json_encode($crop);
+        }
+
         $result = FileRefs::find()->andWhere([
             'attach_file_id' => $attachFile->id,
             'model' => $attachFile->model,

@@ -1,6 +1,15 @@
 <?php
 
-namespace lispa\amos\attachments\models\base;
+/**
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    Open20Package
+ * @category   CategoryName
+ */
+
+namespace open20\amos\attachments\models\base;
 
 use Yii;
 
@@ -19,10 +28,10 @@ use Yii;
  * @property integer $updated_by
  * @property integer $deleted_by
  *
- * @property \lispa\amos\attachments\models\AttachGallery $gallery
- * @property \lispa\amos\attachments\models\AttachGalleryCategory $category
+ * @property \open20\amos\attachments\models\AttachGallery $gallery
+ * @property \open20\amos\attachments\models\AttachGalleryCategory $category
  */
-class  AttachGalleryImage extends \lispa\amos\core\record\Record
+class  AttachGalleryImage extends \open20\amos\core\record\Record
 {
 
 
@@ -75,7 +84,7 @@ class  AttachGalleryImage extends \lispa\amos\core\record\Record
      */
     public function getGallery()
     {
-        return $this->hasOne(\lispa\amos\attachments\models\AttachGallery::className(), ['id' => 'gallery_id']);
+        return $this->hasOne(\open20\amos\attachments\models\AttachGallery::className(), ['id' => 'gallery_id']);
     }
 
     /**
@@ -83,6 +92,6 @@ class  AttachGalleryImage extends \lispa\amos\core\record\Record
      */
     public function getCategory()
     {
-        return $this->hasOne(\lispa\amos\attachments\models\AttachGalleryCategory::className(), ['id' => 'category_id']);
+        return $this->hasOne(\open20\amos\attachments\models\AttachGalleryCategory::className(), ['id' => 'category_id']);
     }
 }

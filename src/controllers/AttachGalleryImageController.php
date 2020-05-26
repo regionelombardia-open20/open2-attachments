@@ -1,17 +1,17 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments\controllers 
+ * @package    open20\amos\attachments\controllers 
  */
  
-namespace lispa\amos\attachments\controllers;
-use lispa\amos\attachments\models\AttachGallery;
-use lispa\amos\attachments\models\AttachGalleryCategory;
-use lispa\amos\attachments\models\AttachGalleryImage;
+namespace open20\amos\attachments\controllers;
+use open20\amos\attachments\models\AttachGallery;
+use open20\amos\attachments\models\AttachGalleryCategory;
+use open20\amos\attachments\models\AttachGalleryImage;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
@@ -20,9 +20,9 @@ use yii\helpers\ArrayHelper;
 /**
  * Class AttachGalleryImageController 
  * This is the class for controller "AttachGalleryImageController".
- * @package lispa\amos\attachments\controllers 
+ * @package open20\amos\attachments\controllers 
  */
-class AttachGalleryImageController extends \lispa\amos\attachments\controllers\base\AttachGalleryImageController
+class AttachGalleryImageController extends \open20\amos\attachments\controllers\base\AttachGalleryImageController
 {
     /**
      * @inheritdoc
@@ -91,7 +91,7 @@ class AttachGalleryImageController extends \lispa\amos\attachments\controllers\b
         if($gallery) {
             $images = $gallery->attachGalleryImages;
             $categories = AttachGalleryCategory::find()->all();
-            return $this->renderAjax('@vendor/lispa/amos-attachments/src/components/views/gallery-view', [
+            return $this->renderAjax('@vendor/open20/amos-attachments/src/components/views/gallery-view', [
                 'attribute' => $attribute,
                 'images' => $images,
                 'gallery' => $gallery,

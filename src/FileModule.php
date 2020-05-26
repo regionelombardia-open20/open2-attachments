@@ -1,18 +1,20 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments
+ * @package    open20\amos\attachments
  * @category   CategoryName
  */
 
-namespace lispa\amos\attachments;
+namespace open20\amos\attachments;
 
-use lispa\amos\attachments\models\File;
-use lispa\amos\core\module\AmosModule;
+use open20\amos\attachments\models\File;
+use open20\amos\core\module\AmosModule;
+
+use open20\amos\core\utilities\ZipUtility;
 use yii\base\Exception;
 use yii\helpers\ArrayHelper;
 use yii\helpers\FileHelper;
@@ -20,7 +22,7 @@ use yii\log\Logger;
 
 /**
  * Class FileModule
- * @package lispa\amos\attachments
+ * @package open20\amos\attachments
  */
 class FileModule extends AmosModule
 {
@@ -35,7 +37,7 @@ class FileModule extends AmosModule
      */
     public $webDir = 'files';
 
-    public $controllerNamespace = 'lispa\amos\attachments\controllers';
+    public $controllerNamespace = 'open20\amos\attachments\controllers';
 
     public $storePath = '@app/uploads/store';
 
@@ -147,7 +149,7 @@ class FileModule extends AmosModule
      * @throws \Exception
      * @throws \yii\base\InvalidConfigException
      */
-    public function attachFile($filePath, $owner, $attribute = 'file', $dropOriginFile = true, $saveWithoutModel = false)
+    public function attachFile($filePath, $owner, $attribute = 'file', $dropOriginFile = true, $saveWithoutModel = false, $encrypt = false)
     {
         if(!$saveWithoutModel) {
             if (!$owner->id) {
@@ -158,21 +160,42 @@ class FileModule extends AmosModule
         if (!file_exists($filePath)) {
             throw new \Exception(FileModule::t('amosattachments', 'File not exist :') . $filePath);
         }
-
+  
         //File infos
         $fileType = pathinfo($filePath, PATHINFO_EXTENSION);
         $fileName = pathinfo($filePath, PATHINFO_FILENAME);
         $dirName = pathinfo($filePath, PATHINFO_DIRNAME);
 
-        //Create a clen name for file
+        //Create a clean name for file
         $cleanName = preg_replace("([\.]{2,})", '_',preg_replace("([^\w\d\-_~,;\[\]\(\).])", '_', $fileName));
 
-        //New location for thge file
+        //New location for the file
         $cleanFilePath = $dirName .DIRECTORY_SEPARATOR.$cleanName.'.'.$fileType;
+
+        if ($encrypt) {
+            $fileTmp = new File();
+            $zipTempFileName = uniqid();
+            $zipTempCompletePath = $this->getTempPath() . DIRECTORY_SEPARATOR . $zipTempFileName . '.zip';
+            $zipUtility = new ZipUtility([
+                'filesToZip' => $filePath,
+                'zipFileName' => $zipTempFileName,
+                'destinationFolder' => $this->getTempPath(),
+                'password' => $fileTmp->getDecryptPassword(),
+            ]);
+            $zipUtility->createZip();
+            if (file_exists($zipTempCompletePath)) {
+                $filePath = $zipTempCompletePath;
+            }
+        }
 
         //Rename current file to avoid any problem
         rename($filePath, $cleanFilePath);
-
+        // compress it!
+        if (in_array($fileType, ['jpg'])) {
+            $image = imagecreatefromjpeg($cleanFilePath);
+            imagejpeg($image, $cleanFilePath, 80);
+        }
+        
         //SystemMd5Sum
         if (strtoupper(PHP_OS) == 'WINNT') {
             $fileHash = md5(file_get_contents($cleanFilePath));
@@ -202,12 +225,24 @@ class FileModule extends AmosModule
 
         $ownerClass = $this->getClass($owner);
 
-        $exists = File::findOne([
+        $tableNameOwner = null;
+        if($owner instanceof \open20\amos\core\record\RecordDynamicModel && method_exists($owner, 'getTableName')){
+            $tblName = $owner->getTableName();
+            if(!empty($tblName)){
+                $tableNameOwner = $tblName;
+            }
+        }
+
+        $query =  File::find()->andWhere([
             'hash' => $fileHash,
             'itemId' => $ownerId,
             'attribute' => $attribute,
-            'model' => $ownerClass
+            'model' => $ownerClass,
         ]);
+        if(!is_null($tableNameOwner)){
+            $query->andFilterWhere(['table_name_form' => $tableNameOwner]);
+        }
+        $exists =$query->one();
 
         if (!$exists) {
 
@@ -223,6 +258,12 @@ class FileModule extends AmosModule
             $file->type = $fileType;
             $file->mime = FileHelper::getMimeType($cleanFilePath);
             $file->attribute = $attribute;
+            if(!empty($tableNameOwner)){
+            $file->table_name_form = $tableNameOwner;
+            }
+            if ($encrypt) {
+                $file->encrypted = File::IS_ENCRYPTED;
+            }
 
             if ($file->save()) {
                 if($dropOriginFile) {
@@ -259,6 +300,10 @@ class FileModule extends AmosModule
         } else {
             if($dropOriginFile) {
                 unlink($cleanFilePath);
+            }
+            if ($encrypt) {
+                $exists->encrypted = File::IS_ENCRYPTED;
+                $exists->save(false);
             }
             return $exists;
         }

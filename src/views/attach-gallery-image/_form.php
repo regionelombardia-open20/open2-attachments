@@ -1,30 +1,30 @@
 <?php
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    @vendor/lispa/amos-attachments/src/views
+ * @package    @vendor/open20/amos-attachments/src/views
  */
 
-use lispa\amos\core\helpers\Html;
-use lispa\amos\core\forms\ActiveForm;
+use open20\amos\core\helpers\Html;
+use open20\amos\core\forms\ActiveForm;
 use kartik\datecontrol\DateControl;
-use lispa\amos\core\forms\Tabs;
-use lispa\amos\core\forms\CloseSaveButtonWidget;
-use lispa\amos\core\forms\RequiredFieldsTipWidget;
+use open20\amos\core\forms\Tabs;
+use open20\amos\core\forms\CloseSaveButtonWidget;
+use open20\amos\core\forms\RequiredFieldsTipWidget;
 use yii\helpers\Url;
-use lispa\amos\core\forms\editors\Select;
+use open20\amos\core\forms\editors\Select;
 use yii\helpers\ArrayHelper;
-use lispa\amos\core\icons\AmosIcons;
+use open20\amos\core\icons\AmosIcons;
 use yii\bootstrap\Modal;
 use yii\redactor\widgets\Redactor;
 use yii\helpers\Inflector;
-use lispa\amos\attachments\FileModule;
+use open20\amos\attachments\FileModule;
 
 /**
  * @var yii\web\View $this
- * @var lispa\amos\attachments\models\AttachGalleryImage $model
+ * @var open20\amos\attachments\models\AttachGalleryImage $model
  * @var yii\widgets\ActiveForm $form
  */
 
@@ -58,7 +58,7 @@ use lispa\amos\attachments\FileModule;
                     }
                     ?>
                 <?= $form->field($model, 'gallery_id')->widget(Select::classname(), [
-                    'data' => ArrayHelper::map(\lispa\amos\attachments\models\AttachGallery::find()->asArray()->all(), 'id', 'name'),
+                    'data' => ArrayHelper::map(\open20\amos\attachments\models\AttachGallery::find()->asArray()->all(), 'id', 'name'),
                     'language' => substr(Yii::$app->language, 0, 2),
                     'options' => [
                         'id' => 'AttachGallery' . $fid,
@@ -89,7 +89,7 @@ use lispa\amos\attachments\FileModule;
                     }
                     ?>
                 <?= $form->field($model, 'category_id')->widget(Select::classname(), [
-                    'data' => ArrayHelper::map(\lispa\amos\attachments\models\AttachGalleryCategory::find()->asArray()->all(),'id','name'),
+                    'data' => ArrayHelper::map(\open20\amos\attachments\models\AttachGalleryCategory::find()->asArray()->all(),'id','name'),
                     'language' => substr(Yii::$app->language, 0, 2),
                     'options' => [
                         'id' => 'AttachGalleryCategory' . $fid,
@@ -128,7 +128,7 @@ use lispa\amos\attachments\FileModule;
             <div class="col-md-4 col xs-12">
                 <div class="col-xs-12 nop">
                     <?=
-                    $form->field($model, 'attachImage')->widget(\lispa\amos\attachments\components\CropInput::classname(),
+                    $form->field($model, 'attachImage')->widget(\open20\amos\attachments\components\CropInput::classname(),
                         [
                             'enableUploadFromGallery' => false,
                             'jcropOptions' => ['aspectRatio' => '1.7']

@@ -1,23 +1,23 @@
 <?php
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    @vendor/lispa/amos-attachments/src/views
+ * @package    @vendor/open20/amos-attachments/src/views
  */
 
-use lispa\amos\core\helpers\Html;
-use lispa\amos\core\views\DataProviderView;
+use open20\amos\core\helpers\Html;
+use open20\amos\core\views\DataProviderView;
 use yii\widgets\Pjax;
 
 /**
  * @var yii\web\View $this
  * @var yii\data\ActiveDataProvider $dataProvider
- * @var lispa\amos\attachments\models\search\AttachGalleryCategorySearch $model
+ * @var open20\amos\attachments\models\search\AttachGalleryCategorySearch $model
  */
 
-$this->title = \lispa\amos\attachments\FileModule::t('amosattachments', 'Categories');
+$this->title = \open20\amos\attachments\FileModule::t('amosattachments', 'Categories');
 $this->params['breadcrumbs'][] = ['label' => '', 'url' => ['/attachments']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
@@ -35,7 +35,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 'description:striptags',
                 'default_order',
                 [
-                    'class' => 'lispa\amos\core\views\grid\ActionColumn',
+                    'class' => 'open20\amos\core\views\grid\ActionColumn',
                 ],
             ],
         ],

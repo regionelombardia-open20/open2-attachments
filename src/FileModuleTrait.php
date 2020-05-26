@@ -1,29 +1,29 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments
+ * @package    open20\amos\attachments
  * @category   CategoryName
  */
 
-namespace lispa\amos\attachments;
+namespace open20\amos\attachments;
 
 /**
  * Class FileModuleTrait
- * @package lispa\amos\attachments
+ * @package open20\amos\attachments
  */
 trait FileModuleTrait
 {
     /**
-     * @var null|\lispa\amos\attachments\FileModule
+     * @var null|\open20\amos\attachments\FileModule
      */
     private $_module = null;
 
     /**
-     * @return null|\lispa\amos\attachments\FileModule
+     * @return null|\open20\amos\attachments\FileModule
      * @throws \Exception
      */
     protected function getModule()

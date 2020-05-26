@@ -1,29 +1,29 @@
 <?php
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments\controllers\base
+ * @package    open20\amos\attachments\controllers\base
  */
 
-namespace lispa\amos\attachments\controllers\base;
+namespace open20\amos\attachments\controllers\base;
 
-use lispa\amos\attachments\FileModule;
-use lispa\amos\attachments\widgets\icons\WidgetIconGalleryDashboard;
-use lispa\amos\dashboard\controllers\TabDashboardControllerTrait;
+use open20\amos\attachments\FileModule;
+use open20\amos\attachments\widgets\icons\WidgetIconGalleryDashboard;
+use open20\amos\dashboard\controllers\TabDashboardControllerTrait;
 use Yii;
-use lispa\amos\attachments\models\AttachGallery;
-use lispa\amos\attachments\models\search\AttachGallerySearch;
-use lispa\amos\core\controllers\CrudController;
-use lispa\amos\core\module\BaseAmosModule;
+use open20\amos\attachments\models\AttachGallery;
+use open20\amos\attachments\models\search\AttachGallerySearch;
+use open20\amos\core\controllers\CrudController;
+use open20\amos\core\module\BaseAmosModule;
 use yii\data\ActiveDataProvider;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
-use lispa\amos\core\icons\AmosIcons;
-use lispa\amos\core\helpers\Html;
-use lispa\amos\core\helpers\T;
+use open20\amos\core\icons\AmosIcons;
+use open20\amos\core\helpers\Html;
+use open20\amos\core\helpers\T;
 use yii\helpers\Url;
 
 
@@ -31,10 +31,10 @@ use yii\helpers\Url;
  * Class AttachGalleryController
  * AttachGalleryController implements the CRUD actions for AttachGallery model.
  *
- * @property \lispa\amos\attachments\models\AttachGallery $model
- * @property \lispa\amos\attachments\models\search\AttachGallerySearch $modelSearch
+ * @property \open20\amos\attachments\models\AttachGallery $model
+ * @property \open20\amos\attachments\models\search\AttachGallerySearch $modelSearch
  *
- * @package lispa\amos\attachments\controllers\base
+ * @package open20\amos\attachments\controllers\base
  */
 class AttachGalleryController extends CrudController
 {
@@ -60,7 +60,7 @@ class AttachGalleryController extends CrudController
         ]);
 
         parent::init();
-        $this->setUpLayout('main');
+        $this->setUpLayout();
     }
 
     /**

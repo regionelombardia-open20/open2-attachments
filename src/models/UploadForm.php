@@ -1,24 +1,24 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments
+ * @package    open20\amos\attachments
  * @category   CategoryName
  */
 
-namespace lispa\amos\attachments\models;
+namespace open20\amos\attachments\models;
 
-use lispa\amos\attachments\FileModuleTrait;
+use open20\amos\attachments\FileModuleTrait;
 use yii\base\Model;
 use yii\db\ActiveRecord;
 use yii\web\UploadedFile;
 
 /**
  * Class UploadForm
- * @package lispa\amos\attachments\models
+ * @package open20\amos\attachments\models
  */
 class UploadForm extends Model
 {

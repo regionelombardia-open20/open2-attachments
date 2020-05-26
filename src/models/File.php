@@ -1,23 +1,26 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\attachments
+ * @package    open20\amos\attachments\models
  * @category   CategoryName
  */
 
-namespace lispa\amos\attachments\models;
+namespace open20\amos\attachments\models;
 
-use lispa\amos\attachments\FileModule;
-use lispa\amos\attachments\FileModuleTrait;
+use open20\amos\attachments\FileModule;
+use open20\amos\attachments\FileModuleTrait;
+use open20\amos\core\record\Record;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\helpers\Url;
 
 /**
+ * Class File
+ *
  * This is the model class for table "file".
  *
  * @property integer $id
@@ -32,14 +35,22 @@ use yii\helpers\Url;
  * @property integer $is_main
  * @property integer $date_upload
  * @property integer $sort
+ * @property integer $num_downloads
+ * @property integer $encrypted
  * @property FileRefs[] $attachFileRefs
+ *
+ * @package open20\amos\attachments\models
  */
-class File extends ActiveRecord
+class File extends Record
 {
     use FileModuleTrait;
 
     const MAIN = 1;
     const NOT_MAIN = 0;
+
+    // Const to encrypted files
+    const IS_ENCRYPTED = 1;
+    const IS_NOT_ENCRYPTED = 0;
 
     /**
      * @inheritdoc
@@ -49,6 +60,9 @@ class File extends ActiveRecord
         return \Yii::$app->getModule(FileModule::getModuleName())->tableName;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function behaviors()
     {
         return [
@@ -68,7 +82,7 @@ class File extends ActiveRecord
         return [
             [['model', 'attribute', 'hash', 'size', 'mime'], 'required'],
             [['itemId', 'size', 'is_main', 'date_upload', 'sort', 'num_downloads'], 'integer'],
-            [['name', 'model', 'hash', 'type', 'mime'], 'string', 'max' => 255]
+            [['name', 'model', 'hash', 'type', 'mime', 'table_name_form'], 'string', 'max' => 255]
         ];
     }
 
@@ -91,6 +105,7 @@ class File extends ActiveRecord
             'date_upload' => FileModule::t('amosattachments', 'Date upload'),
             'sort' => FileModule::t('amosattachments', 'Sort'),
             'num_downloads' => FileModule::t('amosattachments', '#num_downloads'),
+            'encrypted' => FileModule::t('amosattachments', '#encrypted'),
         ];
     }
 
@@ -115,11 +130,10 @@ class File extends ActiveRecord
     }
 
     /**
-     * 
-     * @param type $hash
-     * @param type $absolute
-     * @param type $canCache
-     * @return type
+     * @param $hash
+     * @param $absolute
+     * @param bool $canCache
+     * @return string
      */
     public function generateUrlForHash($hash, $absolute, $canCache = false) {
         $baseUrl = Url::to(['/' . FileModule::getModuleName() . '/file/view', 'hash' => $hash, 'canCache' => $canCache]);
@@ -145,12 +159,28 @@ class File extends ActiveRecord
     {
         return $this->hasOne(FileRefs::className(), ['attach_file_id' => 'id']);
     }
-    
+
     /**
-     * 
      * @return integer
      */
     public function getNumDownloads(){
         return $this->num_downloads;
+    }
+
+    /**
+     * TODO da implementare. Creare tabella criptata in cui salvare la password univoca oppure una random per ciascuna riga di attach_file.
+     * @return string
+     */
+    public function getDecryptPassword()
+    {
+        return '5dd2d749acf49';
+    }
+
+    public function getOwner() {
+        if(class_exists($this->model) && method_exists($this->model, 'find')) {
+            return $this->hasOne($this->model, ['id' => 'itemId']);
+        }
+
+        return null;
     }
 }
