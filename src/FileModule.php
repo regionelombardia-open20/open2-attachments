@@ -233,16 +233,14 @@ class FileModule extends AmosModule
             }
         }
 
-        $query =  File::find()->andWhere([
+
+        $exists = File::find()->andWhere([
             'hash' => $fileHash,
             'itemId' => $ownerId,
             'attribute' => $attribute,
             'model' => $ownerClass,
-        ]);
-        if(!is_null($tableNameOwner)){
-            $query->andFilterWhere(['table_name_form' => $tableNameOwner]);
-        }
-        $exists =$query->one();
+        ])->andFilterWhere(['table_name_form' => $tableNameOwner])
+            ->one();
 
         if (!$exists) {
 
