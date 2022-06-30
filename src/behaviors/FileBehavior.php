@@ -5,7 +5,7 @@
  * OPEN 2.0
  *
  *
- * @package    open20\amos\attachments
+ * @package    open20\amos\attachments\behaviors
  * @category   CategoryName
  */
 
@@ -17,6 +17,11 @@ use open20\amos\attachments\FileModuleTrait;
 use open20\amos\attachments\models\AttachGalleryImage;
 use open20\amos\attachments\models\File;
 use open20\amos\core\views\toolbars\StatsToolbarPanels;
+use open20\amos\core\utilities\ClassUtility;
+
+use Imagine\Image\Box;
+use Imagine\Image\Point;
+
 use yii\base\Behavior;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
@@ -25,11 +30,8 @@ use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\validators\FileValidator;
 use yii\web\UploadedFile;
-
 use yii\imagine\Image;
 use yii\helpers\Json;
-use Imagine\Image\Box;
-use Imagine\Image\Point;
 
 /**
  * Class FileBehavior
@@ -38,6 +40,9 @@ use Imagine\Image\Point;
  */
 class FileBehavior extends Behavior
 {
+    /**
+     *
+     */
     use FileModuleTrait;
 
     /**
@@ -101,7 +106,8 @@ class FileBehavior extends Behavior
     }
 
     /**
-     * Parse file behaviors and find for the choosed attribute for hasOne or hasMultiple files relation
+     * Parse file behaviors and find for the choosed attribute for hasOne
+     * or hasMultiple files relation
      * @param string $name
      * @return array|mixed
      * @throws \yii\base\UnknownPropertyException
@@ -154,6 +160,8 @@ class FileBehavior extends Behavior
 
         return $events;
     }
+
+
 
     /**
      * Iterate files and save by attribute
@@ -244,6 +252,11 @@ class FileBehavior extends Behavior
         return $fileValidators;
     }
 
+    /**
+     *
+     * @param type $attribute
+     * @return boolean
+     */
     protected function saveAttributeUploads($attribute)
     {
         //Find shot model class name
@@ -252,15 +265,19 @@ class FileBehavior extends Behavior
         /**
          * @var UploadedFile[] $files
          */
-        $files = UploadedFile::getInstancesByName($attribute) ?: UploadedFile::getInstancesByName("{$ownerName}[{$attribute}]");
+        $files = UploadedFile::getInstancesByName($attribute)
+            ?
+            : UploadedFile::getInstancesByName("{$ownerName}[{$attribute}]");
 
         /**
          * BASE64 Encoded Files
          */
         $postData = \Yii::$app->request->post($ownerName);
-        $fileAsString = (isset($postData[$attribute]) && !is_array($postData[$attribute]))  ? $postData[$attribute] : null;
+        $fileAsString = (isset($postData[$attribute]) && !is_array($postData[$attribute]))
+            ? $postData[$attribute]
+            : null;
 
-        if(!empty($fileAsString)) {
+        if (!empty($fileAsString)) {
             $decodedFileTempName = md5(time().$attribute);
             $decodedFilePath = sys_get_temp_dir() . '/' . $decodedFileTempName;
 
@@ -290,29 +307,39 @@ class FileBehavior extends Behavior
         $cropData = \Yii::$app->request->post("{$attribute}_data");
 
         //Upload file from gallery
-        $csrf = \Yii::$app->request->post("_csrf-backend");
+        $csrfParam = \Yii::$app->request->csrfParam;
+        $csrf = \Yii::$app->request->post($csrfParam);
         $dataImage = \Yii::$app->session->get($csrf);
+
         if(!empty($dataImage)) {
             $this->saveFileFormGallery($attribute, $csrf, $dataImage);
         }
 
         foreach ($files as $file) {
-            if ($fileValidator && $fileValidator->maxFiles == 1 && file_exists($file->tempName)) {
+            if (
+                $fileValidator
+                && $fileValidator->maxFiles == 1
+                && file_exists($file->tempName)
+            ) {
                 //Drop to make space for new image
                 $this->deleteAttachments($this->owner,$attribute);
             }
 
             if ($cropData) {
-
                 $cropInfo = Json::decode($cropData);
-                if (((isset($cropInfo['width'])) &&  ($cropInfo['width'] > 0)) && ((isset($cropInfo['height'])) &&  ($cropInfo['height'] > 0))) {
+                if (
+                    (
+                        isset($cropInfo['width'])
+                        &&  ($cropInfo['width'] > 0)
+                    )
+                    && ((isset($cropInfo['height']))
+                    &&  ($cropInfo['height'] > 0))
+                ) {
                     $this->cropImage($file, $cropData);
                 }
-               
             }
 
             if (!$file->saveAs($this->getModule()->getUserDirPath($attribute) . $file->name)) {
-                //pr($file,"Failed");die;
                 continue;
             }
         }
@@ -329,22 +356,17 @@ class FileBehavior extends Behavior
         }
 
         foreach (FileHelper::findFiles($userTempDir) as $file) {
-            if (!$this->getModule()->attachFile($file, $this->owner, $attribute, true, false, (in_array($attribute, $this->encryptedAttributes)))) {
+            if (!$this->getModule()->attachFile(
+                $file,
+                $this->owner,
+                $attribute,
+                true,
+                false, (in_array($attribute, $this->encryptedAttributes)))
+            ) {
                 $this->owner->addError($attribute, 'File upload failed.');
                 return true;
             }
         }
-
-        //Getting query
-        //$getter = 'get' . ucfirst($attribute);
-
-        /** @var ActiveQuery $activeQuery */
-        /*$getResult = $this->owner->{$getter}();
-        if ($getResult instanceof ActiveQuery) {
-            $this->owner->{$attribute} = $getResult->multiple ? $getResult->all() : $getResult->one();
-        } else {
-            $this->owner->{$attribute} = $getResult;
-        }*/
     }
 
     /**
@@ -361,6 +383,11 @@ class FileBehavior extends Behavior
         ]);
     }
 
+    /**
+     *
+     * @param UploadedFile $file
+     * @param type $data
+     */
     protected function cropImage(UploadedFile $file, $data)
     {
         //if temp file from post attributes is still present, the cropped image has to be saved
@@ -374,43 +401,23 @@ class FileBehavior extends Behavior
             if(isset($cropInfo['rotate'])) {
                 $image->rotate($cropInfo['rotate']);
             }
-            //$cropInfo['dWidth'] = (int)$cropInfo['dWidth']; //new width image
-            //$cropInfo['dHeight'] = (int)$cropInfo['dHeight']; //new height image
+
             $cropInfo['x'] = abs($cropInfo['x']); //begin position of frame crop by X
             $cropInfo['y'] = abs($cropInfo['y']); //begin position of frame crop by Y
             $cropInfo['width'] = (int)$cropInfo['width']; //width of cropped image
             $cropInfo['height'] = (int)$cropInfo['height']; //height of cropped image
-            // Properties bolow we don't use in this example
-            //$cropInfo['ratio'] = $cropInfo['ratio'] == 0 ? 1.0 : (float)$cropInfo['ratio']; //ratio image.
-
-            /*//delete old images
-            $oldImages = FileHelper::findFiles($file->tempName, [
-                'only' => [
-                    $this->id . '.*',
-                    'thumb_' . $this->id . '.*',
-                ],
-            ]);
-
-            for ($i = 0; $i != count($oldImages); $i++) {
-                @unlink($oldImages[$i]);
-            }*/
 
             //saving thumbnail
-            //$newSizeThumb = new Box($cropInfo['dWidth'], $cropInfo['dHeight']);
             $cropSizeThumb = new Box($cropInfo['width'], $cropInfo['height']); //frame size of crop
             $cropPointThumb = new Point($cropInfo['x'], $cropInfo['y']);
             $pathThumbImage = $file->tempName . '_thumb_' . $file->name;//$file->tempName;
 
             $image
-                //->resize($newSizeThumb)
                 ->crop($cropPointThumb, $cropSizeThumb)
                 ->save($pathThumbImage, ['quality' => 100]);
 
             @unlink($file->tempName);
             rename($pathThumbImage, $file->tempName);
-
-            //saving original
-            //$this->image->saveAs(Yii::getAlias('@path/to/save/image') . $this->id . '.' . $this->image->getExtension());
         }
     }
 
@@ -422,21 +429,49 @@ class FileBehavior extends Behavior
     public function evalAttributes($event)
     {
         $attributes = $this->getFileAttributes();
+        $sessImg    = null;
+        if (\Yii::$app->request->isPost) {
+
+            $csrfParam = \Yii::$app->request->csrfParam;
+
+            $csrf    = \Yii::$app->request->post($csrfParam);
+            $sessImg = \Yii::$app->session->get($csrf);
+        }
 
         if (!empty($attributes)) {
             foreach ($attributes as $attribute) {
-                $files = UploadedFile::getInstancesByName( \open20\amos\core\utilities\ClassUtility::getClassBasename($this->owner->className()). "[" . $attribute. "]");
+                $files = UploadedFile::getInstancesByName(
+                        ClassUtility::getClassBasename($this->owner->className())."[".$attribute."]"
+                );
+
+                if (!empty($sessImg) && is_array($sessImg) && array_key_exists($attribute, $sessImg)) {
+                    if (!empty($sessImg[$attribute]['id'])) {
+                        $imgGallery = AttachGalleryImage::findOne($sessImg[$attribute]['id']);
+                        if (!empty($imgGallery)) {
+
+                            if (array_key_exists($attribute.'_data', \Yii::$app->request->post())) {
+                                $newBody = [];
+                                foreach (\Yii::$app->request->post() as $k => $post) {
+                                    $newBody[$k] = $post;
+                                }
+                                $newBody[$attribute.'_data'] = 'ok';
+                                \Yii::$app->request->setBodyParams($newBody);
+                            }
+                        }
+                    }
+                }
+
                 if (!empty($files)) {
                     $maxFiles = 1;
-
                     foreach ($this->fileValidators as $fileValidator) {
+
                         if (!empty($fileValidator)) {
                             if (in_array($attribute, $fileValidator->attributes)) {
                                 $maxFiles = $fileValidator->maxFiles;
                             }
                         }
                     }
-                    $setter = 'set' . ucfirst($attribute);
+                    $setter = 'set'.ucfirst($attribute);
                     if (method_exists($this->owner, $setter)) {
                         $this->owner->{$setter}($maxFiles == 1 ? reset($files) : $files);
                     } else {
@@ -592,12 +627,20 @@ class FileBehavior extends Behavior
             foreach (FileHelper::findFiles($userTempDir) as $file) {
 
                 if (substr(FileHelper::getMimeType($file), 0, 5) === 'image') {
-                    $initialPreview[] = Html::img(['/' . FileModule::getModuleName() . '/file/download-temp', 'filename' => basename($file)], ['class' => 'file-preview-image']);
+                    $initialPreview[] = Html::img(
+                        [
+                            '/'
+                            . FileModule::getModuleName()
+                            . '/file/download-temp',
+                            'filename' => basename($file)
+                        ],
+                        ['class' => 'file-preview-image']
+                    );
                 } else {
-                    $initialPreview[] = Html::beginTag('div', ['class' => 'file-preview-other']) 
-                        . Html::beginTag('span', ['class' => 'file-other-icon']) 
-                        . Html::tag('i', '', ['class' => 'glyphicon glyphicon-file']) 
-                        . Html::endTag('span') 
+                    $initialPreview[] = Html::beginTag('div', ['class' => 'file-preview-other'])
+                        . Html::beginTag('span', ['class' => 'file-other-icon'])
+                        . Html::tag('i', '', ['class' => 'glyphicon glyphicon-file'])
+                        . Html::endTag('span')
                         . Html::endTag('div');
                 }
             }
@@ -612,16 +655,16 @@ class FileBehavior extends Behavior
                 if (substr($file->mime, 0, 5) === 'image') {
                     $initialPreview[] = Html::img($file->getUrl($size), ['class' => 'file-preview-image']);
                 } else {
-                    $initialPreview[] = Html::beginTag('div', ['class' => 'file-preview-other']) 
-                        . Html::beginTag('span', ['class' => 'file-other-icon']) 
-                        . Html::tag('i', '', ['class' => 'glyphicon glyphicon-file']) 
-                        . Html::endTag('span') 
+                    $initialPreview[] = Html::beginTag('div', ['class' => 'file-preview-other'])
+                        . Html::beginTag('span', ['class' => 'file-other-icon'])
+                        . Html::tag('i', '', ['class' => 'glyphicon glyphicon-file'])
+                        . Html::endTag('span')
                         . Html::endTag('div');
                 }
             }
             return $initialPreview;
         }
-        
+
         return [];
     }
 
@@ -723,10 +766,12 @@ class FileBehavior extends Behavior
                 }
             }
         }
-        if($ok){
+
+        if ($ok) {
             \Yii::$app->session->remove($csrf);
             return true;
         }
+
         return false;
     }
 

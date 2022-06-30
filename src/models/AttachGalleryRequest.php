@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    open20\amos\attachments\models
+ * @category   CategoryName
+ */
+
 namespace open20\amos\attachments\models;
 
 use open20\amos\admin\models\UserProfile;
@@ -14,7 +23,9 @@ use yii\helpers\ArrayHelper;
 /**
  * This is the model class for table "attach_gallery_request".
  */
-class AttachGalleryRequest extends \open20\amos\attachments\models\base\AttachGalleryRequest
+class AttachGalleryRequest
+    extends
+        \open20\amos\attachments\models\base\AttachGalleryRequest
 {
     // Workflow ID
     const GALLERY_IMAGE_REQUEST_WORKFLOW = 'GalleryImageRequestWorkflow';
@@ -23,12 +34,33 @@ class AttachGalleryRequest extends \open20\amos\attachments\models\base\AttachGa
     const IMAGE_REQUEST_WORKFLOW_STATUS_OPENED = 'GalleryImageRequestWorkflow/OPENED';
     const IMAGE_REQUEST_WORKFLOW_STATUS_CLOSED = 'GalleryImageRequestWorkflow/CLOSED';
 
+    /**
+     * 
+     */
     const SCENARIO_REPLY = 'scenario_reply';
 
+    /**
+     * 
+     * @var type
+     */
     public $tagsImage;
+    
+    /**
+     * 
+     * @var type
+     */
     public $customTags;
+    
+    /**
+     * 
+     * @var type
+     */
     public $customTagsReply;
 
+    /**
+     * 
+     * @return type
+     */
     public function representingColumn()
     {
         return ['title'];
@@ -49,6 +81,10 @@ class AttachGalleryRequest extends \open20\amos\attachments\models\base\AttachGa
         return $scenarios;
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function attributeHints()
     {
         return [
@@ -61,11 +97,14 @@ class AttachGalleryRequest extends \open20\amos\attachments\models\base\AttachGa
     public function init()
     {
         if ($this->isNewRecord) {
-            $this->status = $this->getWorkflowSource()->getWorkflow(self::GALLERY_IMAGE_REQUEST_WORKFLOW)->getInitialStatusId();
+            $this->status = $this->getWorkflowSource()->getWorkflow(
+                self::GALLERY_IMAGE_REQUEST_WORKFLOW
+            )
+            ->getInitialStatusId();
         }
+        
         parent::init();
     }
-
 
     /**
      * Returns the text hint for the specified attribute.
@@ -78,6 +117,10 @@ class AttachGalleryRequest extends \open20\amos\attachments\models\base\AttachGa
         return isset($hints[$attribute]) ? $hints[$attribute] : null;
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function rules()
     {
         return ArrayHelper::merge(parent::rules(), [
@@ -104,33 +147,46 @@ class AttachGalleryRequest extends \open20\amos\attachments\models\base\AttachGa
         return true;
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function attributeLabels()
     {
-        return
-            ArrayHelper::merge(
-                parent::attributeLabels(),
-                [
-                ]);
+        return ArrayHelper::merge(
+            parent::attributeLabels(),
+            []
+        );
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function behaviors()
     {
-        return ArrayHelper::merge(parent::behaviors(),
+        return ArrayHelper::merge(
+            parent::behaviors(),
             [
                 'fileBehavior' => [
-                    'class' => FileBehavior::className()
+                    'class' => FileBehavior::class
                 ],
                 'workflow' => [
-                    'class' => SimpleWorkflowBehavior::className(),
+                    'class' => SimpleWorkflowBehavior::class,
                     'defaultWorkflowId' => self::GALLERY_IMAGE_REQUEST_WORKFLOW,
                     'propagateErrorsToModel' => true
                 ],
                 'WorkflowLogFunctionsBehavior' => [
-                    'class' => WorkflowLogFunctionsBehavior::className(),
+                    'class' => WorkflowLogFunctionsBehavior::class,
                 ],
-            ]);
+            ]
+        );
     }
 
+    /**
+     * 
+     * @return type
+     */
     public static function getEditFields()
     {
         $labels = self::attributeLabels();
@@ -222,7 +278,12 @@ class AttachGalleryRequest extends \open20\amos\attachments\models\base\AttachGa
     {
         $root = Tag::find()->andWhere(['codice' => AttachGalleryImage::ROOT_TAG_CUSTOM])->one();
         if ($root) {
-            EntitysTagsMm::deleteAll(['root_id' => $root->id, 'record_id' => $this->id, 'classname' => AttachGalleryRequest::className()]);
+            EntitysTagsMm::deleteAll([
+                'root_id' => $root->id,
+                'record_id' =>
+                $this->id,
+                'classname' => AttachGalleryRequest::class
+            ]);
             $exploded = explode(',', $this->customTags);
             $exploded = array_unique($exploded);
             foreach ($exploded as $tagString) {
@@ -238,11 +299,10 @@ class AttachGalleryRequest extends \open20\amos\attachments\models\base\AttachGa
                     $tagsMm->tag_id = $tag->id;
                     $tagsMm->record_id = $this->id;
                     $tagsMm->root_id = $root->id;
-                    $tagsMm->classname = AttachGalleryRequest::className();
+                    $tagsMm->classname = AttachGalleryRequest::class;
                     $tagsMm->save(false);
                 }
             }
-
         }
     }
 
@@ -268,12 +328,11 @@ class AttachGalleryRequest extends \open20\amos\attachments\models\base\AttachGa
                         $tagsMm->tag_id = $tag->id;
                         $tagsMm->record_id = $this->id;
                         $tagsMm->root_id = $root->id;
-                        $tagsMm->classname = AttachGalleryRequest::className();
+                        $tagsMm->classname = AttachGalleryRequest::class;
                         $tagsMm->save(false);
                     }
                 }
             }
-
         }
     }
 
@@ -285,11 +344,15 @@ class AttachGalleryRequest extends \open20\amos\attachments\models\base\AttachGa
     {
         $this->customTags = [];
 
-        $root = Tag::find()->andWhere(['codice' => AttachGalleryImage::ROOT_TAG_CUSTOM])->one();
+        $root = Tag::find()->andWhere([
+            'codice' => AttachGalleryImage::ROOT_TAG_CUSTOM
+        ])
+        ->one();
+        
         if ($root) {
             $tagsMm = EntitysTagsMm::find()
                 ->innerJoin('tag', 'tag.id = entitys_tags_mm.tag_id')
-                ->andWhere(['classname' => AttachGalleryRequest::className()])
+                ->andWhere(['classname' => AttachGalleryRequest::class])
                 ->andWhere(['record_id' => $this->id])
                 ->andWhere(['root_id' => $root->id])
                 ->andWhere(['IS', 'codice', null])
@@ -311,19 +374,22 @@ class AttachGalleryRequest extends \open20\amos\attachments\models\base\AttachGa
         if ($codice) {
             $root = Tag::find()->andWhere(['codice' => $codice])->one();
             if ($root) {
-                EntitysTagsMm::deleteAll(['root_id' => $root->id, 'record_id' => $this->id, 'classname' => AttachGalleryRequest::className()]);
+                EntitysTagsMm::deleteAll([
+                    'root_id' => $root->id,
+                    'record_id' => $this->id,
+                    'classname' => AttachGalleryRequest::class
+                ]);
                 foreach ($this->tagsImage as $tagId) {
                     $tagsMm = new EntitysTagsMm();
                     $tagsMm->tag_id = $tagId;
                     $tagsMm->record_id = $this->id;
                     $tagsMm->root_id = $root->id;
-                    $tagsMm->classname = AttachGalleryRequest::className();
+                    $tagsMm->classname = AttachGalleryRequest::class;
                     $tagsMm->save(false);
                 }
             }
         }
     }
-
 
     /**
      * @throws \yii\base\InvalidConfigException
@@ -338,7 +404,7 @@ class AttachGalleryRequest extends \open20\amos\attachments\models\base\AttachGa
                 $tagsMm = EntitysTagsMm::find()
                     ->andWhere(['root_id' => $root->id])
                     ->andWhere(['record_id' => $this->id])
-                    ->andWhere(['classname' => AttachGalleryRequest::className()])
+                    ->andWhere(['classname' => AttachGalleryRequest::class])
                     ->all();
                 foreach ($tagsMm as $tagMm) {
                     $this->tagsImage [] = $tagMm->tag_id;
@@ -363,7 +429,6 @@ class AttachGalleryRequest extends \open20\amos\attachments\models\base\AttachGa
         }
         return implode(', ', $tags);
     }
-
 
     /**
      * @return string

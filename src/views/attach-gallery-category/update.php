@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Aria S.p.A.
  * OPEN 2.0
@@ -15,17 +16,20 @@ $this->title = Yii::t('amoscore', 'Aggiorna', [
     'modelClass' => 'Attach Gallery Category',
 ]);
 $this->params['breadcrumbs'][] = ['label' => '', 'url' => ['/attachments']];
-$this->params['breadcrumbs'][] = ['label' => Yii::t('amoscore', 'Attach Gallery Category'), 'url' => ['index']];
-//$this->params['breadcrumbs'][] = ['label' => strip_tags($model), 'url' => ['view', 'id' => $model->id]];
+$this->params['breadcrumbs'][] = [
+    'label' => Yii::t('amoscore', 'Attach Gallery Category'),
+    'url' => ['index']
+];
+
 $this->params['breadcrumbs'][] = Yii::t('amoscore', 'Aggiorna');
 ?>
+
 <div class="attach-gallery-category-update">
-
-    <?= $this->render('_form', [
+<?= $this->render('_form', [
     'model' => $model,
-    'fid' => NULL,
-    'dataField' => NULL,
-    'dataEntity' => NULL,
-    ]) ?>
-
+    'fid' => null,
+    'dataField' => null,
+    'dataEntity' => null,
+    ])
+?>
 </div>

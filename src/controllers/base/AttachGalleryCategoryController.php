@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Aria S.p.A.
  * OPEN 2.0
@@ -12,16 +13,17 @@ namespace open20\amos\attachments\controllers\base;
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\widgets\icons\WidgetIconGalleryDashboard;
 use open20\amos\dashboard\controllers\TabDashboardControllerTrait;
-use Yii;
 use open20\amos\attachments\models\AttachGalleryCategory;
 use open20\amos\attachments\models\search\AttachGalleryCategorySearch;
 use open20\amos\core\controllers\CrudController;
-use open20\amos\core\module\BaseAmosModule;
-use yii\web\NotFoundHttpException;
-use yii\filters\VerbFilter;
 use open20\amos\core\icons\AmosIcons;
 use open20\amos\core\helpers\Html;
 use open20\amos\core\helpers\T;
+use open20\amos\core\module\BaseAmosModule;
+
+use Yii;
+use yii\web\NotFoundHttpException;
+use yii\filters\VerbFilter;
 use yii\helpers\Url;
 
 
@@ -36,7 +38,9 @@ use yii\helpers\Url;
  */
 class AttachGalleryCategoryController extends CrudController
 {
-
+    /**
+     * 
+     */
     use TabDashboardControllerTrait;
 
     /**
@@ -44,6 +48,9 @@ class AttachGalleryCategoryController extends CrudController
      */
     public $layout = 'main';
 
+    /**
+     * 
+     */
     public function init()
     {
         $this->setModelObj(new AttachGalleryCategory());
@@ -55,34 +62,17 @@ class AttachGalleryCategoryController extends CrudController
                 'label' => AmosIcons::show('view-list-alt') . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'Table')),
                 'url' => '?currentView=grid'
             ],
-            /*'list' => [
-                'name' => 'list',
-                'label' => AmosIcons::show('view-list') . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'List')),         
-                'url' => '?currentView=list'
-            ],
-            'icon' => [
-                'name' => 'icon',
-                'label' => AmosIcons::show('grid') . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'Icons')),           
-                'url' => '?currentView=icon'
-            ],
-            'map' => [
-                'name' => 'map',
-                'label' => AmosIcons::show('map') . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'Map')),      
-                'url' => '?currentView=map'
-            ],
-            'calendar' => [
-                'name' => 'calendar',
-                'intestazione' => '', //codice HTML per l'intestazione che verrà caricato prima del calendario,
-                                      //per esempio si può inserire una funzione $model->getHtmlIntestazione() creata ad hoc
-                'label' => AmosIcons::show('calendar') . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'Calendari')),                                            
-                'url' => '?currentView=calendar'
-            ],*/
         ]);
 
         parent::init();
         $this->setUpLayout();
     }
 
+    /**
+     * 
+     * @param type $action
+     * @return boolean
+     */
     public function beforeAction($action)
     {
         if (\Yii::$app->user->isGuest) {
@@ -101,11 +91,6 @@ class AttachGalleryCategoryController extends CrudController
             $titleSection = FileModule::t('amosattachments', 'Categorie');
         }
 
-
-
-
-
-
         $this->view->params = [
             'titleSection' => $titleSection,
         ];
@@ -115,16 +100,14 @@ class AttachGalleryCategoryController extends CrudController
         }
 
         // other custom code here
-
         return true;
     }
-
 
     /**
      * Lists all AttachGalleryCategory models.
      * @return mixed
      */
-    public function actionIndex($layout = NULL)
+    public function actionIndex($layout = null)
     {
         Url::remember();
         $this->setCreateNewBtnLabel();
@@ -137,9 +120,6 @@ class AttachGalleryCategoryController extends CrudController
             $this->view->params['labelCreate']  = FileModule::t('amosattachments', 'Nuova categoria');
             $this->view->params['titleCreate'] = FileModule::t('amosattachments', 'Inserisci una nuova categoria');
             $this->view->params['urlCreate']   = '/attachments/attach-gallery-category/create';
-            
-           
-
         } 
 
         return parent::actionIndex($layout);
@@ -271,7 +251,7 @@ class AttachGalleryCategoryController extends CrudController
         $this->setUpLayout('list');
         if ($setCurrentDashboard) {
             $this->view->params['currentDashboard'] = $this->getCurrentDashboard();
-            $this->child_of = WidgetIconGalleryDashboard::className();
+            $this->child_of = WidgetIconGalleryDashboard::class;
 
         }
     }
@@ -284,28 +264,23 @@ class AttachGalleryCategoryController extends CrudController
         Yii::$app->view->params['createNewBtnParams'] = [
             'createNewBtnLabel' => FileModule::t('amosattachments', 'New category')
         ];
-
     }
 
-      /**
+    /**
      * @return array
      */
     public static function getManageLinks()
     {
- 
-        $links[] = [
-            'title' => FileModule::t('amosattachments', 'Vedi tutte le categorie'),
-            'label' => FileModule::t('amosattachments', 'Categorie'),
-            'url' => '/attachments/attach-gallery-category/index'
-        ];
+//        $links[] = [
+//            'title' => FileModule::t('amosattachments', 'Vedi tutte le categorie'),
+//            'label' => FileModule::t('amosattachments', 'Categorie'),
+//            'url' => '/attachments/attach-gallery-category/index'
+//        ];
         $links[] = [
             'title' => FileModule::t('amosattachments', 'Vedi la galleria immagini'),
             'label' => FileModule::t('amosattachments', 'Galleria immagini'),
             'url' => '/attachments/attach-gallery/single-gallery'
         ];
-
-      
-        
 
         return $links;
     }

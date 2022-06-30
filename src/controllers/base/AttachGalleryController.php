@@ -13,21 +13,21 @@ use open20\amos\attachments\FileModule;
 use open20\amos\attachments\models\search\AttachGalleryImageSearch;
 use open20\amos\attachments\widgets\icons\WidgetIconGalleryDashboard;
 use open20\amos\dashboard\controllers\TabDashboardControllerTrait;
-use Yii;
 use open20\amos\attachments\models\AttachGallery;
 use open20\amos\attachments\models\search\AttachGallerySearch;
 use open20\amos\core\controllers\CrudController;
 use open20\amos\core\module\BaseAmosModule;
-use yii\data\ActiveDataProvider;
-use yii\web\ForbiddenHttpException;
-use yii\web\NotFoundHttpException;
-use yii\filters\VerbFilter;
 use open20\amos\core\icons\AmosIcons;
 use open20\amos\admin\AmosAdmin;
 use open20\amos\core\helpers\Html;
 use open20\amos\core\helpers\T;
-use yii\helpers\Url;
 
+use Yii;
+use yii\data\ActiveDataProvider;
+use yii\filters\VerbFilter;
+use yii\helpers\Url;
+use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
 
 /**
  * Class AttachGalleryController
@@ -40,45 +40,68 @@ use yii\helpers\Url;
  */
 class AttachGalleryController extends CrudController
 {
-
+    /**
+     * 
+     */
     use TabDashboardControllerTrait;
+
+    /**
+     * 
+     * @var type
+     */
+    public $FileModule = null;
 
     /**
      * @var string $layout
      */
     public $layout = 'main';
 
+    /**
+     * 
+     */
     public function init()
     {
+        $thisFileModule = FileModule::getInstance();
+
         $this->setModelObj(new AttachGallery());
         $this->setModelSearch(new AttachGallerySearch());
 
         $this->setAvailableViews([
             'list' => [
                 'name' => 'list',
-                'label' => AmosIcons::show('view-list') . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'List')),
+                'label' => AmosIcons::show('view-list')
+                    . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'List')),
                 'url' => '?currentView=list'
             ],
             'grid' => [
                 'name' => 'grid',
-                'label' => AmosIcons::show('view-list-alt') . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'Table')),
+                'label' => AmosIcons::show('view-list-alt')
+                    . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'Table')),
                 'url' => '?currentView=grid'
             ],
-
         ]);
 
         parent::init();
         $this->setUpLayout();
     }
-
+    
+    /**
+     * 
+     * @param type $action
+     * @return boolean
+     */
     public function beforeAction($action)
     {
         if (\Yii::$app->user->isGuest) {
             $titleSection = FileModule::t('amosattachments', 'Galleria');
             $ctaLoginRegister = Html::a(
                 FileModule::t('amosattachments', 'accedi o registrati alla piattaforma'),
-                isset(\Yii::$app->params['linkConfigurations']['loginLinkCommon']) ? \Yii::$app->params['linkConfigurations']['loginLinkCommon']
-                    : \Yii::$app->params['platform']['backendUrl'] . '/' . AmosAdmin::getModuleName() . '/security/login',
+                isset(\Yii::$app->params['linkConfigurations']['loginLinkCommon'])
+                    ? \Yii::$app->params['linkConfigurations']['loginLinkCommon']
+                    : \Yii::$app->params['platform']['backendUrl'] 
+                        . '/'
+                        . AmosAdmin::getModuleName()
+                        . '/security/login',
                 [
                     'title' => FileModule::t('amosattachments',
                         'Clicca per accedere o registrarti alla piattaforma {platformName}',
@@ -89,7 +112,6 @@ class AttachGalleryController extends CrudController
             $titleSection = FileModule::t('amosattachments', 'Galleria');
         }
 
-
         $this->view->params = [
             'titleSection' => $titleSection,
         ];
@@ -99,7 +121,6 @@ class AttachGalleryController extends CrudController
         }
 
         // other custom code here
-
         return true;
     }
 
@@ -107,7 +128,7 @@ class AttachGalleryController extends CrudController
      * Lists all AttachGallery models.
      * @return mixed
      */
-    public function actionIndex($layout = NULL)
+    public function actionIndex($layout = null)
     {
         Url::remember();
         $this->setListViewsParams($setCurrentDashboard = true);
@@ -160,9 +181,9 @@ class AttachGalleryController extends CrudController
 
         return $this->render('create', [
             'model' => $this->model,
-            'fid' => NULL,
-            'dataField' => NULL,
-            'dataEntity' => NULL,
+            'fid' => null,
+            'dataField' => null,
+            'dataEntity' => null,
         ]);
     }
 
@@ -178,10 +199,7 @@ class AttachGalleryController extends CrudController
 
         if (\Yii::$app->request->isAjax && $this->model->load(Yii::$app->request->post()) && $this->model->validate()) {
             if ($this->model->save()) {
-//Yii::$app->getSession()->addFlash('success', Yii::t('amoscore', 'Item created'));
                 return json_encode($this->model->toArray());
-            } else {
-//Yii::$app->getSession()->addFlash('danger', Yii::t('amoscore', 'Item not created, check data'));
             }
         }
 
@@ -207,7 +225,6 @@ class AttachGalleryController extends CrudController
         $this->setListViewsParams($setCurrentDashboard = true);
         $dataProviderImages = $modelSearch->search(\Yii::$app->request->get(), $this->model->id);
 
-
         if ($this->model->load(Yii::$app->request->post()) && $this->model->validate()) {
             if ($this->model->save()) {
                 Yii::$app->getSession()->addFlash('success', Yii::t('amoscore', 'Item updated'));
@@ -219,9 +236,9 @@ class AttachGalleryController extends CrudController
 
         return $this->render('update', [
             'model' => $this->model,
-            'fid' => NULL,
-            'dataField' => NULL,
-            'dataEntity' => NULL,
+            'fid' => null,
+            'dataField' => null,
+            'dataEntity' => null,
             'dataProviderImages' => $dataProviderImages,
             'modelSearch' => $modelSearch,
             'currentView' => $this->getCurrentView(),
@@ -266,7 +283,7 @@ class AttachGalleryController extends CrudController
         $this->setUpLayout('list');
         if ($setCurrentDashboard) {
             $this->view->params['currentDashboard'] = $this->getCurrentDashboard();
-            $this->child_of = WidgetIconGalleryDashboard::className();
+            $this->child_of = WidgetIconGalleryDashboard::class;
 
         }
     }

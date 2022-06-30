@@ -40,7 +40,7 @@ class AttachmentsList extends AttachmentsTableWithPreview
 
     public $requireModalMoveFile = true;
 
-    // EDITED
+    // EDITED 
     public function drawWidget($attribute = null)
     {
         if (!$attribute) {
@@ -57,7 +57,8 @@ class AttachmentsList extends AttachmentsTableWithPreview
 
         $files = [];
         $filesQuantity = 0;
-        $dataProviderModels = $dataProvider->getModels();
+        // $dataProviderModels = $dataProvider->getModels();
+        $dataProviderModels = $dataProvider->query->all();
         $counter = 1;
         $countModels = count($dataProviderModels);
 
@@ -68,10 +69,12 @@ class AttachmentsList extends AttachmentsTableWithPreview
 
             // Get rendered filename and download link
             $file_name = $model->name . ($this->hideExtensionFile ? '' : "." . $model->type);
-            $file['filename'] = Html::a($file_name, $model->getUrl(), [
-                'class' => ' ',
-                'title' => "File " . $model->type . " - ". ($model->size/1024) . " KB"
-            ]);
+
+            $file['filename'] = Html::tag('div',Html::a($file_name, $model->getUrl(), [
+                'class' => 'filename',
+                'title' => "Dowload file ". $file_name,
+            ]).html::tag('span',strtoupper($model->type) . " (". ($model->size%1024) . " Kb)", ['class' => 'small']),['class'=> 'fileinfos']);
+            $file['type'] = $model->type;
 
             // Get rendered preview button
 

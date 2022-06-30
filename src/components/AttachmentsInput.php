@@ -13,9 +13,11 @@ namespace open20\amos\attachments\components;
 
 use open20\amos\core\helpers\Html;
 use open20\amos\core\icons\AmosIcons;
-use kartik\widgets\FileInput;
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\FileModuleTrait;
+
+use kartik\widgets\FileInput;
+
 use yii\base\InvalidConfigException;
 use yii\helpers\FileHelper;
 use yii\helpers\Url;
@@ -30,8 +32,23 @@ class AttachmentsInput extends FileInput
 {
     use FileModuleTrait;
 
+    /**
+     * 
+     * @var type
+     */
+    
     public $asyncMode = false;
+
+    /**
+     * 
+     * @var type
+     */
     public $enableGoogleDrive = false;
+
+    /**
+     * 
+     * @var type
+     */
     public $enableUploadFromGallery = false;
 
     /**
@@ -42,10 +59,13 @@ class AttachmentsInput extends FileInput
         JuiAsset::register($this->view);
 
         if (empty($this->model)) {
-            throw new InvalidConfigException(FileModule::t('amosattachments', "Property {model} cannot be blank"));
+            throw new InvalidConfigException(
+                FileModule::t('amosattachments', "Property {model} cannot be blank")
+            );
         }
 
-        FileHelper::removeDirectory($this->getModule()->getUserDirPath($this->attribute)); // Delete all uploaded files in past
+        // Delete all uploaded files in past
+        FileHelper::removeDirectory($this->getModule()->getUserDirPath($this->attribute));
 
         $initials = $this->model->isNewRecord 
             ? [] 
@@ -192,7 +212,7 @@ class AttachmentsInput extends FileInput
                 //'model' => $this->model,  COMMENTATO perchè si rompeva, essendo che viene passato il model come attributo tel tag input
 
                 'attribute' => $this->attribute,
-                'name' =>  \yii\helpers\Html::getInputName($this->model,  $this->attribute) . $fileAttribute,
+                'name' =>  (!empty($this->name) ? $this->name : \yii\helpers\Html::getInputName($this->model,  $this->attribute)) . $fileAttribute,
                 'multiple' => (!empty($fileAttribute))
             ]
         );

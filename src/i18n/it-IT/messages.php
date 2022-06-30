@@ -10,6 +10,12 @@
  */
 
 return [
+    'Update gallery' => 'Update Databank',
+    '#label_gallery' => 'Databank',
+    '#description_gallery' => 'Databank',
+    '#desc_gallery_image' => 'Databank immages',
+    '#label_gallery_image' => 'Databank images',    
+
     '#accept_btn' => 'Conferma',
     'amos-attachments module not found, may be you didn\'t add it to your config?' => 'modulo amos-attachments non trovato, probabilmente devi aggiungerlo alla tua configurazione?',
     'Are you sure you want to delete this item?' => 'Confermi la cancellazione?',
@@ -115,4 +121,8 @@ return [
     'Search' => 'Cerca',
     'Cancel' => 'Annulla',
     '#choose_image_from_databank' => "Carica da databank immagini",
+    
+    '#placeholder_for_tags' => 'Seleziona i tag...',
+    "E' necessario inserire un'immagine." => "E' necessario inserire un'immagine.",
+    '#newimg' => 'Nuova',
 ];

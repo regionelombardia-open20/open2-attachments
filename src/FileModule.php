@@ -35,17 +35,62 @@ class FileModule extends AmosModule
      * The folder into which the link is thrown for direct access via http
      * @var string
      */
-    public $webDir              = 'files';
+    public $webDir = 'files';
+    
+    /**
+     * @var type
+     */
     public $controllerNamespace = 'open20\amos\attachments\controllers';
-    public $storePath           = '@app/uploads/store';
-    public $tempPath            = '@app/uploads/temp';
-    public $rules               = [];
-    public $tableName           = 'attach_file';
-    public $config              = [];
-    public $disableGallery      = true;
+    
+    /**
+     * @var type
+     */
+    public $storePath = '@app/uploads/store';
+    
+    /**
+     * @var type
+     */
+    public $tempPath = '@app/uploads/temp';
+    
+    /**
+     * @var type
+     */
+    public $rules = [];
+    
+    /**
+     * @var type
+     */
+    public $tableName = 'attach_file';
+    
+    /**
+     * @var type
+     */
+    public $config = [];
+    
+    /**
+     * @var type
+     */
+    public $disableGallery = true;
+    
+    /**
+     * @var type
+     */
     public $enableSingleGallery = true;
-
+    
+    /**
+     * @var bool $enableRequestImageForGallery
+     */
+    public $enableRequestImageForGallery = false;
+    
+    /**
+     * @var type
+     */
     public $codiceTagGallery = 'root_preference_center';
+    
+    /**
+     * @var type
+     */
+    public $disableFreeCropGallery = false;
 
     /**
      * If set to true it verifies that the parent record is visible to download
@@ -106,16 +151,28 @@ class FileModule extends AmosModule
      */
     public $aws_s3_default_region = 'eu-central-1';
 
+    /**
+     * 
+     * @return string
+     */
     public static function getModuleName()
     {
         return "attachments";
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function getWidgetIcons()
     {
         return [];
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function getWidgetGraphics()
     {
         return [];
@@ -155,7 +212,10 @@ class FileModule extends AmosModule
             \Yii::$app->session->close();
         }
 
-        $userDirPath = $this->getTempPath().DIRECTORY_SEPARATOR.$sessionId.$suffix;
+        $userDirPath = $this->getTempPath()
+            . DIRECTORY_SEPARATOR
+            . $sessionId
+            . $suffix;
 
         //Try dir creation
         FileHelper::createDirectory($userDirPath, 0777);
@@ -165,7 +225,7 @@ class FileModule extends AmosModule
             throw new \Exception("Unable to create Upload Direcotory '{$userDirPath}'");
         }
 
-        return $userDirPath.DIRECTORY_SEPARATOR;
+        return $userDirPath . DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -190,15 +250,24 @@ class FileModule extends AmosModule
     }
 
     /**
-     * @param $filePath string
-     * @param $owner
-     * @param $attribute
-     * @return bool|File
+     * 
+     * @param type $filePath
+     * @param \open20\amos\core\record\RecordDynamicModel $owner
+     * @param type $attribute
+     * @param type $dropOriginFile
+     * @param type $saveWithoutModel
+     * @param type $encrypt
+     * @return boolean|File
      * @throws \Exception
-     * @throws \yii\base\InvalidConfigException
      */
-    public function attachFile($filePath, $owner, $attribute = 'file', $dropOriginFile = true,
-                               $saveWithoutModel = false, $encrypt = false)
+    public function attachFile(
+        $filePath,
+        $owner,
+        $attribute = 'file',
+        $dropOriginFile = true,
+        $saveWithoutModel = false,
+        $encrypt = false
+    ) 
     {
         if (!$saveWithoutModel) {
             if (!$owner->id) {
@@ -216,9 +285,17 @@ class FileModule extends AmosModule
         $dirName  = pathinfo($filePath, PATHINFO_DIRNAME);
 
         //Create a clean name for file
-        $cleanName = preg_replace("([\.]{2,})", '_', preg_replace("([^\w\d\-_~,;\[\]\(\).])", '_', $fileName));
+        $cleanName = preg_replace(
+            "([\.]{2,})",
+            '_',
+            preg_replace(
+                "([^\w\d\-_~,;\[\]\(\).])",
+                '_',
+                $fileName
+            )
+        );
 
-        //New location for the file
+        // New location for the file
         $cleanFilePath = $dirName.DIRECTORY_SEPARATOR.$cleanName.'.'.$fileType;
 
         if ($encrypt) {
@@ -263,20 +340,27 @@ class FileModule extends AmosModule
         $newFilePath = $fileDirPath.DIRECTORY_SEPARATOR.$newFileName;
 
         if (!file_exists($cleanFilePath)) {
-            throw new \Exception(FileModule::t('amosattachments', 'Cannot copy file! ').$cleanFilePath.FileModule::t('amosattachments',
-                ' to ').$newFilePath);
+            throw new \Exception(FileModule::t(
+                'amosattachments',
+                'Cannot copy file! ')
+                . $cleanFilePath
+                . FileModule::t('amosattachments', ' to ')
+                .$newFilePath
+            );
         }
 
-        if ($saveWithoutModel) {
-            $ownerId = null;
-        } else {
-            $ownerId = $owner->id;
-        }
+        $ownerId = $saveWithoutModel
+            ? null
+            : $owner->id
+        ;
 
         $ownerClass = $this->getClass($owner);
 
         $tableNameOwner = null;
-        if ($owner instanceof \open20\amos\core\record\RecordDynamicModel && method_exists($owner, 'getTableName')) {
+        if (
+            $owner instanceof \open20\amos\core\record\RecordDynamicModel
+            && method_exists($owner, 'getTableName')
+        ) {
             $tblName = $owner->getTableName();
             if (!empty($tblName)) {
                 $tableNameOwner = $tblName;
@@ -289,17 +373,15 @@ class FileModule extends AmosModule
             'attribute' => $attribute,
             'model' => $ownerClass,
         ]);
+        
         if (!is_null($tableNameOwner)) {
             $query->andFilterWhere(['table_name_form' => $tableNameOwner]);
         }
+        
         $exists = $query->one();
-
         if (!$exists) {
-
             copy($cleanFilePath, $newFilePath);
-
             $file = new File();
-
             $file->name      = $fileName;
             $file->model     = $ownerClass;
             $file->item_id   = $ownerId;
@@ -316,13 +398,14 @@ class FileModule extends AmosModule
             }
 
             /** @var ActiveQuery $query */
-            $query      = File::find();
-            $query->andWhere(['model' => $ownerClass]);
-            $query->andWhere(['attribute' => $attribute]);
-            $query->andWhere(['item_id' => $ownerId]);
+            $query = File::find()
+                ->andWhere(['model' => $ownerClass])
+                ->andWhere(['attribute' => $attribute])
+                ->andWhere(['item_id' => $ownerId]);
+            
             $maxSort    = $query->max('sort');
-            $file->sort = ($maxSort + 1);
-
+            $file->sort = $maxSort + 1;
+            
             if ($file->save()) {
                 if ($dropOriginFile) {
                     unlink($cleanFilePath);
@@ -378,9 +461,9 @@ class FileModule extends AmosModule
     public function getFilesDirPath($fileHash, $useStorePath = true)
     {
         if ($useStorePath) {
-            $path = $this->getStorePath().DIRECTORY_SEPARATOR.$this->getSubDirs($fileHash);
+            $path = $this->getStorePath() . DIRECTORY_SEPARATOR . $this->getSubDirs($fileHash);
         } else {
-            $path = DIRECTORY_SEPARATOR.$this->getSubDirs($fileHash);
+            $path = DIRECTORY_SEPARATOR . $this->getSubDirs($fileHash);
         }
 
         FileHelper::createDirectory($path, 0777);
@@ -409,7 +492,9 @@ class FileModule extends AmosModule
         for ($i = 0; $i < $depth; $i++) {
             $folder = substr($fileHash, $i * 3, 2);
             $path   .= $folder;
-            if ($i != $depth - 1) $path   .= DIRECTORY_SEPARATOR;
+            if ($i != $depth - 1) {
+                $path   .= DIRECTORY_SEPARATOR;
+            }
         }
 
         return $path;
@@ -435,7 +520,11 @@ class FileModule extends AmosModule
         $file = File::findOne(['id' => $id]);
         if (!is_null($file)) {
             $anyMore  = File::findAll(['hash' => $file->hash]);
-            $filePath = $this->getFilesDirPath($file->hash).DIRECTORY_SEPARATOR.$file->hash.'.'.$file->type;
+            $filePath = $this->getFilesDirPath($file->hash)
+                . DIRECTORY_SEPARATOR
+                . $file->hash
+                . '.'
+                .$file->type;
             if (file_exists($filePath) && count($anyMore) == 1) {
                 unlink($filePath);
             }
@@ -446,8 +535,10 @@ class FileModule extends AmosModule
                     /** @var \amos\statistics\models\AttachmentsStatsInterface $stat */
                     $ok   = $stat->delete($file);
                     if (!$ok) {
-                        \Yii::getLogger()->log(FileModule::t('amosattachments', 'Statistics: error while saving'),
-                            Logger::LEVEL_WARNING);
+                        \Yii::getLogger()->log(
+                            FileModule::t('amosattachments', 'Statistics: error while saving'),
+                            Logger::LEVEL_WARNING
+                        );
                     }
                 }
             } catch (\Exception $exception) {
@@ -474,13 +565,26 @@ class FileModule extends AmosModule
      */
     public function getWebPath(File $file)
     {
-        $fileName = $file->hash.'.'.$file->type;
-        $webPath  = '/'.$this->webDir.'/'.$this->getSubDirs($file->hash).'/'.$fileName;
+        $fileName = $file->hash
+            . '.'
+            . $file->type;
+        
+        $webPath  = '/'
+            . $this->webDir
+            . '/'
+            . $this->getSubDirs($file->hash)
+            . '/'
+            . $fileName;
+        
         return $webPath;
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function getDefaultModels()
     {
-        return File::classname();
+        return File::class;
     }
 }

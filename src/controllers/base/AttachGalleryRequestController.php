@@ -16,18 +16,19 @@ use open20\amos\attachments\models\File;
 use open20\amos\attachments\utility\AttachmentsMailUtility;
 use open20\amos\attachments\widgets\icons\WidgetIconGalleryDashboard;
 use open20\amos\dashboard\controllers\TabDashboardControllerTrait;
-use Yii;
 use open20\amos\attachments\models\AttachGalleryRequest;
 use open20\amos\attachments\models\search\AttachGalleryRequestSearch;
 use open20\amos\core\controllers\CrudController;
 use open20\amos\core\module\BaseAmosModule;
-use yii\web\ForbiddenHttpException;
-use yii\web\NotFoundHttpException;
-use yii\filters\VerbFilter;
 use open20\amos\core\icons\AmosIcons;
 use open20\amos\core\helpers\Html;
 use open20\amos\core\helpers\T;
+
+use Yii;
+use yii\filters\VerbFilter;
 use yii\helpers\Url;
+use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
 
 
 /**
@@ -41,14 +42,19 @@ use yii\helpers\Url;
  */
 class AttachGalleryRequestController extends CrudController
 {
+    /**
+     * 
+     */
     use TabDashboardControllerTrait;
-
 
     /**
      * @var string $layout
      */
     public $layout = 'main';
 
+    /**
+     * 
+     */
     public function init()
     {
         $this->setModelObj(new AttachGalleryRequest());
@@ -60,28 +66,6 @@ class AttachGalleryRequestController extends CrudController
                 'label' => AmosIcons::show('view-list-alt') . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'Table')),
                 'url' => '?currentView=grid'
             ],
-            /*'list' => [
-                'name' => 'list',
-                'label' => AmosIcons::show('view-list') . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'List')),         
-                'url' => '?currentView=list'
-            ],
-            'icon' => [
-                'name' => 'icon',
-                'label' => AmosIcons::show('grid') . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'Icons')),           
-                'url' => '?currentView=icon'
-            ],
-            'map' => [
-                'name' => 'map',
-                'label' => AmosIcons::show('map') . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'Map')),      
-                'url' => '?currentView=map'
-            ],
-            'calendar' => [
-                'name' => 'calendar',
-                'intestazione' => '', //codice HTML per l'intestazione che verrà caricato prima del calendario,
-                                      //per esempio si può inserire una funzione $model->getHtmlIntestazione() creata ad hoc
-                'label' => AmosIcons::show('calendar') . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'Calendari')),                                            
-                'url' => '?currentView=calendar'
-            ],*/
         ]);
 
         parent::init();
@@ -92,7 +76,7 @@ class AttachGalleryRequestController extends CrudController
      * Lists all AttachGalleryRequest models.
      * @return mixed
      */
-    public function actionIndex($layout = NULL)
+    public function actionIndex($layout = null)
     {
         Url::remember();
         $this->setCreateNewBtnLabelGeneral();
@@ -148,9 +132,9 @@ class AttachGalleryRequestController extends CrudController
         return $this->render('create', [
             'model' => $this->model,
             'gallery' => $gallery,
-            'fid' => NULL,
-            'dataField' => NULL,
-            'dataEntity' => NULL,
+            'fid' => null,
+            'dataField' => null,
+            'dataEntity' => null,
         ]);
     }
 
@@ -166,10 +150,7 @@ class AttachGalleryRequestController extends CrudController
 
         if (\Yii::$app->request->isAjax && $this->model->load(Yii::$app->request->post()) && $this->model->validate()) {
             if ($this->model->save()) {
-//Yii::$app->getSession()->addFlash('success', BaseAmosModule::t('amoscore', 'Item created'));
                 return json_encode($this->model->toArray());
-            } else {
-//Yii::$app->getSession()->addFlash('danger', BaseAmosModule::t('amoscore', 'Item not created, check data'));
             }
         }
 
@@ -216,13 +197,12 @@ class AttachGalleryRequestController extends CrudController
                 Yii::$app->getSession()->addFlash('danger', BaseAmosModule::t('amoscore', 'Item not updated, check data'));
             }
         }
-//        pr($this->model->getErrors());
 
         return $this->render('update', [
             'model' => $this->model,
-            'fid' => NULL,
-            'dataField' => NULL,
-            'dataEntity' => NULL,
+            'fid' => null,
+            'dataField' => null,
+            'dataEntity' => null,
         ]);
     }
 
@@ -256,8 +236,7 @@ class AttachGalleryRequestController extends CrudController
         $this->setUpLayout('list');
         if ($setCurrentDashboard) {
             $this->view->params['currentDashboard'] = $this->getCurrentDashboard();
-            $this->child_of = WidgetIconGalleryDashboard::className();
-
+            $this->child_of = WidgetIconGalleryDashboard::class;
         }
     }
 
@@ -266,7 +245,6 @@ class AttachGalleryRequestController extends CrudController
      */
     public function setCreateNewBtnLabelGeneral($id = 1)
     {
-
         $btnUploadImage = Html::a(FileModule::t('amosattachments', "Carica nuova"), ['/attachments/attach-gallery-image/create', 'id' => $id], [
             'class' => 'btn btn-primary',
             'title' => FileModule::t('amosattachments', "Carica nuova immmagine")

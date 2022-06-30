@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Aria S.p.A.
  * OPEN 2.0
@@ -13,10 +14,11 @@ namespace open20\amos\attachments\models;
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\FileModuleTrait;
 use open20\amos\core\record\Record;
+
+use Yii;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveQuery;
 use yii\helpers\Url;
-use Yii;
 
 /**
  * Class File
@@ -43,14 +45,32 @@ use Yii;
  *
  * @package open20\amos\attachments\models
  */
+
 class File extends Record
 {
-
+    /**
+     * 
+     */
     use FileModuleTrait;
+    
+    /**
+     * 
+     */
     const MAIN             = 1;
+    
+    /**
+     * 
+     */
     const NOT_MAIN         = 0;
-    // Const to encrypted files
+    
+    /**
+     * Const to encrypted files
+     */
     const IS_ENCRYPTED     = 1;
+    
+    /**
+     * 
+     */
     const IS_NOT_ENCRYPTED = 0;
 
     /**
@@ -68,7 +88,7 @@ class File extends Record
     {
         return [
             [
-                'class' => TimestampBehavior::className(),
+                'class' => TimestampBehavior::class,
                 'createdAtAttribute' => 'date_upload',
                 'updatedAtAttribute' => false,
             ],
@@ -177,12 +197,24 @@ class File extends Record
         $module = FileModule::getInstance();
         if ($module->enable_aws_s3) {
             $fileRef = FileRefs::find()->andWhere(['hash' => $hash])->one();
-            if (!empty($fileRef) && !empty($fileRef->s3_url)) return $fileRef->s3_url;
+            if (!empty($fileRef) && !empty($fileRef->s3_url)) {
+                return $fileRef->s3_url;
+            }
         }
-        $baseUrl = Url::to(['/'.FileModule::getModuleName().'/file/view', 'hash' => $hash, 'canCache' => $canCache]);
+        
+        $baseUrl = Url::to([
+            '/'
+            . FileModule::getModuleName()
+            . '/file/view',
+            'hash' => $hash,
+            'canCache' => $canCache
+        ]);
 
-        if (!$absolute) return $baseUrl;
-        else return \Yii::$app->getUrlManager()->createAbsoluteUrl($baseUrl);
+        if (!$absolute) {
+            return $baseUrl;
+        }
+        
+        return \Yii::$app->getUrlManager()->createAbsoluteUrl($baseUrl);
     }
 
     /**
@@ -190,28 +222,45 @@ class File extends Record
      */
     public function getPath($size = 'original')
     {
+        $filesDirPath = $this->getModule()->getFilesDirPath($this->hash);
+
         if ($size == 'original') {
-            return $this->getModule()->getFilesDirPath($this->hash).DIRECTORY_SEPARATOR.$this->hash.'.'.$this->type;
-        } else {
-            $moduleConfig = Yii::$app->getModule('attachments')->config;
-            $crops        = $moduleConfig['crops'] ?: [];
-
-            if (json_decode($size) != null) {
-                $crops['custom'] = (array) json_decode($size);
-                $size            = 'custom';
-            }
-
-            if (array_key_exists($size, $crops)) {
-                $cropSettings = $crops[$size];
-            } else {
-                $crops['custom'] = (array) json_decode('default');
-                $size            = 'custom';
-                $cropSettings    = $crops[$size];
-            }
-
-            return $this->getModule()->getFilesDirPath($this->hash).DIRECTORY_SEPARATOR.$this->hash.'.'.(!empty($cropSettings['width'])
-                    ? $cropSettings['width'] : '').'.'.(!empty($cropSettings['height']) ? $cropSettings['height'] : '').'.'.$this->type;
+            return $filesDirPath
+                . DIRECTORY_SEPARATOR
+                . $this->hash
+                . '.'
+                . $this->type;
         }
+        
+        $moduleConfig = Yii::$app->getModule('attachments')->config;
+        $crops        = $moduleConfig['crops'] ?: [];
+
+        if (json_decode($size) != null) {
+            $crops['custom'] = (array) json_decode($size);
+            $size            = 'custom';
+        }
+
+        if (array_key_exists($size, $crops)) {
+            $cropSettings = $crops[$size];
+        } else {
+            $crops['custom'] = (array) json_decode('default');
+            $size            = 'custom';
+            $cropSettings    = $crops[$size];
+        }
+
+        return $filesDirPath
+            . DIRECTORY_SEPARATOR
+            . $this->hash
+            . '.'
+            . (!empty($cropSettings['width'])
+                ? $cropSettings['width'] : ''
+            )
+            . '.'
+            . (!empty($cropSettings['height'])
+                ? $cropSettings['height'] : ''
+            )
+            . '.'
+            . $this->type;
     }
 
     /**
@@ -219,7 +268,7 @@ class File extends Record
      */
     public function getAttachFileRefs()
     {
-        return $this->hasOne(FileRefs::className(), ['attach_file_id' => 'id']);
+        return $this->hasOne(FileRefs::class, ['attach_file_id' => 'id']);
     }
 
     /**
@@ -227,7 +276,7 @@ class File extends Record
      */
     public function getAttachFileRefsMany()
     {
-        return $this->hasMany(FileRefs::className(), ['attach_file_id' => 'id']);
+        return $this->hasMany(FileRefs::class, ['attach_file_id' => 'id']);
     }
 
     /**
@@ -239,7 +288,8 @@ class File extends Record
     }
 
     /**
-     * TODO da implementare. Creare tabella criptata in cui salvare la password univoca oppure una random per ciascuna riga di attach_file.
+     * TODO da implementare. Creare tabella criptata in cui salvare la password
+     * univoca oppure una random per ciascuna riga di attach_file.
      * @return string
      */
     public function getDecryptPassword()
@@ -247,6 +297,10 @@ class File extends Record
         return '5dd2d749acf49';
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function getOwner()
     {
         if (class_exists($this->model) && method_exists($this->model, 'find')) {
@@ -264,7 +318,7 @@ class File extends Record
     {
         return $this->hasMany(self::className(), ['model' => 'model'])
             ->andWhere(['item_id' => $this->item_id])
-                ->andWhere(['attribute' => $this->attribute]);
+            ->andWhere(['attribute' => $this->attribute]);
     }
 
     /**
@@ -273,8 +327,17 @@ class File extends Record
     public function getFormattedSize(){
         $dimScale = ['B', 'Kb', 'Mb', 'Gb', 'Tb'];
         $sizeFile = intval($this->size);
-        $power = $sizeFile > 0 ? floor(log($sizeFile, 1024)) : 0;
-        $size =  number_format($sizeFile / pow(1024, $power), 0, '.', ',') . ' ' . $dimScale[$power];
-        return $size;
+        $power = $sizeFile > 0
+            ? floor(log($sizeFile, 1024))
+            : 0;
+        
+        return number_format(
+            $sizeFile / pow(1024, $power),
+            0,
+            '.',
+            ','
+        )
+        . ' '
+        . $dimScale[$power];
     }
 }

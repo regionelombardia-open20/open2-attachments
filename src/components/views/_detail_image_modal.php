@@ -1,16 +1,28 @@
 <?php
 
-use yii\helpers\Html;
+/**
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    open20\amos\attachments\components\views
+ * @category   CategoryName
+ */
+
+use open20\amos\attachments\FileModule;
 use open20\amos\core\icons\AmosIcons;
+
+use yii\helpers\Html;
 
 /**
  * @var $attribute string
  * @var $model \open20\amos\attachments\models\AttachGalleryImage
  */
-
-use open20\amos\attachments\FileModule;
-
 $fileImage = $model->attachImage;
+list($width, $height, $type, $attr) = getimagesize($fileImage->path);
+$image = Html::img($model->attachImage->getWebUrl(), [
+    'class' => 'mx-auto img-responsive'
+]);
 ?>
 <div class="row detail-image-masonry">
     <div class="col-sm-7 order-sm-1 text-sm-right">
@@ -27,16 +39,9 @@ $fileImage = $model->attachImage;
                 'src' => $model->attachImage->getWebUrl()
             ]
         ]) ?>
-
-        <!-- < ?= Html::a(AmosIcons::show('fullscreen-exit'), '', [
-        'class' => 'btn btn-tools-secondary exit-fullscreen-btn',
-        'data-attribute' => $attribute
-    ]) ?> -->
     </div>
+    
     <div class="col-sm-5 order-sm-0 pt-2">
-        <?php
-        list($width, $height, $type, $attr) = getimagesize($fileImage->path);
-        ?>
         <div class="d-flex flex-wrap">
             <div class="mr-2">
                 <strong class="h4"><?= FileModule::t('amosattachments', "Dimensioni (pixel)") . ': ' ?></strong><?= $width . 'x' . $height ?>
@@ -49,11 +54,7 @@ $fileImage = $model->attachImage;
 
     </div>
     <div class="col-12 mt-4 image-detail order-sm-2">
-        <?php
-        $image = \yii\helpers\Html::img($model->attachImage->getWebUrl(), [
-            'class' => 'mx-auto img-responsive'
-        ]);
-        echo \yii\helpers\Html::a($image, '', [
+    <?= Html::a($image, '', [
             'id' => 'exit-fullscreen-btn-' . $attribute,
             'class' => 'exit-fullscreen-btn zoom-out-btn',
             'data' => [
@@ -63,6 +64,5 @@ $fileImage = $model->attachImage;
             ]
         ])
         ?>
-
     </div>
 </div>

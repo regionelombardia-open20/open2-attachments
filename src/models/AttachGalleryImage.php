@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    open20\amos\attachments\models
+ * @category   CategoryName
+ */
+
 namespace open20\amos\attachments\models;
 
 use open20\amos\admin\models\UserProfile;
@@ -12,10 +21,18 @@ use yii\helpers\ArrayHelper;
 /**
  * This is the model class for table "attach_gallery_image".
  */
-class AttachGalleryImage extends \open20\amos\attachments\models\base\AttachGalleryImage
+class AttachGalleryImage 
+    extends
+        \open20\amos\attachments\models\base\AttachGalleryImage
 {
+    /**
+     * 
+     */
     const ROOT_TAG_CUSTOM = 'root_tag_custom_attach';
 
+    /**
+     * 
+     */
     const DEFAULT_ASPECT_RATIO  = '1.7';
 
     /**
@@ -23,18 +40,23 @@ class AttachGalleryImage extends \open20\amos\attachments\models\base\AttachGall
      */
     public function behaviors()
     {
-        return ArrayHelper::merge(parent::behaviors(), [
-            'fileBehavior' => [
-                'class' => FileBehavior::className()
+        return ArrayHelper::merge(
+            parent::behaviors(),
+            [
+                'fileBehavior' => [
+                    'class' => FileBehavior::class
+                ]
             ]
-        ]);
+        );
     }
-
+    
+    /**
+     * inserire il campo o i campi rappresentativi del modulo
+     * @return type
+     */
     public function representingColumn()
     {
-        return [
-//inserire il campo o i campi rappresentativi del modulo
-        ];
+        return [];
     }
 
     public function attributeHints()
@@ -166,7 +188,7 @@ class AttachGalleryImage extends \open20\amos\attachments\models\base\AttachGall
     {
         $root = Tag::find()->andWhere(['codice' => self::ROOT_TAG_CUSTOM])->one();
         if ($root) {
-            EntitysTagsMm::deleteAll(['root_id' => $root->id, 'record_id' => $this->id, 'classname' => AttachGalleryImage::className()]);
+            EntitysTagsMm::deleteAll(['root_id' => $root->id, 'record_id' => $this->id, 'classname' => AttachGalleryImage::class]);
             $exploded = explode(',', $this->customTags);
             foreach ($exploded as $tagString) {
                 if (!empty($tagString)) {
@@ -182,15 +204,13 @@ class AttachGalleryImage extends \open20\amos\attachments\models\base\AttachGall
                         $tagsMm->tag_id = $tag->id;
                         $tagsMm->record_id = $this->id;
                         $tagsMm->root_id = $root->id;
-                        $tagsMm->classname = AttachGalleryImage::className();
+                        $tagsMm->classname = AttachGalleryImage::class;
                         $tagsMm->save(false);
                     }
                 }
             }
-
         }
     }
-
 
     /**
      * @throws \yii\base\InvalidConfigException
@@ -203,7 +223,7 @@ class AttachGalleryImage extends \open20\amos\attachments\models\base\AttachGall
         if ($root) {
             $tagsMm = EntitysTagsMm::find()
                 ->innerJoin('tag', 'tag.id = entitys_tags_mm.tag_id')
-                ->andWhere(['classname' => AttachGalleryImage::className()])
+                ->andWhere(['classname' => AttachGalleryImage::class])
                 ->andWhere(['record_id' => $this->id])
                 ->andWhere(['root_id' => $root->id])
                 ->andWhere(['IS', 'codice', null])
@@ -225,13 +245,13 @@ class AttachGalleryImage extends \open20\amos\attachments\models\base\AttachGall
         if ($codice) {
             $root = Tag::find()->andWhere(['codice' => $codice])->one();
             if ($root) {
-                EntitysTagsMm::deleteAll(['root_id' => $root->id, 'record_id' => $this->id, 'classname' => AttachGalleryImage::className()]);
+                EntitysTagsMm::deleteAll(['root_id' => $root->id, 'record_id' => $this->id, 'classname' => AttachGalleryImage::class]);
                 foreach ($this->tagsImage as $tagId) {
                     $tagsMm = new EntitysTagsMm();
                     $tagsMm->tag_id = $tagId;
                     $tagsMm->record_id = $this->id;
                     $tagsMm->root_id = $root->id;
-                    $tagsMm->classname = AttachGalleryImage::className();
+                    $tagsMm->classname = AttachGalleryImage::class;
                     $tagsMm->save(false);
                 }
             }
@@ -251,7 +271,7 @@ class AttachGalleryImage extends \open20\amos\attachments\models\base\AttachGall
                 $tagsMm = EntitysTagsMm::find()
                     ->andWhere(['root_id' => $root->id])
                     ->andWhere(['record_id' => $this->id])
-                    ->andWhere(['classname' => AttachGalleryImage::className()])
+                    ->andWhere(['classname' => AttachGalleryImage::class])
                     ->all();
                 foreach ($tagsMm as $tagMm) {
                     $this->tagsImage [] = $tagMm->tag_id;
@@ -299,7 +319,6 @@ class AttachGalleryImage extends \open20\amos\attachments\models\base\AttachGall
         return implode(', ', $tags);
     }
 
-
     /**
      * @return string
      * @throws \yii\base\InvalidConfigException
@@ -309,7 +328,6 @@ class AttachGalleryImage extends \open20\amos\attachments\models\base\AttachGall
         $this->loadCustomTags();
         return $this->customTags;
     }
-
 
     /**
      * @throws \yii\base\InvalidConfigException
@@ -346,7 +364,6 @@ class AttachGalleryImage extends \open20\amos\attachments\models\base\AttachGall
         }
         return $tags;
     }
-
 
     /**
      * @return string

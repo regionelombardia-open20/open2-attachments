@@ -98,6 +98,22 @@ return [
     'Tag liberi' => 'Free tags',
     'Carica da databank immagini' => 'Upload from images databank',
     'Creato a partire dal' => 'Created at from',
-
-
+    "Libero" => 'Free',
+    "Elimina Crop" => 'Delete crop',
+    "Fattore di crop libero Crop" => 'Free crop',
+    "Databank immagini" => "Images databank",
+    "Le mie richieste" => "My requests",
+    "Richieste aperte" => "Open request",
+    "Richieste chiuse" => "Closed request",
+    "Peso" => "Weight",
+    "Estensione" => "Extension",
+    "Dimensioni (pixel)" => "Size (pixel)",
+    "Sei sicuro di cancellare questa immagine?" => "Are you sure to delete this image?",
+    "Torna alla gallery" => "Back to the gallery",
+    "Seleziona immagine" => "Select image",
+    "Apri immagine" => "Open image",
+    "Creata a partire dal" => "Created starting by",
+    
+    '#placeholder_for_tags' => 'Select tags...',
+    '#newimg' => 'New',
 ];

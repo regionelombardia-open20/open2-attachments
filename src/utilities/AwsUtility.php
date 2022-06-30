@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Aria S.p.A.
  * OPEN 2.0
@@ -10,15 +11,15 @@
 
 namespace open20\amos\attachments\utilities;
 
-use yii\log\Logger;
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\models\FileRefs;
 use open20\amos\attachments\models\File;
+
 use Yii;
+use yii\log\Logger;
 
 class AwsUtility
 {
-
     /**
      *
      * @param string $hash
@@ -30,7 +31,14 @@ class AwsUtility
             $module = FileModule::getInstance();
             if ($module->enable_aws_s3) {
                 $fileRef = FileRefs::findOne(['hash' => $hash]);
-                if (!empty($fileRef) && !$fileRef->protected && ($force_upload || empty($fileRef->s3_url))) {
+                if (
+                    !empty($fileRef)
+                    && !$fileRef->protected
+                    && (
+                        $force_upload
+                        || empty($fileRef->s3_url)
+                    )
+                ) {
                     $origin = $fileRef->getPath($fileRef->crop);
                     if (!empty($origin)) {
                         $path = self::getS3PathByLocalPath($origin);
@@ -55,8 +63,13 @@ class AwsUtility
      * @param FileRefs $fileRef
      * @param bool $force_upload
      */
-    public static function uploadS3ByPath(File $file, $local_path, $crop, FileRefs $fileRef = null,
-                                          $force_upload = false)
+    public static function uploadS3ByPath(
+        File $file,
+        $local_path,
+        $crop,
+        FileRefs $fileRef = null,
+        $force_upload = false
+    )
     {
         try {
             $module = FileModule::getInstance();
@@ -66,14 +79,23 @@ class AwsUtility
                 if (!empty($url)) {
                     if (empty($fileRef)) {
                         $fileRef = FileRefs::find()->andWhere([
-                                'attach_file_id' => $file->id,
-                                'model' => $file->model,
-                                'item_id' => $file->item_id,
-                                'attribute' => $file->attribute,
-                                'crop' => $crop,
-                            ])->one();
+                            'attach_file_id' => $file->id,
+                            'model' => $file->model,
+                            'item_id' => $file->item_id,
+                            'attribute' => $file->attribute,
+                            'crop' => $crop,
+                        ])
+                        ->one();
                     }
-                    if (!empty($fileRef) && !$fileRef->protected && ($force_upload || empty($fileRef->s3_url))) {
+                    
+                    if (
+                        !empty($fileRef)
+                        && !$fileRef->protected
+                        && (
+                            $force_upload
+                            || empty($fileRef->s3_url)
+                        )
+                    ) {
                         $fileRef->s3_url = $url;
                         $fileRef->save(false);
                     }

@@ -1,19 +1,31 @@
 <?php
 
+/**
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    open20\amos\attachments\components\views
+ * @category   CategoryName
+ */
+
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\assets\ModuleAttachmentsAsset;
+use open20\amos\core\views\ListView;
+
+use yii\widgets\Pjax;
 
 ModuleAttachmentsAsset::register($this);
-//$dataProvider->pagination->pageSize = 4;
 ?>
 
 <div class="col-xs-12 gallery-masonry">
-    <?php \yii\widgets\Pjax::begin([
-        'enablePushState' => false, // to disable push state
-        'enableReplaceState' => false // to disable replace state
-    ]); ?>
-    <?= \open20\amos\core\views\ListView::widget([
-
+    <?php Pjax::begin([
+        'enablePushState' => false,
+        'enableReplaceState' => false
+    ]);
+    ?>
+    
+    <?= ListView::widget([
         'dataProvider' => $dataProvider,
         'viewParams' => ['attribute' => $attribute],
         'itemView' => '_item_gallery',
@@ -30,8 +42,8 @@ ModuleAttachmentsAsset::register($this);
         //     'percentPosition' => 'true',
         //     'gutter' => 3
         // ],
-
-
-    ]) ?>
-    <?php \yii\widgets\Pjax::end() ?>
+    ])
+    ?>
+    
+    <?php Pjax::end() ?>
 </div>

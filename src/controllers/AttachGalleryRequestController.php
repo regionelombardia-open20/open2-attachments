@@ -27,9 +27,10 @@ class AttachGalleryRequestController extends \open20\amos\attachments\controller
      * @inheritdoc
      */
     public function behaviors() {
-        $behaviors = ArrayHelper::merge(parent::behaviors(), [
+        $behaviors = ArrayHelper::merge(
+            parent::behaviors(), [
             'access' => [
-                'class' => AccessControl::className(),
+                'class' => AccessControl::class,
                 'rules' => [
                     [
                         'allow' => true,
@@ -37,19 +38,19 @@ class AttachGalleryRequestController extends \open20\amos\attachments\controller
                             'opened',
                             'closed',
                         ],
-                        'roles' => ['ATTACH_IMAGE_REQUEST_OPERATOR','MANAGE_ATTACH_GALLERY']
+                        'roles' => ['ATTACH_IMAGE_REQUEST_OPERATOR','MANAGE_ATTACH_GALLERY','ATTACH_GALLERY_OPERATOR']
                     ],
                     [
                         'allow' => true,
                         'actions' => [
                             'my-requests',
                         ],
-                        'roles' => ['MANAGE_ATTACH_GALLERY']
+                        'roles' => ['MANAGE_ATTACH_GALLERY','ATTACH_GALLERY_OPERATOR']
                     ],
                 ]
             ],
             'verbs' => [
-                'class' => VerbFilter::className(),
+                'class' => VerbFilter::class,
                 'actions' => [
                     'delete' => ['post', 'get']
                 ]
@@ -62,10 +63,10 @@ class AttachGalleryRequestController extends \open20\amos\attachments\controller
      * @return string
      * @throws \yii\base\InvalidConfigException
      */
-    public function actionOpened(){
+    public function actionOpened()
+    {
         $this->setListViewsParams();
         $this->setCreateNewBtnLabelGeneral();
-
 
         $this->setUpLayout('list');
         Url::remember();
@@ -89,7 +90,6 @@ class AttachGalleryRequestController extends \open20\amos\attachments\controller
         $this->setListViewsParams();
         $this->setCreateNewBtnLabelGeneral();
 
-
         $this->setUpLayout('list');
         Url::remember();
         $this->setDataProvider($this->modelSearch->searchClosed(\Yii::$app->request->getQueryParams()));
@@ -108,7 +108,8 @@ class AttachGalleryRequestController extends \open20\amos\attachments\controller
      * @return string
      * @throws \yii\base\InvalidConfigException
      */
-    public function actionMyRequests(){
+    public function actionMyRequests()
+    {
         $this->setListViewsParams();
         $this->setCreateNewBtnLabelGeneral();
 

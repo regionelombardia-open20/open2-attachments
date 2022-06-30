@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Aria S.p.A.
  * OPEN 2.0
@@ -8,7 +7,6 @@
  * @package    open20\amos\comments\i18n\en-US
  * @category   CategoryName
  */
-
 return [
     '#accept_btn' => 'Conferma',
     'amos-attachments module not found, may be you didn\'t add it to your config?' => 'amos-attachments module not found, may be you didn\'t add it to your config?',
@@ -77,17 +75,43 @@ return [
     'Gallery' => 'Gallery',
     '#image_field' => 'Image',
     '#new_image' => 'New image',
+    'Update image' => 'Update image',
     '#label_gallery' => 'Gallery',
     '#label_gallery_category' => 'Categories',
     '#description_gallery_category' => 'Categories',
     '#description_gallery' => 'Gallery',
     'Categories' => 'Categories',
+    '#desc_gallery_image' => 'Image gallery',
+    '#label_gallery_image' => 'Image gallery',
+    'New category' => 'New category',
     '#choose_image_from_gallery' => 'Choose image from gallery',
     '#select_gallery_image' => 'Select image',
     "E' necessario inserire un'immagine." => "Please upload an image file.",
     "#default_message" => "We recommend loading horizontal images in a 16: 9 aspect ratio. The minimum recommended size is 1348 x 758px, the ideal size is 1920 x 1080px",
     "#no_attach" => "No attachments selected.",
     "Estensione file non permessa, inserire un file con un'estensione consentita." => "File extension not allowed, insert a file with an allowed extension.",
+    "Richiedi nuova" => 'Require new',
+    "Carica nuova" => 'Upload new',
+    '#choose_image_from_databank' => "Upload from images databank",
+    'Tag liberi' => 'Free tags',
+    'Carica da databank immagini' => 'Upload from images databank',
+    'Creato a partire dal' => 'Created at from',
+    "Libero" => 'Free',
+    "Elimina Crop" => 'Delete crop',
+    "Fattore di crop libero Crop" => 'Free crop',
+    "Databank immagini" => "Images databank",
+    "Le mie richieste" => "My requests",
+    "Richieste aperte" => "Open request",
+    "Richieste chiuse" => "Closed request",
+    "Peso" => "Weight",
+    "Estensione" => "Extension",
+    "Dimensioni (pixel)" => "Size (pixel)",
+    "Sei sicuro di cancellare questa immagine?" => "Are you sure to delete this image?",
+    "Torna alla gallery" => "Back to the gallery",
+    "Seleziona immagine" => "Select image",
+    "Apri immagine" => "Open image",
+    "Creata a partire dal" => "Created starting by",
 
-
+    '#placeholder_for_tags' => 'Select tags...',
+    '#newimg' => 'New',
 ];

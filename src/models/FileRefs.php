@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Aria S.p.A.
  * OPEN 2.0
@@ -13,6 +14,7 @@ namespace open20\amos\attachments\models;
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\FileModuleTrait;
 use open20\amos\core\record\Record;
+
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\helpers\Url;
@@ -32,11 +34,22 @@ use yii\helpers\Url;
  * @property integer $sort
  * @property File $attachFile
  */
+
 class FileRefs extends Record
 {
-
+    /**
+     * 
+     */
     use FileModuleTrait;
+    
+    /**
+     * 
+     */
     const MAIN     = 1;
+    
+    /**
+     * 
+     */
     const NOT_MAIN = 0;
 
     /**
@@ -54,7 +67,7 @@ class FileRefs extends Record
     {
         return [
             [
-                'class' => TimestampBehavior::className(),
+                'class' => TimestampBehavior::class,
                 'createdAtAttribute' => 'date_upload',
                 'updatedAtAttribute' => false,
             ],
@@ -101,7 +114,14 @@ class FileRefs extends Record
      */
     public function getUrl($size = 'original')
     {
-        return Url::to(['/'.FileModule::getModuleName().'/file/view', 'id' => $this->id, 'hash' => $this->hash, 'size' => $size]);
+        return Url::to([
+            '/'
+            . FileModule::getModuleName()
+            . '/file/view',
+            'id' => $this->id,
+            'hash' => $this->hash,
+            'size' => $size
+        ]);
     }
 
     /**
@@ -110,8 +130,16 @@ class FileRefs extends Record
      */
     public function getWebUrl($size)
     {
-        return \Yii::$app->getUrlManager()->createAbsoluteUrl(Url::to(['/'.FileModule::getModuleName().'/file/download',
-                    'id' => $this->id, 'hash' => $this->hash, 'size' => $size]));
+        return \Yii::$app->getUrlManager()->createAbsoluteUrl(
+            Url::to([
+                '/'
+                . FileModule::getModuleName()
+                . '/file/download',
+                'id' => $this->id,
+                'hash' => $this->hash,
+                'size' => $size
+            ])
+        );
     }
 
     /**
@@ -124,9 +152,9 @@ class FileRefs extends Record
         $attachFile = $this->attachFile;
         if (empty($attachFile)) {
             return null;
-        } else {
-            return $this->attachFile->getPath($size);
         }
+        
+        return $this->attachFile->getPath($size);
     }
 
     /**
@@ -134,7 +162,7 @@ class FileRefs extends Record
      */
     public function getAttachFile()
     {
-        return $this->hasOne(File::className(), ['id' => 'attach_file_id']);
+        return $this->hasOne(File::class, ['id' => 'attach_file_id']);
     }
 
     /**
@@ -150,13 +178,14 @@ class FileRefs extends Record
         }
 
         $result = FileRefs::find()->andWhere([
-                'attach_file_id' => $attachFile->id,
-                'model' => $attachFile->model,
+            'attach_file_id' => $attachFile->id,
+            'model' => $attachFile->model,
             'item_id' => $attachFile->item_id,
-                'attribute' => $attachFile->attribute,
-                'crop' => $crop,
-                'protected' => $protected
-            ])->one();
+            'attribute' => $attachFile->attribute,
+            'crop' => $crop,
+            'protected' => $protected
+            ])
+            ->one();
 
         if ($result && $result->id) {
             return $result->hash;
@@ -171,7 +200,9 @@ class FileRefs extends Record
             'item_id' => $attachFile->item_id,
             'attribute' => $attachFile->attribute,
             'is_main' => $attachFile->is_main,
-            'sort' => $attachFile->sort ?: 0,
+            'sort' => $attachFile->sort
+                ?
+                : 0,
             'crop' => $crop,
             'protected' => $protected,
         ];

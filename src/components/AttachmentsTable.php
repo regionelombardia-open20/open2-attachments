@@ -5,7 +5,7 @@
  * OPEN 2.0
  *
  *
- * @package    open20\amos\attachments
+ * @package    open20\amos\attachments\components
  * @category   CategoryName
  */
 
@@ -15,6 +15,7 @@ use open20\amos\attachments\behaviors\FileBehavior;
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\FileModuleTrait;
 use open20\amos\attachments\models\File;
+
 use yii\base\InvalidConfigException;
 use yii\bootstrap\Widget;
 use yii\data\ActiveDataProvider;
@@ -29,32 +30,58 @@ use yii\helpers\Url;
  */
 class AttachmentsTable extends Widget
 {
+    /**
+     * 
+     */
     use FileModuleTrait;
     
-    /** @var FileActiveRecord */
+    /**
+     * @var FileActiveRecord
+     * @var type
+     */
     public $model;
     
+    /**
+     * 
+     * @var type
+     */
     public $attribute;
     
+    /**
+     * 
+     * @var type
+     */
     public $tableOptions = ['class' => 'table table-striped table-bordered table-condensed'];
     
+    /**
+     * 
+     * @var type
+     */
     public $viewDeleteBtn = true;
     
+    /**
+     * 
+     */
     public function init()
     {
         parent::init();
     }
     
+    /**
+     * 
+     * @return type
+     * @throws InvalidConfigException
+     */
     public function run()
     {
-        
         if (empty($this->model)) {
             throw new InvalidConfigException(FileModule::t('amosattachments', "Property {model} cannot be blank"));
         }
         
         $hasFileBehavior = false;
+        $fileBehaviorClass = FileBehavior::class;
         foreach ($this->model->getBehaviors() as $behavior) {
-            if (is_a($behavior, FileBehavior::className())) {
+            if (is_a($behavior, $fileBehaviorClass)) {
                 $hasFileBehavior = true;
             }
         }
@@ -67,20 +94,25 @@ class AttachmentsTable extends Widget
         
         if (!empty($this->attribute)) {
             return $this->drawWidget($this->attribute);
-        } else {
-            $widgets = null;
-            $attributes = $this->model->getFileAttributes();
-            
-            if (!empty($attributes)) {
-                foreach ($attributes as $attribute) {
-                    $widgets .= $this->drawWidget($attribute);
-                }
-            }
-            
-            return $widgets;
         }
+        
+        $widgets = null;
+        $attributes = $this->model->getFileAttributes();
+            
+        if (!empty($attributes)) {
+            foreach ($attributes as $attribute) {
+                $widgets .= $this->drawWidget($attribute);
+            }
+        }
+            
+        return $widgets;
     }
-    
+
+    /**
+     * 
+     * @param type $attribute
+     * @return type
+     */    
     public function drawWidget($attribute = null)
     {
         if (!$attribute) {
@@ -111,9 +143,8 @@ class AttachmentsTable extends Widget
                         // Update permission name
                         $updatePremission = strtoupper($baseClassName . '_UPDATE');
                         
-                        $btn = '';
                         if (\Yii::$app->user->can($updatePremission, ['model' => $this->model])) {
-                            $btn = Html::a('<span class="glyphicon glyphicon-trash"></span>',
+                            return Html::a('<span class="glyphicon glyphicon-trash"></span>',
                                 [
                                     '/' . FileModule::getModuleName() . '/file/delete',
                                     'id' => $model->id,
@@ -128,7 +159,6 @@ class AttachmentsTable extends Widget
                                 ]
                             );
                         }
-                        return $btn;
                     }
                 ]
             ];

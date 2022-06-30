@@ -5,7 +5,7 @@
  * OPEN 2.0
  *
  *
- * @package    open20\amos\attachments
+ * @package    open20\amos\attachments\components
  * @category   CategoryName
  */
 
@@ -14,12 +14,15 @@ namespace open20\amos\attachments\components;
 use open20\amos\attachments\behaviors\FileBehavior;
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\FileModuleTrait;
+
 use himiklab\colorbox\Colorbox;
+
 use yii\bootstrap\Widget;
 use yii\data\ActiveDataProvider;
 use yii\db\ActiveRecord;
 use yii\grid\GridView;
 use yii\helpers\Html;
+use yii\helpers\StringHelper;
 use yii\helpers\Url;
 
 /**
@@ -28,6 +31,9 @@ use yii\helpers\Url;
  */
 class AttachmentsTableWithPreview extends Widget
 {
+    /**
+     * 
+     */
     use FileModuleTrait;
     
     /**
@@ -35,17 +41,37 @@ class AttachmentsTableWithPreview extends Widget
      */
     public $model;
     
+    /**
+     * 
+     * @var type
+     */
     public $attribute;
     
+    /**
+     * 
+     * @var type
+     */
     public $tableOptions = ['class' => 'table table-striped table-bordered table-condensed'];
     
+    /**
+     * 
+     * @var type
+     */
     public $viewDeleteBtn = true;
     
+    /**
+     * 
+     * @return type
+     */
     public function run()
     {
         if (!$this->model) {
             return Html::tag('div',
-                Html::tag('b', FileModule::t('amosattachments', 'Error')) . ': ' . FileModule::t('amosattachments', 'The model cannot be empty.'),
+                Html::tag(
+                    'b',
+                    FileModule::t('amosattachments', 'Error'))
+                    . ': '
+                    . FileModule::t('amosattachments', 'The model cannot be empty.'),
                 [
                     'class' => 'alert alert-danger'
                 ]
@@ -59,9 +85,15 @@ class AttachmentsTableWithPreview extends Widget
                 break;
             }
         }
+        
         if (!$hasFileBehavior) {
-            return Html::tag('div',
-                Html::tag('b', FileModule::t('amosattachments', 'Error')) . ': ' . FileModule::t('amosattachments', 'The behavior FileBehavior has not been attached to the model.'),
+            return Html::tag(
+                'div',
+                Html::tag(
+                    'b',
+                    FileModule::t('amosattachments', 'Error'))
+                    . ': '
+                    . FileModule::t('amosattachments', 'The behavior FileBehavior has not been attached to the model.'),
                 [
                     'class' => 'alert alert-danger'
                 ]
@@ -72,20 +104,25 @@ class AttachmentsTableWithPreview extends Widget
         
         if (!empty($this->attribute)) {
             return $this->drawWidget($this->attribute);
-        } else {
-            $widgets = null;
-            $attributes = $this->model->getFileAttributes();
-            
-            if (!empty($attributes)) {
-                foreach ($attributes as $attribute) {
-                    $widgets .= $this->drawWidget($attribute);
-                }
-            }
-            
-            return $widgets;
         }
+        
+        $widgets = null;
+        $attributes = $this->model->getFileAttributes();
+            
+        if (!empty($attributes)) {
+            foreach ($attributes as $attribute) {
+                $widgets .= $this->drawWidget($attribute);
+            }
+        }
+            
+        return $widgets;
     }
-    
+
+    /**
+     * 
+     * @param type $attribute
+     * @return type
+     */
     public function drawWidget($attribute = null)
     {
         if (!$attribute) {
@@ -144,14 +181,13 @@ class AttachmentsTableWithPreview extends Widget
                         /** @var ActiveRecord $model */
                         
                         // The base class name
-                        $baseClassName = \yii\helpers\StringHelper::basename($this->model->className());
+                        $baseClassName = StringHelper::basename($this->model->className());
                         
                         // Update permission name
                         $updatePremission = strtoupper($baseClassName . '_UPDATE');
                         
-                        $btn = '';
                         if (\Yii::$app->user->can($updatePremission, ['model' => $this->model])) {
-                            $btn = Html::a('<span class="glyphicon glyphicon-trash"></span>',
+                            return Html::a('<span class="glyphicon glyphicon-trash"></span>',
                                 [
                                     '/' . FileModule::getModuleName() . '/file/delete',
                                     'id' => $model->id,
@@ -166,7 +202,6 @@ class AttachmentsTableWithPreview extends Widget
                                 ]
                             );
                         }
-                        return $btn;
                     }
                 ]
             ];

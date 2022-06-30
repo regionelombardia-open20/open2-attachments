@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    open20\amos\attachments\models\base
+ * @category   CategoryName
+ */
+
 namespace open20\amos\attachments\models\base;
 
 use Yii;
@@ -20,10 +29,8 @@ use Yii;
  *
  * @property \open20\amos\attachments\models\AttachGalleryImage[] $attachGalleryImages
  */
-class  AttachGallery extends \open20\amos\core\record\Record
+class AttachGallery extends \open20\amos\core\record\Record
 {
-
-
     /**
      * @inheritdoc
      */
@@ -70,6 +77,9 @@ class  AttachGallery extends \open20\amos\core\record\Record
      */
     public function getAttachGalleryImages()
     {
-        return $this->hasMany(\open20\amos\attachments\models\AttachGalleryImage::className(), ['gallery_id' => 'id']);
+        return $this->hasMany(
+            \open20\amos\attachments\models\AttachGalleryImage::class,
+            ['gallery_id' => 'id']
+        );
     }
 }

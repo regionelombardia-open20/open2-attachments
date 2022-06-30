@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    open20\amos\attachments\models\search
+ * @category   CategoryName
+ */
+
 namespace open20\amos\attachments\models\search;
 
 use Yii;

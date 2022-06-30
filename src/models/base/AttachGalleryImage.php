@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    open20\amos\attachments\models\base
+ * @category   CategoryName
+ */
+
 namespace open20\amos\attachments\models\base;
 
 use Yii;
@@ -25,9 +34,16 @@ use Yii;
  */
 class  AttachGalleryImage extends \open20\amos\core\record\Record
 {
-
-
+    /**
+     * 
+     * @var type
+     */
     public $customTags;
+    
+    /**
+     * 
+     * @var type
+     */
     public $tagsImage;
 
     /**
@@ -49,8 +65,7 @@ class  AttachGalleryImage extends \open20\amos\core\record\Record
             [['description', 'customTags'], 'string'],
             [['aspect_ratio', 'tagsImage','customTags','created_at', 'updated_at', 'deleted_at'], 'safe'],
             [['name'], 'string', 'max' => 255],
-            [['gallery_id'], 'exist', 'skipOnError' => true, 'targetClass' => AttachGallery::className(), 'targetAttribute' => ['gallery_id' => 'id']],
-//            [['category_id'], 'exist', 'skipOnError' => true, 'targetClass' => AttachGalleryCategory::className(), 'targetAttribute' => ['category_id' => 'id']],
+            [['gallery_id'], 'exist', 'skipOnError' => true, 'targetClass' => AttachGallery::class, 'targetAttribute' => ['gallery_id' => 'id']],
         ];
     }
 
@@ -79,7 +94,10 @@ class  AttachGalleryImage extends \open20\amos\core\record\Record
      */
     public function getGallery()
     {
-        return $this->hasOne(\open20\amos\attachments\models\AttachGallery::className(), ['id' => 'gallery_id']);
+        return $this->hasOne(
+            \open20\amos\attachments\models\AttachGallery::class,
+            ['id' => 'gallery_id']
+        );
     }
 
     /**
@@ -87,6 +105,9 @@ class  AttachGalleryImage extends \open20\amos\core\record\Record
      */
     public function getCategory()
     {
-        return $this->hasOne(\open20\amos\attachments\models\AttachGalleryCategory::className(), ['id' => 'category_id']);
+        return $this->hasOne(
+            \open20\amos\attachments\models\AttachGalleryCategory::class,
+            ['id' => 'category_id']
+        );
     }
 }

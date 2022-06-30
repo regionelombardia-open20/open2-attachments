@@ -32,7 +32,7 @@ class ModuleAttachmentsAsset extends AssetBundle
 
         } else {
             if (!empty(\Yii::$app->params['dashboardEngine']) && \Yii::$app->params['dashboardEngine'] == WidgetAbstract::ENGINE_ROWS) {
-                $this->css = ['less/attachments_fullsize.less'];
+                $this->css = ['less/attachments_fullsize.less','less/attachments_design_bi.less'];
             } else {
                 $this->css = ['less/attachments.less'];
             }

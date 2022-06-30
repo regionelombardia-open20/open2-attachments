@@ -10,6 +10,7 @@
 
 namespace open20\amos\attachments\controllers;
 
+use open20\amos\attachments\FileModule;
 use open20\amos\attachments\models\AttachGallery;
 use open20\amos\attachments\models\AttachGalleryCategory;
 use open20\amos\attachments\models\AttachGalleryImage;
@@ -19,12 +20,12 @@ use open20\amos\core\icons\AmosIcons;
 use open20\amos\core\module\BaseAmosModule;
 use open20\amos\dashboard\controllers\TabDashboardControllerTrait;
 use open20\amos\layout\Module;
+
+use Yii;
 use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
-use open20\amos\attachments\FileModule;
-use Yii;
 
 /**
  * Class AttachGalleryController
@@ -33,15 +34,15 @@ use Yii;
  */
 class AttachGalleryController extends \open20\amos\attachments\controllers\base\AttachGalleryController
 {
-
     /**
      * @inheritdoc
      */
     public function behaviors()
     {
-        $behaviors = ArrayHelper::merge(parent::behaviors(), [
+        $behaviors = ArrayHelper::merge(
+            parent::behaviors(), [
             'access' => [
-                'class' => AccessControl::className(),
+                'class' => AccessControl::class,
                 'rules' => [
                     [
                         'allow' => true,
@@ -54,12 +55,13 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
                 ]
             ],
             'verbs' => [
-                'class' => VerbFilter::className(),
+                'class' => VerbFilter::class,
                 'actions' => [
                     'delete' => ['post', 'get']
                 ]
             ]
         ]);
+
         return $behaviors;
     }
 
@@ -71,15 +73,20 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
      */
     public function actionLoadModal($galleryId, $attribute)
     {
-        $gallery = AttachGallery::findOne($galleryId);
+        $gallery   = AttachGallery::findOne($galleryId);
+        $csrfParam = \Yii::$app->request->csrfParam;
+        $csrfToken = \Yii::$app->request->get($csrfParam);
+
         if ($gallery) {
-            $images = $gallery->attachGalleryImages;
+            $images     = $gallery->attachGalleryImages;
             $categories = AttachGalleryCategory::find()->orderBy('default_order ASC')->all();
-            return $this->renderAjax('@vendor/open20/amos-attachments/src/components/views/gallery-view', [
-                'attribute' => $attribute,
-                'images' => $images,
-                'gallery' => $gallery,
-                'categories' => $categories,
+            return $this->renderAjax('@vendor/open20/amos-attachments/src/components/views/gallery-view',
+                    [
+                    'attribute' => $attribute,
+                    'images' => $images,
+                    'gallery' => $gallery,
+                    'categories' => $categories,
+                    'csrf' => $csrfToken,
             ]);
         }
         return '';
@@ -91,8 +98,6 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
      */
     public function actionSingleGallery()
     {
-
-
         $this->setUpLayout('list');
         $this->model = $this->findModel(1);
         $this->setCreateNewBtnLabelSingle();
@@ -131,17 +136,35 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
      */
     public function setCreateNewBtnLabelSingle()
     {
+        $btnUploadImage = Html::a(FileModule::t('amosattachments', "Carica nuova"), [
+                '/attachments/attach-gallery-image/create',
+                'id' => 1
+            ],
+            [
+                'class' => 'btn btn-primary',
+                'title' => FileModule::t('amosattachments', "Carica nuova immmagine")
+            ]
+        );
 
-        $btnUploadImage = Html::a(FileModule::t('amosattachments', "Carica nuova"), ['/attachments/attach-gallery-image/create', 'id' => 1], [
-            'class' => 'btn btn-primary',
-            'title' => FileModule::t('amosattachments', "Carica nuova immmagine")
-        ]);
-        $btnRequestImage = Html::a(FileModule::t('amosattachments', "Richiedi nuova"), ['/attachments/attach-gallery-request/create', 'id' => 1], [
-            'class' => 'btn btn-primary',
-            'title' => FileModule::t('amosattachments', "Richiedi nuova immagine")
-        ]);
-        Yii::$app->view->params['createNewBtnParams']['layout'] = $btnUploadImage.$btnRequestImage;
+        $btnRequestImage = Html::a(FileModule::t('amosattachments', "Richiedi nuova"), [
+                '/attachments/attach-gallery-request/create',
+                'id' => 1
+            ],
+            [
+                'class' => 'btn btn-primary',
+                'title' => FileModule::t('amosattachments', "Richiedi nuova immagine")
+            ]
+        );
 
+        Yii::$app->view->params['createNewBtnParams']['layout'] = $btnUploadImage;
+        if (
+            $thisFileModule->enableRequestImageForGallery == true
+            && \Yii::$app->user->can('ATTACHGALLERYREQUEST_CREATE')
+        ) {
+            Yii::$app->view->params['additionalButtons'] = [
+                'htmlButtons' => [$btnRequestImage]
+            ];
+        }
     }
 
     /**
@@ -149,21 +172,19 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
      */
     public static function getManageLinks()
     {
+//        $links[] = [
+//            'title' => FileModule::t('amosattachments', 'Categorie'),
+//            'label' => FileModule::t('amosattachments', 'Tutte le categorie'),
+//            'url' => '/attachments/attach-gallery-category/index'
+//        ];
 
-        $links[] = [
-            'title' => FileModule::t('amosattachments', 'Categorie'),
-            'label' => FileModule::t('amosattachments', 'Tutte le categorie'),
-            'url' => '/attachments/attach-gallery-category/index'
-        ];
         $links[] = [
             'title' => FileModule::t('amosattachments', 'Galleria'),
             'label' => FileModule::t('amosattachments', 'Vedi la galleria'),
             'url' => '/attachments/attach-gallery/single-gallery'
         ];
 
-
         return $links;
     }
-
 
 }

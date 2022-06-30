@@ -11,18 +11,18 @@ namespace open20\amos\attachments\controllers\base;
 
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\models\AttachGallery;
-use Yii;
 use open20\amos\attachments\models\AttachGalleryImage;
 use open20\amos\attachments\models\search\AttachGalleryImageSearch;
 use open20\amos\core\controllers\CrudController;
 use open20\amos\core\module\BaseAmosModule;
-use yii\web\NotFoundHttpException;
-use yii\filters\VerbFilter;
 use open20\amos\core\icons\AmosIcons;
 use open20\amos\core\helpers\Html;
 use open20\amos\core\helpers\T;
-use yii\helpers\Url;
 
+use Yii;
+use yii\filters\VerbFilter;
+use yii\helpers\Url;
+use yii\web\NotFoundHttpException;
 
 /**
  * Class AttachGalleryImageController
@@ -35,12 +35,14 @@ use yii\helpers\Url;
  */
 class AttachGalleryImageController extends CrudController
 {
-
     /**
      * @var string $layout
      */
     public $layout = 'main';
-
+    
+    /**
+     * 
+     */
     public function init()
     {
         $this->setModelObj(new AttachGalleryImage());
@@ -52,28 +54,6 @@ class AttachGalleryImageController extends CrudController
                 'label' => AmosIcons::show('view-list-alt') . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'Table')),
                 'url' => '?currentView=grid'
             ],
-            /*'list' => [
-                'name' => 'list',
-                'label' => AmosIcons::show('view-list') . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'List')),         
-                'url' => '?currentView=list'
-            ],
-            'icon' => [
-                'name' => 'icon',
-                'label' => AmosIcons::show('grid') . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'Icons')),           
-                'url' => '?currentView=icon'
-            ],
-            'map' => [
-                'name' => 'map',
-                'label' => AmosIcons::show('map') . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'Map')),      
-                'url' => '?currentView=map'
-            ],
-            'calendar' => [
-                'name' => 'calendar',
-                'intestazione' => '', //codice HTML per l'intestazione che verrà caricato prima del calendario,
-                                      //per esempio si può inserire una funzione $model->getHtmlIntestazione() creata ad hoc
-                'label' => AmosIcons::show('calendar') . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'Calendari')),                                            
-                'url' => '?currentView=calendar'
-            ],*/
         ]);
 
         parent::init();
@@ -84,7 +64,7 @@ class AttachGalleryImageController extends CrudController
      * Lists all AttachGalleryImage models.
      * @return mixed
      */
-    public function actionIndex($layout = NULL)
+    public function actionIndex($layout = null)
     {
         Url::remember();
         $this->setDataProvider($this->modelSearch->search(Yii::$app->request->getQueryParams()));
@@ -137,9 +117,9 @@ class AttachGalleryImageController extends CrudController
 
         return $this->render('create', [
             'model' => $this->model,
-            'fid' => NULL,
-            'dataField' => NULL,
-            'dataEntity' => NULL,
+            'fid' => null,
+            'dataField' => null,
+            'dataEntity' => null,
         ]);
     }
 
@@ -155,10 +135,7 @@ class AttachGalleryImageController extends CrudController
 
         if (\Yii::$app->request->isAjax && $this->model->load(Yii::$app->request->post()) && $this->model->validate()) {
             if ($this->model->save()) {
-//Yii::$app->getSession()->addFlash('success', Yii::t('amoscore', 'Item created'));
                 return json_encode($this->model->toArray());
-            } else {
-//Yii::$app->getSession()->addFlash('danger', Yii::t('amoscore', 'Item not created, check data'));
             }
         }
 
@@ -203,9 +180,9 @@ class AttachGalleryImageController extends CrudController
 
         return $this->render('update', [
             'model' => $this->model,
-            'fid' => NULL,
-            'dataField' => NULL,
-            'dataEntity' => NULL,
+            'fid' => null,
+            'dataField' => null,
+            'dataEntity' => null,
         ]);
     }
 
@@ -241,7 +218,6 @@ class AttachGalleryImageController extends CrudController
      */
     private function setCreateNewBtnLabelGeneral($id)
     {
-
         $btnUploadImage = Html::a(FileModule::t('amosattachments', "Carica nuova"), ['/attachments/attach-gallery-image/create', 'id' => $id], [
             'class' => 'btn btn-primary',
             'title' => FileModule::t('amosattachments', "Carica nuova immmagine")

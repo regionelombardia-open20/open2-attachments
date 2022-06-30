@@ -1,0 +1,112 @@
+/**
+IMPORT AMOS-LAYOUT VARIABLES and UTILITY
+ */
+ @import (optional) "../../vendor/open20/amos-layout/src/assets/resources/base/less/v2/variables.less";
+ @import (optional) "../../vendor/open20/amos-layout/src/assets/resources/base/less/v2/utility.less";
+ /**
+ IMPORT STYLE-CUSTOM
+  */
+ @import (optional) "../../backend/web/less/style_custom.less";
+
+
+
+
+/* @attachments-colors: {
+    excel: #0C9D58;
+    pdf:  #EA4435;
+    immage: #D93025;
+    world: #4A88E3;
+    linka: #5e7887;
+}
+
+.for-each(@value in @attachments-colors) {
+    @key: at(@value, 1);
+    .icon-@{key} {
+        color: at(@value, 2);
+    }
+} */
+
+.attachments-list {
+    @media (min-width: 992px) {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .attachment-list-item {
+        justify-content: normal;
+        padding: 5px 15px;
+        @media (min-width: 992px) {
+            align-items: baseline;
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+        .attachment-list-item-name {
+            display: flex;
+            position: relative;
+            /* flex-wrap: wrap; */
+            align-items: center;
+            margin-right: 5px;
+            .icon {
+                font-size: 24px;
+                margin-right: 5px;
+                /* line-height: 1; */
+            }
+            .fileinfos {
+                display: flex;
+                align-items: baseline;
+                flex-wrap: wrap;
+                .filename {
+                    margin-right: 12px;
+                    font-weight: bold;
+                    display: flex;
+                    word-break: break-all;
+                    &:hover {
+                        color: darken(@primary-color,15%);
+                    }
+                    /* .filename__base {
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        overflow: hidden;
+                    } */
+                    .filename__extenction {
+                        flex-shrink: 0;
+                    }
+                }
+            }
+            
+
+        }
+        .attachment-list-item-action {
+            display: flex;
+            a {
+                justify-content: center;
+                display: inline-flex !important;
+                text-decoration: none;
+                padding: 6px 12px;
+                align-items: center;
+                font-size: 22px !important;
+                &:hover {
+                    .btn-icon {
+                        color: darken(@primary-color,15%);
+                    }
+                    color: darken(@primary-color,15%);
+                }
+            }
+        }
+    }
+}
+//---------------------------------------
+// ATTACHMENT INPUT WIDGET
+//---------------------------------------
+.file-input .file-caption-main .input-group-btn {
+    .glyphicon {
+        margin-right: 5px;
+        top: 0px;
+      }
+      .btn {
+          height: 45px;
+          margin-top: 0;
+        }
+      
+
+  }

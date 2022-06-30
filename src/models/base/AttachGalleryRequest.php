@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    open20\amos\attachments\models\base
+ * @category   CategoryName
+ */
+
 namespace open20\amos\attachments\models\base;
 
 use open20\amos\attachments\FileModule;
@@ -50,8 +59,8 @@ class  AttachGalleryRequest extends \open20\amos\core\record\Record
             [['attach_gallery_id', 'attach_gallery_image_id', 'created_by', 'updated_by', 'deleted_by'], 'integer'],
             [['created_at', 'updated_at', 'deleted_at'], 'safe'],
             [['title', 'status', 'aspect_ratio','aspect_ratio_reply'], 'string', 'max' => 255],
-            [['attach_gallery_id'], 'exist', 'skipOnError' => true, 'targetClass' => AttachGallery::className(), 'targetAttribute' => ['attach_gallery_id' => 'id']],
-            [['attach_gallery_image_id'], 'exist', 'skipOnError' => true, 'targetClass' => AttachGalleryImage::className(), 'targetAttribute' => ['attach_gallery_image_id' => 'id']],
+            [['attach_gallery_id'], 'exist', 'skipOnError' => true, 'targetClass' => AttachGallery::class, 'targetAttribute' => ['attach_gallery_id' => 'id']],
+            [['attach_gallery_image_id'], 'exist', 'skipOnError' => true, 'targetClass' => AttachGalleryImage::class, 'targetAttribute' => ['attach_gallery_image_id' => 'id']],
             ];
     }
 
@@ -83,7 +92,10 @@ class  AttachGalleryRequest extends \open20\amos\core\record\Record
      */
     public function getAttachGallery()
     {
-        return $this->hasOne(\open20\amos\attachments\models\AttachGallery::className(), ['id' => 'attach_gallery_id']);
+        return $this->hasOne(
+            \open20\amos\attachments\models\AttachGallery::class,
+            ['id' => 'attach_gallery_id']
+        );
     }
 
     /**
@@ -91,6 +103,9 @@ class  AttachGalleryRequest extends \open20\amos\core\record\Record
      */
     public function getAttachGalleryImage()
     {
-        return $this->hasOne(\open20\amos\attachments\models\AttachGalleryImage::className(), ['id' => 'attach_gallery_image_id']);
+        return $this->hasOne(
+            \open20\amos\attachments\models\AttachGalleryImage::class,
+            ['id' => 'attach_gallery_image_id']
+        );
     }
 }

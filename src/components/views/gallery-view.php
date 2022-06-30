@@ -1,17 +1,12 @@
 <?php
+
 /**
  * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    open20\amos\attachments
+ * @package    open20\amos\attachments\components\views
  * @category   CategoryName
- *
- * @var \yii\web\View $this
- * @var \open20\amos\attachments\components\GalleryInput $widget
- * @var \open20\amos\attachments\models\AttachGallery $gallery
- * @var \open20\amos\attachments\models\AttachGalleryImage [] $images
- * @var \open20\amos\attachments\models\AttachGalleryCategory [] $categories
  */
 
 use open20\amos\attachments\FileModule;
@@ -21,18 +16,24 @@ if (preg_match('/^[a-zA-Z]+$/', $attribute) == 0) {
     $attribute = '';
 }
 
+if (empty($csrf)) {
+//    $csrfParam = \Yii::$app->request->csrfParam;
+    $csrfToken = \Yii::$app->request->csrfToken;
+} else {
+    $csrfToken = $csrf;
+}
 
 $js = <<<JS
     // Add the preview of the image and set in session the id of the file to attach
     $(document).on('click','.link-image' , function(e){
         e.preventDefault();
-        var csrf = $('form input[name="_csrf-backend"]').val();
+
         var id_image = $(this).attr('data-key');
         var attribute = $(this).attr('data-attribute');
         var src_image = $(this).find('img').attr('src');
         var tag_img = "<img class='img-responsive' src='"+src_image+"' style='display:block;width:100%;height:auto; 'min-width:0!important;min-height:0!important; max-width:none!important;max-height:none!important; image-orientation:0deg!important;'>";
-        
-        
+
+
         $('#container-preview-image-'+attribute).load('/attachments/attach-gallery-image/load-detail?id_image='+id_image+'&attribute='+attribute, function () {
             $('#container-preview-image-'+attribute).show();
             $('#container-gallery-'+attribute).hide();
@@ -43,7 +44,7 @@ $js = <<<JS
         // $.ajax({
         //   method: 'get',
         //   url: "/attachments/attach-gallery-image/upload-from-gallery-ajax",
-        //   data: {id: id_image, attribute: attribute,  csrf: csrf},
+        //   data: {id: id_image, attribute: attribute,  csrf: "$csrfToken"},
         //   success: function(data){
         //       if(data.success == true){
         //         $('.preview-pane .hidden').removeClass('hidden');
@@ -52,16 +53,16 @@ $js = <<<JS
         //         $('.uploadcrop.attachment-uploadcrop').addClass('cropper-done');
         //         }
         //   }
-        // }); 
+        // });
     });
 
     // delete the id of the file from session
     function deleteFromSession(){
-         var csrf = $('form input[name="_csrf-backend"]').val();
+
          $.ajax({
           method: 'get',
           url: "/attachments/attach-gallery-image/delete-from-session-ajax",
-          data: {csrf: csrf},
+          data: {csrf: "$csrfToken"},
           success: function(data){
               if(data.success == true){
                 }
@@ -73,22 +74,22 @@ $js = <<<JS
     $(document).on('click', '.deleteImageCrop', function(){
         deleteFromSession();
     });
-    
+
     //event on change image (if you upload the image normally for example)
     $(document).on('change', '.cropper-data', function(){
          deleteFromSession();
     });
-    
+
     $(document).on('click', '.exit-fullscreen-btn', function(e){
         e.preventDefault();
         var attribute = $(this).attr('data-attribute');
           $('#container-preview-image-'+attribute).hide();
           $('#container-gallery-'+attribute).show();
     });
-    
+
     $(document).on('click','#image-gallery-link-$attribute, .select-image-$attribute', function(e){
         e.preventDefault();
-        var csrf = $('form input[name="_csrf-backend"]').val();
+
         var id_image = $(this).attr('data-key');
         var attribute = $(this).attr('data-attribute');
         var src_image = $(this).attr('data-src');
@@ -96,7 +97,7 @@ $js = <<<JS
           $.ajax({
           method: 'get',
           url: "/attachments/attach-gallery-image/upload-from-gallery-ajax",
-          data: {id: id_image, attribute: attribute,  csrf: csrf},
+          data: {id: id_image, attribute: attribute,  csrf: "$csrfToken"},
           success: function(data){
               if(data.success == true){
                 $('.preview-pane .hidden').removeClass('hidden');
@@ -112,7 +113,7 @@ $js = <<<JS
                 $('.uploadcrop.attachment-uploadcrop').addClass('cropper-done');
                 }
           }
-        }); 
+        });
     });
 
 JS;

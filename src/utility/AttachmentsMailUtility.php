@@ -1,20 +1,25 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: michele.lafrancesca
- * Date: 03/09/2021
- * Time: 14:49
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    open20\amos\attachments\utility
  */
 
 namespace open20\amos\attachments\utility;
-
 
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\models\AttachGalleryRequest;
 use open20\amos\core\user\User;
 use open20\amos\core\utilities\Email;
+
 use yii\log\Logger;
 
+/**
+ * 
+ */
 class AttachmentsMailUtility
 {
     /**
@@ -52,7 +57,9 @@ class AttachmentsMailUtility
     {
         /**@var $model AttachGalleryRequest */
         $subject = FileModule::t('amosattachments', 'Databank immagini - Richiesta immagine');
-        $link = \Yii::$app->params['platform']['backendUrl'] . '/attachments/attach-gallery-request/update?id=' . $model->id;
+        $link = \Yii::$app->params['platform']['backendUrl']
+            . '/attachments/attach-gallery-request/update?id='
+            . $model->id;
 
         $userDefault = null;
         $userIds = \Yii::$app->authManager->getUserIdsByRole('ATTACH_IMAGE_REQUEST_OPERATOR');
@@ -79,7 +86,6 @@ class AttachmentsMailUtility
         }
 
     }
-
 
     /**
      * @param $model AttachGalleryRequest

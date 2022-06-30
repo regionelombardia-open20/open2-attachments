@@ -26,16 +26,18 @@ use yii\web\Response;
  * This is the class for controller "AttachGalleryImageController".
  * @package open20\amos\attachments\controllers
  */
-class AttachGalleryImageController extends \open20\amos\attachments\controllers\base\AttachGalleryImageController
+class AttachGalleryImageController
+    extends \open20\amos\attachments\controllers\base\AttachGalleryImageController
 {
     /**
      * @inheritdoc
      */
     public function behaviors()
     {
-        $behaviors = ArrayHelper::merge(parent::behaviors(), [
+        $behaviors = ArrayHelper::merge(
+            parent::behaviors(), [
             'access' => [
-                'class' => AccessControl::className(),
+                'class' => AccessControl::class,
                 'rules' => [
                     [
                         'allow' => true,
@@ -53,7 +55,7 @@ class AttachGalleryImageController extends \open20\amos\attachments\controllers\
                 ]
             ],
             'verbs' => [
-                'class' => VerbFilter::className(),
+                'class' => VerbFilter::class,
                 'actions' => [
                     'delete' => ['post', 'get']
                 ]
@@ -100,11 +102,13 @@ class AttachGalleryImageController extends \open20\amos\attachments\controllers\
      */
     public function actionLoadModal($galleryId, $attribute)
     {
+        $template = '@vendor/open20/amos-attachments/src/components/views/gallery-view';
+
         $gallery = AttachGallery::findOne($galleryId);
         if ($gallery) {
             $images = $gallery->attachGalleryImages;
             $categories = AttachGalleryCategory::find()->all();
-            return $this->renderPartial('@vendor/open20/amos-attachments/src/components/views/gallery-view', [
+            return $this->renderPartial($template, [
                 'attribute' => $attribute,
                 'images' => $images,
                 'gallery' => $gallery,
@@ -143,14 +147,15 @@ class AttachGalleryImageController extends \open20\amos\attachments\controllers\
      */
     public function actionLoadDetail($id_image, $attribute)
     {
+        $template = '@vendor/open20/amos-attachments/src/components/views/_detail_image_modal';
         $model = AttachGalleryImage::findOne($id_image);
         if ($model) {
-
-            return $this->renderAjax('@vendor/open20/amos-attachments/src/components/views/_detail_image_modal', [
+            return $this->renderAjax($template, [
                 'model' => $model,
                 'attribute' => $attribute,
             ]);
         }
+        
         return '';
     }
 
@@ -159,11 +164,12 @@ class AttachGalleryImageController extends \open20\amos\attachments\controllers\
      */
     public function actionSearchGalleryAjax()
     {
+        $template = '@vendor/open20/amos-attachments/src/components/views/images_gallery';
         $model = new AttachGalleryImageSearch();
         $attribute = \Yii::$app->request->get('attribute');
         $dataProvider = $model->search(\Yii::$app->request->get());
 
-        return $this->renderAjax('@vendor/open20/amos-attachments/src/components/views/images_gallery', [
+        return $this->renderAjax($template, [
             'dataProvider' => $dataProvider,
             'attribute' => $attribute
         ]);
@@ -177,10 +183,10 @@ class AttachGalleryImageController extends \open20\amos\attachments\controllers\
      */
     public function actionLoadDetailIndex($id_image)
     {
+        $template = '@vendor/open20/amos-attachments/src/views/attach-gallery-image/_detail_image_modal';
         $model = AttachGalleryImage::findOne($id_image);
         if ($model) {
-
-            return $this->renderAjax('@vendor/open20/amos-attachments/src/views/attach-gallery-image/_detail_image_modal', [
+            return $this->renderAjax($template, [
                 'model' => $model,
             ]);
         }

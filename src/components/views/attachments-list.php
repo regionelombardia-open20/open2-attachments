@@ -65,16 +65,16 @@ JS
 
 ?>
 
-<div class="attachments-list col-xs-12 nop">
+<div class="attachments-list m-t-20 row">
 
     <?php if ($filesList) : ?>
 
-        <label><?= FileModule::t('amosattachments', '#attach_list_title'); ?></label>
+        <label class="text-uppercase col-md-12"><?= FileModule::t('amosattachments', '#attach'); ?></label>
 
     <?php else: ?>
 
-        <label class="text-uppercase"><?= FileModule::t('amosattachments', '#attach'); ?></label>
-        <div class="no-items text-muted"><?= FileModule::t('amosattachments', '#no_attach'); ?></div>
+        <label class="text-uppercase col-md-12"><?= FileModule::t('amosattachments', '#attach'); ?></label>
+        <div class="no-items text-muted col-md-12"><?= FileModule::t('amosattachments', '#no_attach'); ?></div>
 
 
     <?php endif; ?>
@@ -82,13 +82,28 @@ JS
 
     <?php foreach ($filesList as $file) : ?>
 
-        <div id="attachment-list-item-<?=$file['file_id']?>" class="attachment-list-item col-xs-12 nop">
+        <div id="attachment-list-item-<?=$file['file_id']?>" class="attachment-list-item col-md-6">
             <div class="attachment-list-item-name">
+                <div>
+                    <?php if ((in_array(strtolower($file['type']), ['jpg', 'png', 'jpeg', 'svg']))) : ?>
+                        <span class="icon icon-image icon-sm mdi mdi-image"></span>
+                    <?php elseif ((in_array(strtolower($file['type']), ['pdf']))) : ?>
+                        <span class="icon icon-pdf icon-sm mdi mdi-file-pdf-box"></span>
+                    <?php elseif ((in_array(strtolower($file['type']), ['doc', 'docx']))) : ?>
+                        <span class="icon icon-word icon-sm mdi mdi-file-word-box"></span>
+                    <?php elseif ((in_array(strtolower($file['type']), ['xls', 'xlsx']))) : ?>
+                        <span class="icon icon-excel icon-sm mdi mdi-file-excel-box"></span>
+                    <?php elseif ((in_array(strtolower($file['type']), ['zip', 'rar']))) : ?>
+                        <span class="icon icon-link icon-sm mdi mdi-folder-zip"></span>
+                    <?php else : ?>
+                        <span class="icon icon-link icon-sm mdi mdi-link-box"></span>
+                    <?php endif ?>
+                </div>
                 <?= $file['filename']; ?>
             </div>
             <div class="attachment-list-item-action">
                 <?= $file['preview']; ?>
-                <?= $file['downloadButton']; ?>
+                <!-- < ?= $file['downloadButton']; ?> -->
                 <?= $file['sortButtons']; ?>
                 <?= $file['deleteButton']; ?>
             </div>

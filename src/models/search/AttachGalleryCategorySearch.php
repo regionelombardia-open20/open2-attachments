@@ -1,26 +1,40 @@
 <?php
 
+/**
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    open20\amos\attachments\models\search
+ * @category   CategoryName
+ */
+
 namespace open20\amos\attachments\models\search;
+
+use open20\amos\attachments\models\AttachGalleryCategory;
 
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use open20\amos\attachments\models\AttachGalleryCategory;
 
 /**
  * AttachGalleryCategorySearch represents the model behind the search form about `open20\amos\attachments\models\AttachGalleryCategory`.
  */
 class AttachGalleryCategorySearch extends AttachGalleryCategory
 {
-
-//private $container; 
-
+    /**
+     * 
+     * @param array $config
+     */
     public function __construct(array $config = [])
     {
-//        $this->isSearch = true;
         parent::__construct($config);
     }
-
+    
+    /**
+     * 
+     * @return type
+     */
     public function rules()
     {
         return [
@@ -29,12 +43,20 @@ class AttachGalleryCategorySearch extends AttachGalleryCategory
         ];
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function scenarios()
     {
-// bypass scenarios() implementation in the parent class
         return Model::scenarios();
     }
 
+    /**
+     * 
+     * @param type $params
+     * @return ActiveDataProvider
+     */
     public function search($params)
     {
         $query = AttachGalleryCategory::find();
@@ -42,7 +64,6 @@ class AttachGalleryCategorySearch extends AttachGalleryCategory
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
         ]);
-
 
         $dataProvider->setSort([
             'attributes' => [
@@ -143,7 +164,6 @@ class AttachGalleryCategorySearch extends AttachGalleryCategory
         if (!($this->load($params) && $this->validate())) {
             return $dataProvider;
         }
-
 
         $query->andFilterWhere([
             'id' => $this->id,

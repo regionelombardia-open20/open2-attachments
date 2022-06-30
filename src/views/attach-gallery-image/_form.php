@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Aria S.p.A.
  * OPEN 2.0
@@ -7,28 +8,35 @@
  * @package    @vendor/open20/amos-attachments/src/views
  */
 
+use open20\amos\attachments\FileModule;
+use open20\amos\attachments\components\CropInput;
+use open20\amos\attachments\models\AttachGallery;
+use open20\amos\attachments\models\AttachGalleryImage;
+use open20\amos\attachments\utility\AttachmentsUtility;
 use open20\amos\core\helpers\Html;
 use open20\amos\core\forms\ActiveForm;
-use kartik\datecontrol\DateControl;
 use open20\amos\core\forms\Tabs;
 use open20\amos\core\forms\CloseSaveButtonWidget;
 use open20\amos\core\forms\RequiredFieldsTipWidget;
-use yii\helpers\Url;
 use open20\amos\core\forms\editors\Select;
-use yii\helpers\ArrayHelper;
 use open20\amos\core\icons\AmosIcons;
+
+use kartik\datecontrol\DateControl;
+use kartik\select2\Select2;
+        
+use xj\tagit\Tagit;
+
+use yii\helpers\Url;
+use yii\helpers\ArrayHelper;
 use yii\bootstrap\Modal;
 use yii\redactor\widgets\Redactor;
 use yii\helpers\Inflector;
-use open20\amos\attachments\FileModule;
 
 /**
  * @var yii\web\View $this
  * @var open20\amos\attachments\models\AttachGalleryImage $model
  * @var yii\widgets\ActiveForm $form
  */
-
-
 $js = <<<JS
     $(document).on('click','#crop-buttons-id button', function(){
         var crop_type = $(this).attr('data-option');
@@ -40,73 +48,87 @@ $this->registerJs($js);
 
 $module = \Yii::$app->getModule('attachments');
 $enableSingleGallery = $module->enableSingleGallery;
-?>
-<div class="attach-gallery-image-form">
+$disableFreeCropGallery = $module->disableFreeCropGallery;
 
-    <?php $form = ActiveForm::begin([
-        'options' => [
-            'id' => 'attach-gallery-image_' . ((isset($fid)) ? $fid : 0),
-            'data-fid' => (isset($fid)) ? $fid : 0,
-            'data-field' => ((isset($dataField)) ? $dataField : ''),
-            'data-entity' => ((isset($dataEntity)) ? $dataEntity : ''),
-            'class' => ((isset($class)) ? $class : ''),
-            'enctype' => 'multipart/form-data'
-        ]
-    ]);
-    ?>
-    <?php // $form->errorSummary($model, ['class' => 'alert-danger alert fade in']); ?>
+$tagsImage = AttachGalleryImage::getTagIntereseInformativo();
+
+if (empty($model->aspect_ratio)) {
+    $model->aspect_ratio = AttachGalleryImage::DEFAULT_ASPECT_RATIO;
+}
+
+$append = \Yii::$app->getUser()->can('ATTACHGALLERY_CREATE')
+    ? ' canInsert'
+    : null
+;
+
+$idGallery = \Yii::$app->request->get('id');
+
+$display = !empty($idGallery)
+    ? 'display:none'
+    : '';
+
+$aspectRatioChoices = AttachmentsUtility::getConfigCropGallery();
+
+$form = ActiveForm::begin([
+    'options' => [
+        'id' => 'attach-gallery-image_' . ((isset($fid)) ? $fid : 0),
+        'data-fid' => (isset($fid)) ? $fid : 0,
+        'data-field' => ((isset($dataField)) ? $dataField : ''),
+        'data-entity' => ((isset($dataEntity)) ? $dataEntity : ''),
+        'class' => ((isset($class)) ? $class : ''),
+        'enctype' => 'multipart/form-data'
+    ]
+]);
+?>
+
+<div class="attach-gallery-image-form">    
     <div class="row m-t-20">
         <div class="col-md-8">
-            <!-- name string -->
             <div>
-                <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?><!-- description text -->
+            <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
             </div>
+            
             <div>
-                <?php
-                if (\Yii::$app->getUser()->can('ATTACHGALLERY_CREATE')) {
-                    $append = ' canInsert';
-                } else {
-                    $append = NULL;
-                }
-                ?>
-
-                <?php
-                $display = '';
-                $idGallery = \Yii::$app->request->get('id');
-
-                if (!empty($idGallery)) {
-                    $display = 'display:none';
-                } ?>
                 <div style="<?= $display ?>">
-                    <?= $form->field($model, 'gallery_id')->widget(Select::classname(), [
-                        'data' => ArrayHelper::map(\open20\amos\attachments\models\AttachGallery::find()->asArray()->all(), 'id', 'name'),
-                        'language' => substr(Yii::$app->language, 0, 2),
-                        'options' => [
-                            'id' => 'AttachGallery' . $fid,
-                            'multiple' => false,
-                        ],
-                        'pluginOptions' => [
-                            'allowClear' => true
-                        ],
-                    ])
-                    ?>
+                <?= $form->field($model, 'gallery_id')->widget(Select::class, [
+                    'data' => ArrayHelper::map(
+                        AttachGallery::find()
+                        ->asArray()
+                        ->all(),
+                        'id',
+                        'name'
+                    ),
+                    'language' => substr(Yii::$app->language, 0, 2),
+                    'options' => [
+                        'id' => 'AttachGallery' . $fid,
+                        'multiple' => false,
+                    ],
+                    'pluginOptions' => [
+                        'allowClear' => true
+                    ],
+                ])
+                ?>
                 </div>
             </div>
+            
+            <?php if ($tagsImage) : ?>
             <div>
-                <?php $tagsImage = \open20\amos\attachments\models\AttachGalleryImage::getTagIntereseInformativo(); ?>
-                <?= $form->field($model, 'tagsImage')->widget(\kartik\select2\Select2::className(), [
+            <?= $form->field($model, 'tagsImage')->widget(Select2::class, [
                     'data' => ArrayHelper::map($tagsImage, 'id', 'nome'),
                     'options' => [
                         'id' => 'tags-image-id',
-                        'placeholder' => \Yii::t('app', "Seleziona i tag ..."),
+                        'placeholder' => FileModule::t('amosattachments', '#placeholder_for_tags'),
                         'multiple' => true,
                         'title' => 'Tag di interesse informativo',
                     ],
                     'pluginOptions' => ['allowClear' => true]
-                ])->label(FileModule::t('amosattachments', 'Tag di interesse informativo')) ?>
+                ])->label(FileModule::t('amosattachments', 'Tag di interesse informativo'))
+            ?>
             </div>
+            <?php endif; ?>
+            
             <div id="custom-tags-cont">
-                <?= $form->field($model, 'customTags')->widget(\xj\tagit\Tagit::className(), [
+                <?= $form->field($model, 'customTags')->widget(Tagit::class, [
                     'options' => [
                         'id' => 'custom-tags-id',
                         'placeholder' => FileModule::t('amosattachments', 'Inserisci una parolachiave')
@@ -121,96 +143,27 @@ $enableSingleGallery = $module->enableSingleGallery;
                 ])->label(FileModule::t('amosevents', 'Tag liberi')) ?>
             </div>
 
-            <!--                <div class="col-md-6 col xs-12">-->
-            <!--                    --><?php
-            //                    if (\Yii::$app->getUser()->can('ATTACHGALLERYCATEGORY_CREATE')) {
-            //                        $append = ' canInsert';
-            //                    } else {
-            //                        $append = NULL;
-            //                    }
-            //                    ?>
-            <!--                --><?php //$form->field($model, 'category_id')->widget(Select::classname(), [
-            //                    'data' => ArrayHelper::map(\open20\amos\attachments\models\AttachGalleryCategory::find()->asArray()->all(),'id','name'),
-            //                    'language' => substr(Yii::$app->language, 0, 2),
-            //                    'options' => [
-            //                        'id' => 'AttachGalleryCategory' . $fid,
-            //                        'multiple' => false,
-            //                        'placeholder' => 'Seleziona ...',
-            //                        'class' => 'dynamicCreation' . $append,
-            //                        'data-model' => 'attach_gallery_category',
-            //                        'data-field' => 'name',
-            //                        'data-module' => 'attachments',
-            //                        'data-entity' => 'attach-gallery-category',
-            //                        'data-toggle' => 'tooltip'
-            //                    ],
-            //                    'pluginOptions' => [
-            //                        'allowClear' => true
-            //                    ],
-            //                    'pluginEvents' => [
-            //                        "select2:open" => "dynamicInsertOpening"
-            //                    ]
-            //                ]);
-            ?>
-            <!--                </div>-->
-            <!--                --><?php //$form->field($model, 'description')->widget(yii\redactor\widgets\Redactor::className(), [
-            //                    'options' => [
-            //                        'id' => 'description' . $fid,
-            //                    ],
-            //                    'clientOptions' => [
-            //                        'language' => substr(Yii::$app->language, 0, 2),
-            //                        'plugins' => ['clips', 'fontcolor', 'imagemanager'],
-            //                        'buttons' => ['format', 'bold', 'italic', 'deleted', 'lists', 'image', 'file', 'link', 'horizontalrule'],
-            //                    ],
-            //                ]);
-            //                ?>
-
             <div style="display:none">
-                <?php
-                if (empty($model->aspect_ratio)) {
-                    $model->aspect_ratio = \open20\amos\attachments\models\AttachGalleryImage::DEFAULT_ASPECT_RATIO;
-                } ?>
                 <?= $form->field($model, 'aspect_ratio')->hiddenInput(['id' => 'aspect_ratio_id']) ?>
             </div>
 
         </div>
 
         <div class="col-md-4">
-            <div>
-                <?=
-                $form->field($model, 'attachImage')->widget(\open20\amos\attachments\components\CropInput::classname(),
-                    [
-                         'hidePreviewDeleteButton' => true,
-                        'enableUploadFromGallery' => false,
-                        'aspectRatioChoices' => [
-                            [
-                                'title' => 'Elimina Crop',
-                                'value' => 'x',
-                                'label' => \open20\amos\core\icons\AmosIcons::show('close'),
-                            ],
-                            [
-                                'title' => 'Fattore di crop libero',
-                                'value' => 'NaN',
-                                'label' => 'Libero',
-                            ],
-                            [
-                                'title' => '16:9',
-                                'value' => '1.7',
-                                'label' => '16:9',
-                            ],
-                            [
-                                'title' => '1:1',
-                                'value' => '1',
-                                'label' => '1:1',
-                            ],
-                        ],
-                        'jcropOptions' => ['aspectRatio' => '1.7']
-                    ])->label(FileModule::t('amosattachments', '#image_field')."<span class='text-danger'> *</span>")
-                ?>
+            <div> <?= $form->field($model, 'attachImage')->widget(CropInput::class, [
+                'hidePreviewDeleteButton' => true,
+                'enableUploadFromGallery' => false,
+                'aspectRatioChoices' => $aspectRatioChoices,
+                'jcropOptions' => ['aspectRatio' => '1.7']
+            ])
+            ->label(
+                FileModule::t('amosattachments', '#image_field')
+                . '<span class="text-danger"> *</span>'
+            )
+            ?>
             </div>
-
         </div>
         <div class="clearfix"></div>
-
     </div>
 
     <div>
@@ -222,5 +175,6 @@ $enableSingleGallery = $module->enableSingleGallery;
         ]); ?>
     </div>
 
-    <?php ActiveForm::end(); ?>
 </div>
+
+<?php ActiveForm::end(); ?>
