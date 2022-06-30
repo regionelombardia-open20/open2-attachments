@@ -170,7 +170,6 @@ class AttachmentsInput extends FileInput
                                                                     <input class=\"file-caption-name\" onkeydown=\"return false;\" onpaste=\"return false;\" tabindex=\"-1\">
                                                                   </div>
                                                                   <div class=\"input-group-btn\">
-                                                                    {cancel}
                                                                     {upload}
                                                                     {browse}" . $driveButton . "
                                                                   </div>
@@ -179,7 +178,7 @@ class AttachmentsInput extends FileInput
             $this->pluginOptions['layoutTemplates']['main2'] = "<div id=\"errorDropUpload -{$this->attribute}\"></div>
                                                                 {preview}
                                                                 <div class=\"kv-upload-progress hide\"></div>
-                                                                {remove}{cancel}\n{upload}\n{browse}" . $driveButton;
+                                                                {remove}\n{upload}\n{browse}" . $driveButton;
         } else {
             // OLD code to see that caption were converted in the 3 lines with file-caption classes.
 //            $this->pluginOptions['layoutTemplates']['main1'] = '{preview}

@@ -117,11 +117,13 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
 
         if (!\Yii::$app->user->isGuest) {
             $this->view->params['titleSection'] = FileModule::t('amosattachments', 'Galleria');
-            $this->view->params['labelCreate'] = FileModule::t('amosattachments', 'Nuova immagine');
+            $this->view->params['labelCreate'] = FileModule::t('amosattachments', 'Carica nuova');
             $this->view->params['titleCreate'] = FileModule::t('amosattachments', 'Inserisci una nuova immagine');
             $this->view->params['urlCreate'] = '/attachments/attach-gallery-image/create?id=' . $this->model->id;
 
+
         }
+
         return $this->render('update', [
             'model' => $this->model,
             'modelSearch' => $modelSearch,
@@ -136,6 +138,7 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
      */
     public function setCreateNewBtnLabelSingle()
     {
+        $module = \Yii::$app->getModule('attachments');
         $btnUploadImage = Html::a(FileModule::t('amosattachments', "Carica nuova"), [
                 '/attachments/attach-gallery-image/create',
                 'id' => 1
@@ -146,25 +149,9 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
             ]
         );
 
-        $btnRequestImage = Html::a(FileModule::t('amosattachments', "Richiedi nuova"), [
-                '/attachments/attach-gallery-request/create',
-                'id' => 1
-            ],
-            [
-                'class' => 'btn btn-primary',
-                'title' => FileModule::t('amosattachments', "Richiedi nuova immagine")
-            ]
-        );
-
         Yii::$app->view->params['createNewBtnParams']['layout'] = $btnUploadImage;
-        if (
-            $thisFileModule->enableRequestImageForGallery == true
-            && \Yii::$app->user->can('ATTACHGALLERYREQUEST_CREATE')
-        ) {
-            Yii::$app->view->params['additionalButtons'] = [
-                'htmlButtons' => [$btnRequestImage]
-            ];
-        }
+        $this->buttonRequestImage();
+
     }
 
     /**
@@ -187,4 +174,23 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
         return $links;
     }
 
+    /**
+     *
+     */
+    public function buttonRequestImage(){
+        $module = \Yii::$app->getModule('attachments');
+        if (
+            $module->enableRequestImageForGallery == true
+            && \Yii::$app->user->can('ATTACHGALLERYREQUEST_CREATE')
+        ) {
+            $urlSecondAction = '/attachments/attach-gallery-request/create?id=1';
+            $labelSecondAction = FileModule::t('amosattachments', "Richiedi nuova");
+            $titleSecondAction = FileModule::t('amosattachments', "Richiedi nuova immagine");
+            Yii::$app->view->params['urlSecondAction'] = $urlSecondAction;
+            Yii::$app->view->params['labelSecondAction'] = $labelSecondAction;
+            Yii::$app->view->params['titleSecondAction']= $titleSecondAction;
+            Yii::$app->view->params['hideSecondAction']= false;
+
+        }
+    }
 }
