@@ -22,7 +22,9 @@ return [
     '#attach_list_move_up_title' => 'Move up',
     '#attach_list_no_items' => 'No attachments',
     '#attach_list_preview_icon_title' => 'Preview image',
-    '#attach_list_title' => 'Attachments uploaded',
+    '#attach' => 'Attachments',
+    '#attach_list_title' => 'Uploaded attachments',
+    '#no_attach' => 'There are no attachments in this content',
     'Attribute' => 'Attribute',
     '#cancel_btn' => 'Cancella',
     'Cannot copy file! ' => 'Cannot copy file! ',
@@ -83,5 +85,9 @@ return [
     '#choose_image_from_gallery' => 'Choose image from gallery',
     '#select_gallery_image' => 'Select image',
     "E' necessario inserire un'immagine." => "Please upload an image file.",
+    "#default_message" => "We recommend loading horizontal images in a 16: 9 aspect ratio. The minimum recommended size is 1348 x 758px, the ideal size is 1920 x 1080px",
+    "#no_attach" => "No attachments selected.",
+    "Estensione file non permessa, inserire un file con un'estensione consentita." => "File extension not allowed, insert a file with an allowed extension.",
+
 
 ];

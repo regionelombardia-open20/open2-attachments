@@ -18,10 +18,10 @@ use yii\data\ActiveDataProvider;
 use yii\helpers\Html;
 
 /**
- * Class AttachmentsList
+ * Class AttachmentsListBS4
  * @package open20\amos\attachments\components
  */
-class AttachmentsList extends AttachmentsTableWithPreview
+class AttachmentsListBS4 extends AttachmentsTableWithPreview
 {
     var $viewDownloadBtn = false;
     var $viewFilesCounter = false;
@@ -35,10 +35,8 @@ class AttachmentsList extends AttachmentsTableWithPreview
      * @var bool $viewSortBtns If true enable the buttons to order the attachments in a multi attachments input.
      */
     public $viewSortBtns = true;
-
+    
     public $hideExtensionFile = false;
-
-    public $requireModalMoveFile = true;
 
     // EDITED
     public function drawWidget($attribute = null)
@@ -53,7 +51,7 @@ class AttachmentsList extends AttachmentsTableWithPreview
             $fileQuery = $this->model->hasMultipleFiles($attribute);
         }
 
-        $dataProvider = new ActiveDataProvider(['query' => $fileQuery, 'pagination' => false]);
+        $dataProvider = new ActiveDataProvider(['query' => $fileQuery, 'pagination' => false,]);
 
         $files = [];
         $filesQuantity = 0;
@@ -108,14 +106,17 @@ class AttachmentsList extends AttachmentsTableWithPreview
                     if ($userHasUpdatePermission) {
                         $btn = Html::a(
                             Html::tag('span', '', ['class' => 'btn btn-icon am am-close']),
-                            '#',
                             [
-                                'class' => 'attachments-list-delete',
+                                '/' . FileModule::getModuleName() . '/file/delete',
+                                'id' => $model->id,
+                                'item_id' => $this->model->id,
+                                'model' => $this->getModule()->getClass($this->model),
+                                'attribute' => $this->attribute
+                            ],
+                            [
                                 'title' => FileModule::t('amosattachments', '#attach_list_delete_title'),
-                                'data-id' => $model->id,
-                                'data-item_id' => $this->model->id,
-                                'data-model' => $this->getModule()->getClass($this->model),
-                                'data-attribute' => $this->attribute
+                                'data-confirm' => FileModule::t('amosattachments', 'Are you sure you want to delete this item?'),
+                                'data-method' => 'post',
                             ]
                         );
                     }
@@ -129,15 +130,6 @@ class AttachmentsList extends AttachmentsTableWithPreview
                     $btn = '';
                     if ($userHasUpdatePermission) {
                         if ($counter > 1) {
-                            $link_options = [
-                                    'title' => FileModule::t('amosattachments', '#attach_list_move_up_title'),
-                                    'data-method' => 'post',
-                                ];
-
-                            if($this->requireModalMoveFile)
-                            {
-                                $link_options['data-confirm'] = FileModule::t('amosattachments', '#attach_list_move_up_data_confirm');
-                            }
                             $btn .= Html::a(
                                 Html::tag('span', '', ['class' => 'btn btn-icon am am-long-arrow-up']),
                                 [
@@ -145,18 +137,14 @@ class AttachmentsList extends AttachmentsTableWithPreview
                                     'id' => $model->id,
                                     'direction' => SortModelsUtility::DIRECTION_UP
                                 ],
-                                $link_options
+                                [
+                                    'title' => FileModule::t('amosattachments', '#attach_list_move_up_title'),
+                                    'data-confirm' => FileModule::t('amosattachments', '#attach_list_move_up_data_confirm'),
+                                    'data-method' => 'post',
+                                ]
                             );
                         }
                         if ($counter < $countModels) {
-                            $link_options = [
-                                    'title' => FileModule::t('amosattachments', '#attach_list_move_down_title'),
-                                    'data-method' => 'post',
-                                ];
-                            if($this->requireModalMoveFile)
-                            {
-                                $link_options['data-confirm'] = FileModule::t('amosattachments', '#attach_list_move_down_data_confirm');
-                            }
                             $btn .= Html::a(
                                 Html::tag('span', '', ['class' => 'btn btn-icon am am-long-arrow-down']),
                                 [
@@ -164,7 +152,11 @@ class AttachmentsList extends AttachmentsTableWithPreview
                                     'id' => $model->id,
                                     'direction' => SortModelsUtility::DIRECTION_DOWN
                                 ],
-                                $link_options
+                                [
+                                    'title' => FileModule::t('amosattachments', '#attach_list_move_down_title'),
+                                    'data-confirm' => FileModule::t('amosattachments', '#attach_list_move_down_data_confirm'),
+                                    'data-method' => 'post',
+                                ]
                             );
                         }
                     }
@@ -195,12 +187,11 @@ class AttachmentsList extends AttachmentsTableWithPreview
 
             $counter++;
             $file['id'] = $this->model->id;
-            $file['file_id'] = $model->id;
             $files[] = $file;
             $filesQuantity++;
         }
 
-        return $this->render('attachments-list', [
+        return $this->render('attachments-listBS4', [
             'filesList' => $files,
             'viewFilesCounter' => $this->viewFilesCounter,
             'filesQuantity' => $filesQuantity

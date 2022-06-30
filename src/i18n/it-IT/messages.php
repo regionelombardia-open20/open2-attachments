@@ -22,7 +22,9 @@ return [
     '#attach_list_move_up_title' => 'Sposta in su',
     '#attach_list_no_items' => 'Nessun allegato',
     '#attach_list_preview_icon_title' => 'Anteprima immagine',
+    '#attach' => 'Allegati',
     '#attach_list_title' => 'Allegati caricati',
+    '#no_attach' => 'Non sono presenti allegati in questo contenuto',
     'Attribute' => 'Attributo',
     '#cancel_btn' => 'Cancella',
     'Cannot copy file! ' => 'Non posso copiare il file! ',
@@ -87,5 +89,8 @@ return [
     'New category' => 'Nuova categoria',
     '#choose_image_from_gallery' => 'Scegli immagine da gallery',
     '#select_gallery_image' => 'Seleziona immagine',
-    "E' necessario inserire un'immagine." => "E' necessario inserire un'immagine.",
+    "Estensione file non permessa, inserire un file con un'estensione consentita." => "Estensione file non permessa, inserire un file con un'estensione consentita.",
+    "#default_message" => "Si consiglia il caricamento di immagini orizzontali in proporzione 16:9. La dimensione consigliata minima è 1348 x 758px, quella ideale è 1920 x 1080px",
+    "#default_message_icon" => "<div class='tooltip-custom'><span class='am am-info'></span><span class='tooltiptext'>Si consiglia il caricamento di immagini orizzontali in proporzione 16:9. La dimensione consigliata minima è 1348 x 758px, quella ideale è 1920 x 1080px</span></div>",
+    "#no_attach" => "Nessun allegato selezionato."
 ];

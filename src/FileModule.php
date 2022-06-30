@@ -55,12 +55,6 @@ class FileModule extends AmosModule
     public $enableSingleGallery = true;
 
     /**
-     * E.g: 'original'
-     * @var string $forceCrop
-     */
-    public $forceCrop;
-
-    /**
      * @var null|\amos\statistics\models\AttachmentsStatsInterface
      */
     public $statistics = null;
@@ -286,10 +280,13 @@ class FileModule extends AmosModule
                 }
 
                 try {
-                    $stat = \Yii::createObject($this->statistics);
-                    $ok = $stat->save($file);
-                    if (!$ok) {
-                        \Yii::getLogger()->log(FileModule::t('amosattachments', 'Statistics: error while saving'), Logger::LEVEL_WARNING);
+                    if(!is_null($this->statistics))
+                    {
+                        $stat = \Yii::createObject($this->statistics);
+                        $ok = $stat->save($file);
+                        if (!$ok) {
+                            \Yii::getLogger()->log(FileModule::t('amosattachments', 'Statistics: error while saving'), Logger::LEVEL_WARNING);
+                        }
                     }
                 } catch (\Exception $exception) {
                     \Yii::getLogger()->log($exception->getMessage(), Logger::LEVEL_ERROR);
@@ -396,12 +393,15 @@ class FileModule extends AmosModule
             }
 
             try {
-                $stat = \Yii::createObject($this->statistics);
-                /** @var \amos\statistics\models\AttachmentsStatsInterface $stat */
-                $ok = $stat->delete($file);
-                if (!$ok)
+                if(!is_null($this->statistics))
                 {
-                    \Yii::getLogger()->log(FileModule::t('amosattachments', 'Statistics: error while saving'), Logger::LEVEL_WARNING);
+                    $stat = \Yii::createObject($this->statistics);
+                    /** @var \amos\statistics\models\AttachmentsStatsInterface $stat */
+                    $ok = $stat->delete($file);
+                    if (!$ok)
+                    {
+                        \Yii::getLogger()->log(FileModule::t('amosattachments', 'Statistics: error while saving'), Logger::LEVEL_WARNING);
+                    }
                 }
             } catch (\Exception $exception) {
                 \Yii::getLogger()->log($exception->getMessage(), Logger::LEVEL_ERROR);

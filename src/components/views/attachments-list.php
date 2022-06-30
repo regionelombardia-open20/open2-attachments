@@ -23,19 +23,45 @@ ModuleAttachmentsAsset::register($this);
 
 if ($viewFilesCounter) {
     $this->registerJs(<<<JS
-    
+
     var filesQuantity = "$filesQuantity";
-    
+
     var section_title = $("#section-attachments").find("h2");
 
     section_title.append(" (" + filesQuantity + ")");
     if(filesQuantity == 0){
         section_title.addClass("section-disabled");
     }
-    
+
 JS
     );
 }
+
+$confirm = FileModule::t('amosattachments', 'Are you sure you want to delete this item?');
+$deleteUrl = '/' . FileModule::getModuleName() . '/file/delete';
+
+$this->registerJs(<<<JS
+    $('.attachments-list-delete').on('click', function(e) {
+        e.preventDefault();
+        var id = encodeURI($(this).data('id'));
+        var item_id = encodeURI($(this).data('item_id'));
+        var model = encodeURI($(this).data('model'));
+        var attribute = encodeURI($(this).data('attribute'));
+        krajeeDialog.confirm("{$confirm}", function (result) {
+            if (result) { // ok button was pressed
+                $.ajax({
+                    url: '{$deleteUrl}?id='+id+'&item_id='+item_id+'&model='+model+'&attribute='+attribute,
+                    type: 'post',
+                    success: function () {
+                        $('#attachment-list-item-'+id).remove();
+                    }
+                });
+            }
+        });
+
+    });
+JS
+);
 
 ?>
 
@@ -47,14 +73,16 @@ JS
 
     <?php else: ?>
 
-        <div class="no-items"><?= FileModule::t('amosattachments', '#attach_list_no_items'); ?></div>
+        <label class="text-uppercase"><?= FileModule::t('amosattachments', '#attach'); ?></label>
+        <div class="no-items text-muted"><?= FileModule::t('amosattachments', '#no_attach'); ?></div>
+
 
     <?php endif; ?>
 
 
     <?php foreach ($filesList as $file) : ?>
 
-        <div class="attachment-list-item col-xs-12 nop">
+        <div id="attachment-list-item-<?=$file['file_id']?>" class="attachment-list-item col-xs-12 nop">
             <div class="attachment-list-item-name">
                 <?= $file['filename']; ?>
             </div>

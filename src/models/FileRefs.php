@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Aria S.p.A.
  * OPEN 2.0
@@ -34,9 +35,9 @@ use yii\helpers\Url;
  */
 class FileRefs extends Record
 {
-
     use FileModuleTrait;
-    const MAIN     = 1;
+
+    const MAIN = 1;
     const NOT_MAIN = 0;
 
     /**
@@ -99,7 +100,7 @@ class FileRefs extends Record
      */
     public function getUrl($size = 'original')
     {
-        return Url::to(['/'.FileModule::getModuleName().'/file/view', 'id' => $this->id, 'hash' => $this->hash, 'size' => $size]);
+        return Url::to(['/' . FileModule::getModuleName() . '/file/view', 'id' => $this->id, 'hash' => $this->hash, 'size' => $size]);
     }
 
     /**
@@ -108,25 +109,21 @@ class FileRefs extends Record
      */
     public function getWebUrl($size)
     {
-        return \Yii::$app->getUrlManager()->createAbsoluteUrl(Url::to(['/'.FileModule::getModuleName().'/file/download',
-                    'id' => $this->id, 'hash' => $this->hash, 'size' => $size]));
+        return  \Yii::$app->getUrlManager()->createAbsoluteUrl(Url::to(['/' . FileModule::getModuleName() . '/file/download', 'id' => $this->id, 'hash' => $this->hash, 'size' => $size]));
     }
 
     /**
-     *
-     * @param string $size
      * @return string
      */
-    public function getPath($size = 'original')
+    public function getPath()
     {
-        return $this->attachFile->getPath($size);
+        return $this->getModule()->getFilesDirPath($this->attachFile->hash) . DIRECTORY_SEPARATOR . $this->attachFile->hash . '.' . $this->attachFile->type;
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getAttachFile()
-    {
+    public function getAttachFile() {
         return $this->hasOne(File::className(), ['id' => 'attach_file_id']);
     }
 
@@ -135,23 +132,22 @@ class FileRefs extends Record
      * @param string $crop
      * @return bool|string
      */
-    public static function getHashByAttachFile(File $attachFile, $crop, $protected = true)
-    {
+    public static function getHashByAttachFile(File $attachFile, $crop, $protected = true) {
         // Custom crops values?
         if (is_array($crop)) {
             $crop = json_encode($crop);
         }
 
         $result = FileRefs::find()->andWhere([
-                'attach_file_id' => $attachFile->id,
-                'model' => $attachFile->model,
-                'item_id' => $attachFile->itemId,
-                'attribute' => $attachFile->attribute,
-                'crop' => $crop,
-                'protected' => $protected
-            ])->one();
+            'attach_file_id' => $attachFile->id,
+            'model' => $attachFile->model,
+            'item_id' => $attachFile->itemId,
+            'attribute' => $attachFile->attribute,
+            'crop' => $crop,
+            'protected' => $protected
+        ])->one();
 
-        if ($result && $result->id) {
+        if($result && $result->id) {
             return $result->hash;
         }
 
@@ -169,11 +165,11 @@ class FileRefs extends Record
             'protected' => $protected
         ];
 
-        $newFileRef       = new FileRefs();
+        $newFileRef = new FileRefs();
         $newFileRef->load(['FileRefs' => $data]);
         $newFileRef->hash = md5(json_encode($data));
 
-        if ($newFileRef->validate()) {
+        if($newFileRef->validate()) {
             $newFileRef->save();
 
             return $newFileRef->hash;

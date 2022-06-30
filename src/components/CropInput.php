@@ -10,12 +10,12 @@
  */
 
 namespace open20\amos\attachments\components;
-
+ 
 use yii\widgets\InputWidget;
 use Yii;
 use yii\base\InvalidParamException;
-use yii\helpers\Html;
-use yii\widgets\ActiveForm;
+use yii\helpers\Html; 
+use yii\widgets\ActiveForm; 
 
 class CropInput extends InputWidget
 {
@@ -28,33 +28,6 @@ class CropInput extends InputWidget
     /** @var array */
     var $imageOptions;
 
-    /**
-     * Example:
-     *   [
-     *       [
-     *           'label' => 'X',
-     *           'value' => 'x',
-     *           'title' => 'Elimina il crop',
-     *       ],
-     *       [
-     *           'label' => '1:1',
-     *          'value' => 1,
-     *           'title' => 'Fattore di crop 1:1',
-     *       ],
-     *       [
-     *           'label' => '19:9',
-     *           'value' => (16/9),
-     *           'title' => 'Fattore di crop 16:9',
-     *       ],
-     *       [
-     *           'label' => 'free',
-     *           'value' => 'NaN',
-     *           'title' => 'Fattore di crop libero',
-     *       ],
-     *   ], 
-     *  @var array */
-    var $aspectRatioChoices;
-
     /** @var array */
     var $jcropOptions = [];
 
@@ -63,12 +36,24 @@ class CropInput extends InputWidget
 
     /** @var string */
     var $defaultPreviewImage = NULL;
+ 
+
+    /** @var string */
+    var $customHint = NULL;
 
     /** @var boolean */
     var $enableUploadFromGallery = true;
 
-    /** @var array */
-    var $cropModalCloseButton = [];
+    /**
+     *
+     * @var boolean
+     */
+    var $isFrontend = false;
+
+    /**
+     * @param boolean  for enable hint message
+     */
+    var $enableHintMessage = true;
 
     /**
      * only call this method after a form closing and
@@ -128,7 +113,7 @@ class CropInput extends InputWidget
 
         $this->imageOptions['id'] = Yii::$app->getSecurity()->generateRandomString(10);
 
-        $inputField = (isset($this->options['id']) && (!empty($this->options['id'])))? $this->options['id']: Html::getInputId($this->model, $this->attribute, ['data-image_id' => $this->imageOptions['id']]);
+        $inputField = Html::getInputId($this->model, $this->attribute, ['data-image_id' => $this->imageOptions['id']]);
 
         $default_jcropOptions = [
             'aspectRatio' => 1,
@@ -139,17 +124,16 @@ class CropInput extends InputWidget
         ];
         $default_options = [
             'accept' => "image/*",
-            'aria-label' => 'Seleziona file',
         ];
 
         $this->jcropOptions = array_merge($default_jcropOptions, $this->jcropOptions);
         $this->options = array_merge($default_options, $this->options);
 
         return $this->render('crop-view', [
-            'inputField' => $inputField,
-            'crop' => $this,
-            'aspectRatioChoices' => $this->aspectRatioChoices,
-            'cropModalCloseButton' => $this->cropModalCloseButton,
+        'inputField' => $inputField,
+        'crop' => $this,
+        'aspectRatio' => $this->jcropOptions['aspectRatio'],
+        'customHint'=>$this->customHint
         ]);
     }
 }
