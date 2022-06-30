@@ -323,7 +323,10 @@ class FileController extends Controller
                     if (json_decode($size) != null) {
                         $crops['custom'] = (array) json_decode($size);
                         $size            = 'custom';
+                    } else {
+                        $size = 'default';
                     }
+
 
                     if (array_key_exists($size, $crops)) {
                         $this->addDownloadNumber($file);
