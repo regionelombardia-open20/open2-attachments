@@ -101,12 +101,12 @@ class FileController extends Controller
             case 'view' : {
                     // Fire ref
                     $fileRef = FileRefs::findOne(['hash' => Yii::$app->request->get('hash')]);
-                    
+
                     //If file exists
                     if (!$fileRef || !$fileRef->attachFile) {
                         return false;
                     }
-                    
+
                     /**
                      * If the file is not under protection
                      */
@@ -114,11 +114,11 @@ class FileController extends Controller
                         && !\Yii::$app->user->isGuest))) {
                         return true;
                     }
-                    
-                    if($fileRef->protected && CurrentUser::isPlatformGuest()){
+
+                    if ($fileRef->protected && CurrentUser::isPlatformGuest()) {
                         return false;
                     }
-                    
+
                     // Find file
                     $file = $fileRef->attachFile;
                 }
@@ -345,7 +345,7 @@ class FileController extends Controller
             $filePath = $file->getPath();
 
             if (file_exists($filePath)) {
-                if ($size == 'original' || !in_array(strtolower($file->type), ['jpg', 'jpeg', 'png', 'gif'])) {
+                if ($size == 'original' && !in_array(strtolower($file->type), ['jpg', 'jpeg', 'png', 'gif'])) {
                     $this->addDownloadNumber($file);
                     $zipTmpFolderName = uniqid();
                     if ($file->encrypted) {
@@ -363,6 +363,9 @@ class FileController extends Controller
                         }
                     }
                     return \Yii::$app->response->sendFile($filePath, "$file->name.$file->type");
+                } else if ($size == 'original' && in_array(strtolower($file->type), ['jpg', 'jpeg', 'png', 'gif'])) {
+                    $this->addDownloadNumber($file);
+                    return $this->getCroppedImage($file, $crops[$size], $size, $fileRef);
                 } else {
                     $moduleConfig = Yii::$app->getModule('attachments')->config;
                     $crops        = $moduleConfig['crops'] ?: [];
@@ -405,12 +408,6 @@ class FileController extends Controller
         $cropPath = $fileDir.$file->hash.'.'.(!empty($cropSettings['width']) ? $cropSettings['width'] : '').'.'.(!empty($cropSettings['height'])
                 ? $cropSettings['height'] : '').'.'.$file->type;
 
-        if (file_exists($cropPath)) { 
-            return \Yii::$app->response->sendFile($cropPath, "$file->name.$file->type");
-        }
-        //Crop and return
-        $cropper = new ImageDriver();
-
         $configStack = [
             'width' => null,
             'height' => null,
@@ -428,6 +425,20 @@ class FileController extends Controller
             'bg_opacity' => null,
             'quality' => 100
         ];
+
+        if (file_exists($filePath) && (!empty($fileRef) && $crop == 'original')) {
+            if (!empty($fileRef->s3_url)) {
+                return \Yii::$app->response->sendFile($filePath, "$file->name.$file->type");
+            } else {
+                AwsUtility::uploadS3ByPath($file, $filePath, $crop, $fileRef);
+                return \Yii::$app->response->sendFile($filePath, "$file->name.$file->type");
+            }
+        } else if (file_exists($cropPath)) {
+            return \Yii::$app->response->sendFile($cropPath, "$file->name.$file->type");
+        }
+
+        //Crop and return
+        $cropper = new ImageDriver();
 
         $cropConfig = ArrayHelper::merge($configStack, $cropSettings);
 
@@ -464,7 +475,7 @@ class FileController extends Controller
         }
         $image->save($cropPath, $cr_quality);
 
-        AwsUtility::uploadS3ByPath($file, $cropPath, $crop, $fileRef);        
+        AwsUtility::uploadS3ByPath($file, $cropPath, $crop, $fileRef);
         //Return the new image
         return \Yii::$app->response->sendFile($cropPath, "$file->name.$file->type");
     }
