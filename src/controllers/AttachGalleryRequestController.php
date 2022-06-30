@@ -37,14 +37,14 @@ class AttachGalleryRequestController extends \open20\amos\attachments\controller
                             'opened',
                             'closed',
                         ],
-                        'roles' => ['ATTACH_IMAGE_REQUEST_OPERATOR','MANAGE_ATTACH_GALLERY']
+                        'roles' => ['ATTACH_IMAGE_REQUEST_OPERATOR','MANAGE_ATTACH_GALLERY','ATTACH_GALLERY_OPERATOR']
                     ],
                     [
                         'allow' => true,
                         'actions' => [
                             'my-requests',
                         ],
-                        'roles' => ['MANAGE_ATTACH_GALLERY']
+                        'roles' => ['MANAGE_ATTACH_GALLERY','ATTACH_GALLERY_OPERATOR']
                     ],
                 ]
             ],

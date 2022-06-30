@@ -9,6 +9,8 @@ use open20\amos\attachments\FileModule;
 use open20\amos\core\forms\ActiveForm;
 
 
+$module = \Yii::$app->getModule('attachments');
+$disableFreeCropGallery = $module->disableFreeCropGallery;
 
 $form = ActiveForm::begin([
     'method' => 'get',
@@ -79,13 +81,18 @@ $form = ActiveForm::begin([
                 <?= FileModule::t('amosattachments', 'Aspect ratio') ?>
             </div>
             <div>
+                <?php
+                $aspectRatio = [
+                    '1.7' => '16:9',
+                    '1' => '1:1',
+                ];
+                if(!$disableFreeCropGallery){
+                    $aspectRatio['other']= FileModule::t('amosattachments', 'Other');
+                }
+                ?>
                 <?=
                 $form->field($modelSearch, 'aspectRatioSearch')->widget(\kartik\select2\Select2::className(), [
-                    'data' => [
-                        '1.7' => '16:9',
-                        '1' => '1:1',
-                        'other' => FileModule::t('amosattachments', 'Other'),
-                    ],
+                    'data' => $aspectRatio,
                     'options' => [
                         'placeholder' => FileModule::t('amosattachments', 'Seleziona...'),
                     ],

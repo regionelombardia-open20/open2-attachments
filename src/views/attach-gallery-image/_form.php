@@ -40,6 +40,7 @@ $this->registerJs($js);
 
 $module = \Yii::$app->getModule('attachments');
 $enableSingleGallery = $module->enableSingleGallery;
+$disableFreeCropGallery = $module->disableFreeCropGallery;
 ?>
 <div class="attach-gallery-image-form">
 
@@ -175,36 +176,17 @@ $enableSingleGallery = $module->enableSingleGallery;
         </div>
 
         <div class="col-md-4">
+            <?php $aspectRatioChoices = \open20\amos\attachments\utility\AttachmentsUtility::getConfigCropGallery(); ?>
             <div>
                 <?=
                 $form->field($model, 'attachImage')->widget(\open20\amos\attachments\components\CropInput::classname(),
                     [
-                         'hidePreviewDeleteButton' => true,
+                        'hidePreviewDeleteButton' => true,
                         'enableUploadFromGallery' => false,
-                        'aspectRatioChoices' => [
-                            [
-                                'title' => 'Elimina Crop',
-                                'value' => 'x',
-                                'label' => \open20\amos\core\icons\AmosIcons::show('close'),
-                            ],
-                            [
-                                'title' => 'Fattore di crop libero',
-                                'value' => 'NaN',
-                                'label' => 'Libero',
-                            ],
-                            [
-                                'title' => '16:9',
-                                'value' => '1.7',
-                                'label' => '16:9',
-                            ],
-                            [
-                                'title' => '1:1',
-                                'value' => '1',
-                                'label' => '1:1',
-                            ],
-                        ],
+                        'aspectRatioChoices' => $aspectRatioChoices,
+
                         'jcropOptions' => ['aspectRatio' => '1.7']
-                    ])->label(FileModule::t('amosattachments', '#image_field')."<span class='text-danger'> *</span>")
+                    ])->label(FileModule::t('amosattachments', '#image_field') . "<span class='text-danger'> *</span>")
                 ?>
             </div>
 

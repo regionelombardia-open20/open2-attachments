@@ -18,7 +18,8 @@ use open20\amos\attachments\FileModule;
  * @var open20\amos\attachments\models\search\AttachGalleryImageSearch $model
  * @var yii\widgets\ActiveForm $form
  */
-
+$module = \Yii::$app->getModule('attachments');
+$disableFreeCropGallery = $module->disableFreeCropGallery;
 
 ?>
 <div class="attach-gallery-image-search element-to-toggle" data-toggle-element="form-search">
@@ -74,14 +75,18 @@ use open20\amos\attachments\FileModule;
         </div>
 
         <div class="col-md-6">
-
+            <?php
+            $aspectRatio = [
+                '1.7' => '16:9',
+                '1' => '1:1',
+            ];
+            if(!$disableFreeCropGallery){
+                $aspectRatio['other']= FileModule::t('amosattachments', 'Other');
+            }
+            ?>
             <?=
             $form->field($model, 'aspectRatioSearch')->widget(\kartik\select2\Select2::className(), [
-                'data' => [
-                    '1.7' => '16:9',
-                    '1' => '1:1',
-                    'other' => FileModule::t('amosattachments', 'Other'),
-                ],
+                'data' => $aspectRatio,
                 'options' => [
                     'placeholder' => FileModule::t('amosattachments', 'Seleziona...'),
                 ],

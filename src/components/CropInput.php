@@ -123,8 +123,8 @@ class CropInput extends InputWidget
             }
         }
 
-        $oldGetAttribute = 'get'.$this->attribute;
-        if ((property_exists($this->model, $this->attribute) || isset($this->model->{$this->attribute})) && ($this->model->{$this->attribute} || $this->model->$oldGetAttribute())) {
+        $oldGetAttribute = 'get'.ucfirst($this->attribute);
+        if ((property_exists($this->model, $this->attribute) || isset($this->model->{$this->attribute})) && ($this->model->{$this->attribute} || method_exists($this->model,$oldGetAttribute))) {
             if (is_null($this->defaultPreviewImage)) {
                 $this->defaultPreviewImage = $this->model->{$this->attribute}->url;
             }

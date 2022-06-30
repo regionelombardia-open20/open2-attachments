@@ -140,7 +140,13 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
             'class' => 'btn btn-primary',
             'title' => FileModule::t('amosattachments', "Richiedi nuova immagine")
         ]);
-        Yii::$app->view->params['createNewBtnParams']['layout'] = $btnUploadImage.$btnRequestImage;
+        Yii::$app->view->params['createNewBtnParams']['layout'] = $btnUploadImage;
+
+        if (\Yii::$app->user->can('ATTACHGALLERYREQUEST_CREATE')) {
+            Yii::$app->view->params['additionalButtons'] = [
+                'htmlButtons' => [$btnRequestImage]
+            ];
+        }
 
     }
 
