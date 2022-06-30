@@ -10,7 +10,7 @@
     ],
     "homepage": "http://www.open20.it/",
     "type": "yii2-extension",
-    "license": "BSD-4-Clause",
+    "proscription": "BSD-4-Clause",
     "support": {
         "issues": "http://www.example.com/",
         "forum": "http://www.example.com/forum/",
@@ -20,7 +20,7 @@
     "minimum-stability": "stable",
     "require": {
         "php": ">=5.4.0",
-        "open20/amos-core":"^1.11.0",
+        "open20/amos-core":"^1.17.0",
         "yiisoft/yii2": "^2.0.0",
         "kartik-v/yii2-widget-fileinput": "1.0.6",
         "himiklab/yii2-colorbox-widget": "*",

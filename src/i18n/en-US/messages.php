@@ -16,6 +16,10 @@ return [
     'Attach File ID' => 'Attach File ID',
     '#attach_list_delete_title' => 'Delete file',
     '#attach_list_download_title' => 'Download file',
+    '#attach_list_move_down_data_confirm' => 'Are you sure you want to move down this item?',
+    '#attach_list_move_down_title' => 'Move down',
+    '#attach_list_move_up_data_confirm' => 'Are you sure you want to move up this item?',
+    '#attach_list_move_up_title' => 'Move up',
     '#attach_list_no_items' => 'No attachments',
     '#attach_list_preview_icon_title' => 'Preview image',
     '#attach_list_title' => 'Attachments uploaded',
@@ -54,6 +58,7 @@ return [
     'The behavior {FileBehavior} has not been attached to the model.' => 'The behavior {FileBehavior} has not been attached to the model.',
     'The behavior FileBehavior has not been attached to the model.' => 'The behavior FileBehavior has not been attached to the model.',
     'The model cannot be empty.' => 'The model cannot be empty.',
+    'The request must be post' => 'The request must be post.',
     ' to ' => ' to ',
     'Type' => 'Type',
     'You can upload at most 3 files.' => 'You can upload at most 3 files.',
@@ -77,4 +82,6 @@ return [
     'Categories' => 'Categories',
     '#choose_image_from_gallery' => 'Choose image from gallery',
     '#select_gallery_image' => 'Select image',
+    "E' necessario inserire un'immagine." => "Please upload an image file.",
+
 ];

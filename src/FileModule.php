@@ -16,6 +16,7 @@ use open20\amos\core\module\AmosModule;
 
 use open20\amos\core\utilities\ZipUtility;
 use yii\base\Exception;
+use yii\db\ActiveQuery;
 use yii\helpers\ArrayHelper;
 use yii\helpers\FileHelper;
 use yii\log\Logger;
@@ -264,6 +265,14 @@ class FileModule extends AmosModule
             if ($encrypt) {
                 $file->encrypted = File::IS_ENCRYPTED;
             }
+
+            /** @var ActiveQuery $query */
+            $query = File::find();
+            $query->andWhere(['model' => $ownerClass]);
+            $query->andWhere(['attribute' => $attribute]);
+            $query->andWhere(['itemId' => $ownerId]);
+            $maxSort = $query->max('sort');
+            $file->sort = ($maxSort + 1);
 
             if ($file->save()) {
                 if($dropOriginFile) {

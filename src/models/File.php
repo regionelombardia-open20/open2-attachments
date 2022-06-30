@@ -15,7 +15,7 @@ use open20\amos\attachments\FileModule;
 use open20\amos\attachments\FileModuleTrait;
 use open20\amos\core\record\Record;
 use yii\behaviors\TimestampBehavior;
-use yii\db\ActiveRecord;
+use yii\db\ActiveQuery;
 use yii\helpers\Url;
 
 /**
@@ -38,6 +38,8 @@ use yii\helpers\Url;
  * @property integer $num_downloads
  * @property integer $encrypted
  * @property FileRefs[] $attachFileRefs
+ *
+ * @property \open20\amos\attachments\models\File[] $attachmentWithBrothers
  *
  * @package open20\amos\attachments\models
  */
@@ -116,7 +118,7 @@ class File extends Record
     public function getUrl($size = 'original', $absolute = false, $canCache = false)
     {
         $hash = FileRefs::getHashByAttachFile($this, $size);
-        return $this->generateUrlForHash($hash, $absolute,$canCache);
+        return $this->generateUrlForHash($hash, $absolute, $canCache);
     }
 
     /**
@@ -126,7 +128,7 @@ class File extends Record
     public function getWebUrl($size = 'original', $absolute = false, $canCache = false)
     {
         $hash = FileRefs::getHashByAttachFile($this, $size, false);
-        return $this->generateUrlForHash($hash, $absolute,$canCache);
+        return $this->generateUrlForHash($hash, $absolute, $canCache);
     }
 
     /**
@@ -135,7 +137,8 @@ class File extends Record
      * @param bool $canCache
      * @return string
      */
-    public function generateUrlForHash($hash, $absolute, $canCache = false) {
+    public function generateUrlForHash($hash, $absolute, $canCache = false)
+    {
         $baseUrl = Url::to(['/' . FileModule::getModuleName() . '/file/view', 'hash' => $hash, 'canCache' => $canCache]);
 
         if (!$absolute)
@@ -163,7 +166,8 @@ class File extends Record
     /**
      * @return integer
      */
-    public function getNumDownloads(){
+    public function getNumDownloads()
+    {
         return $this->num_downloads;
     }
 
@@ -176,11 +180,23 @@ class File extends Record
         return '5dd2d749acf49';
     }
 
-    public function getOwner() {
-        if(class_exists($this->model) && method_exists($this->model, 'find')) {
+    public function getOwner()
+    {
+        if (class_exists($this->model) && method_exists($this->model, 'find')) {
             return $this->hasOne($this->model, ['id' => 'itemId']);
         }
 
         return null;
+    }
+
+    /**
+     * @return ActiveQuery
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function getAttachmentWithBrothers()
+    {
+        return $this->hasMany(self::className(), ['model' => 'model'])
+            ->andWhere(['itemId' => $this->itemId])
+            ->andWhere(['attribute' => $this->attribute]);
     }
 }

@@ -107,8 +107,12 @@ class CropInput extends InputWidget
             'zoomable' => FALSE,
             'rotatable' => true
         ];
+        $default_options = [
+            'accept' => "image/*",
+        ];
 
         $this->jcropOptions = array_merge($default_jcropOptions, $this->jcropOptions);
+        $this->options = array_merge($default_options, $this->options);
 
         return $this->render('crop-view', [
         'inputField' => $inputField,

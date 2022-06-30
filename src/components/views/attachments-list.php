@@ -5,16 +5,23 @@
  * OPEN 2.0
  *
  *
- * @package    open20\amos\attachments
+ * @package    open20\amos\attachments\components\views
  * @category   CategoryName
  */
 
-use \open20\amos\attachments\FileModule;
+use open20\amos\attachments\assets\ModuleAttachmentsAsset;
+use open20\amos\attachments\FileModule;
 use himiklab\colorbox\Colorbox;
 
-\open20\amos\attachments\assets\ModuleAttachmentsAsset::register($this);
+/**
+ * @var array $filesList
+ * @var bool $viewFilesCounter
+ * @var int $filesQuantity
+ */
 
-if($viewFilesCounter) {
+ModuleAttachmentsAsset::register($this);
+
+if ($viewFilesCounter) {
     $this->registerJs(<<<JS
     
     var filesQuantity = "$filesQuantity";
@@ -54,6 +61,7 @@ JS
             <div class="attachment-list-item-action">
                 <?= $file['preview']; ?>
                 <?= $file['downloadButton']; ?>
+                <?= $file['sortButtons']; ?>
                 <?= $file['deleteButton']; ?>
             </div>
         </div>

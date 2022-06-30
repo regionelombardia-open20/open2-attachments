@@ -5,7 +5,7 @@
  * OPEN 2.0
  *
  *
- * @package    open20\amos\attachments
+ * @package    open20\amos\attachments\components
  * @category   CategoryName
  */
 
@@ -30,7 +30,6 @@ class AttachmentsInput extends FileInput
 {
     use FileModuleTrait;
 
-    public $attribute; // TODO verificarne la reale utilità
     public $asyncMode = false;
     public $enableGoogleDrive = false;
 

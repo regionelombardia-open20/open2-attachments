@@ -1,14 +1,5 @@
 <?php
 
-/**
- * Aria S.p.A.
- * OPEN 2.0
- *
- *
- * @package    Open20Package
- * @category   CategoryName
- */
-
 use kartik\select2\Select2;
 use kartik\datecontrol\DateControl;
 use yii\helpers\Html;
