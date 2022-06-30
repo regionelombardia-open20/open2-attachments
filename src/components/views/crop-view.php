@@ -11,6 +11,7 @@
  * @var \yii\web\View $this
  * @var \open20\amos\attachments\components\CropInput $crop
  * @var string $inputField
+ * @var array|boolean $cropModalCloseButton
  */
 
 use yii\helpers\Html;
@@ -30,6 +31,8 @@ if (!empty(\Yii::$app->params['bsVersion']) && \Yii::$app->params['bsVersion'] =
 }
 
 $cropperInputId = (isset($crop->options['id']) && (!empty($crop->options['id'])))? ('cropInput_' . $crop->options['id']): ('cropInput_' . $crop->attribute);
+$closeButtonModalId = $crop->imageOptions['id'] . '_button_cancel';
+$modalId = 'cropper-modal-' . $crop->imageOptions['id'];
 
 $js = <<<JS
 //On delete button click
@@ -75,6 +78,11 @@ jQuery('.modal-body .tools>.aspectratio_{$crop->attribute}', '#{$cropperInputId}
 //On new image selected
 jQuery('.modal-footer button[class*="cropper-done"]', '#{$cropperInputId}').on('click', function() {
     jQuery('.deleteImageCrop', '#{$cropperInputId}').removeClass('hidden');
+});
+
+jQuery('#{$closeButtonModalId}').click(function(e){
+    e.preventDefault();
+    $('#{$modalId}').modal('hide');
 });
 
 JS;
@@ -135,12 +143,14 @@ $this->registerCss($css);
 
     <?php if (!empty(\Yii::$app->params['bsVersion']) && \Yii::$app->params['bsVersion'] == '4.x') : ?>
 
-        <?php yii\bootstrap4\Modal::begin([
+        <?php
+        //\yii\helpers\VarDumper::dump($cropModalCloseButton,3,true);
+        yii\bootstrap4\Modal::begin([
             'id' => 'cropper-modal-' . $crop->imageOptions['id'],
             'title' => '<h2>' . FileModule::t('amosattachments', '#crop_title') . '</h2>',
-            'closeButton' => [],
+            'closeButton' => $cropModalCloseButton,
             'footer' => '<div class="cropper-btns">'
-                . Html::button(FileModule::t('amosattachments', '#cancel_btn'), ['id' => $crop->imageOptions['id'] . '_button_cancel', 'class' => 'btn btn-link mr-3', 'data-dismiss' => 'modal'])
+                . Html::button(FileModule::t('amosattachments', '#cancel_btn'), ['id' => $crop->imageOptions['id'] . '_button_cancel', 'class' => 'btn btn-link mr-3'])
                 . Html::button(FileModule::t('amosattachments', '#accept_btn'), ['id' => $crop->imageOptions['id'] . '_button_accept', 'class' => 'btn btn-primary cropper-done']) . '</div>',
             'size' => yii\bootstrap4\Modal::SIZE_LARGE,
             'clientOptions' => ['backdrop' => 'static'] //To prevent closing when you drag outside the modal window

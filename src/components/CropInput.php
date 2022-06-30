@@ -67,6 +67,9 @@ class CropInput extends InputWidget
     /** @var boolean */
     var $enableUploadFromGallery = true;
 
+    /** @var array */
+    var $cropModalCloseButton = [];
+
     /**
      * only call this method after a form closing and
      *    when user hasn't used in the widget call the parameter $form
@@ -136,15 +139,17 @@ class CropInput extends InputWidget
         ];
         $default_options = [
             'accept' => "image/*",
+            'aria-label' => 'Seleziona file',
         ];
 
         $this->jcropOptions = array_merge($default_jcropOptions, $this->jcropOptions);
         $this->options = array_merge($default_options, $this->options);
 
         return $this->render('crop-view', [
-        'inputField' => $inputField,
-        'crop' => $this,
-        'aspectRatioChoices' => $this->aspectRatioChoices,
+            'inputField' => $inputField,
+            'crop' => $this,
+            'aspectRatioChoices' => $this->aspectRatioChoices,
+            'cropModalCloseButton' => $this->cropModalCloseButton,
         ]);
     }
 }
