@@ -46,86 +46,95 @@ use open20\amos\core\forms\TextEditorWidget;
         ]);
         ?>
         <div class="row">
-            <div class="col-xs-12"><h2 class="subtitle-form"><?= FileModule::t('amosattachments', "#settings") ?></h2>
-                <div class="col-md-12 col xs-12"><!-- name string -->
-                    <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?><!-- description text -->
-                    <?=
-                    $form->field($model, 'description')->widget(TextEditorWidget::className(),
-                        [
+            <div class="col-xs-12">
+                <h2 class="subtitle-form"><?= FileModule::t('amosattachments', "#settings") ?></h2>
+                <div class="row">
+
+                    <div class="col-md-12 col xs-12"><!-- name string -->
+                        <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?><!-- description text -->
+                        <?=
+                        $form->field($model, 'description')->widget(TextEditorWidget::className(),
+                            [
+                            'options' => [
+                                'id' => 'description'.$fid,
+                            ],
+                            'clientOptions' => [
+                                'placeholder' => FileModule::t('amosattachments', '#description_field_placeholder'),
+                                'lang' => substr(Yii::$app->language, 0, 2)
+                            ]
+                        ]);
+                        ?>
+                        <?php /* $form->field($model, 'description')->widget(yii\redactor\widgets\Redactor::className(), [
                         'options' => [
-                            'id' => 'description'.$fid,
+                        'id' => 'description' . $fid,
                         ],
                         'clientOptions' => [
-                            'placeholder' => FileModule::t('amosattachments', '#description_field_placeholder'),
-                            'lang' => substr(Yii::$app->language, 0, 2)
-                        ]
-                    ]);
-                    ?>
-                    <?php /* $form->field($model, 'description')->widget(yii\redactor\widgets\Redactor::className(), [
-                      'options' => [
-                      'id' => 'description' . $fid,
-                      ],
-                      'clientOptions' => [
-                      'language' => substr(Yii::$app->language, 0, 2),
-                      'plugins' => ['clips', 'fontcolor', 'imagemanager'],
-                      'buttons' => ['format', 'bold', 'italic', 'deleted', 'lists', 'image', 'file', 'link', 'horizontalrule'],
-                      ],
-                      ]); */
-                    ?><?= RequiredFieldsTipWidget::widget(); ?>
+                        'language' => substr(Yii::$app->language, 0, 2),
+                        'plugins' => ['clips', 'fontcolor', 'imagemanager'],
+                        'buttons' => ['format', 'bold', 'italic', 'deleted', 'lists', 'image', 'file', 'link', 'horizontalrule'],
+                        ],
+                        ]); */
+                        ?><?= RequiredFieldsTipWidget::widget(); ?>
 
-                    <?= CloseSaveButtonWidget::widget(['model' => $model]); ?><?php ActiveForm::end(); ?></div>
-                <div class="col-md-4 col xs-12"></div>
+                        <?= CloseSaveButtonWidget::widget(['model' => $model]); ?><?php ActiveForm::end(); ?></div>
+                    <div class="col-md-4 col xs-12"></div>
+                </div>
+                
             </div>
         </div>
     <?php } ?>
 
     <div class="row">
-        <div class="col-xs-12"><h2 class="subtitle-form"><?= FileModule::t('amosattachments', '#images') ?></h2>
+        <div class="col-xs-12">
+            <h2 class="subtitle-form"><?= FileModule::t('amosattachments', '#images') ?></h2>
+        <div class="row">
             <div class="col-lg-12 col-sm-12">
-                <?php if (!$model->isNewRecord) { ?>
-                    <?=
-                    Html::a(FileModule::t('amosattachments', '#new_image'),
-                        ['/attachments/attach-gallery-image/create', 'id' => $model->id],
-                        ['class' => 'btn btn-navigation-primary'])
-                    ?>
-                    <?php
-                    echo \open20\amos\core\views\AmosGridView::widget([
-                        'dataProvider' => $dataProviderImages,
-                        'columns' => [
-                            'image' => [
-                                'label' => FileModule::t('amosattachments', 'Image'),
-                                'format' => 'html',
-                                'value' => function ($model) {
-                                    $url = '';
-                                    if ($model->attachImage) {
-                                        $url = $model->attachImage->getUrl('square_small');
+                    <?php if (!$model->isNewRecord) { ?>
+                        <!--< ?=
+                        Html::a(FileModule::t('amosattachments', '#new_image'),
+                            ['/attachments/attach-gallery-image/create', 'id' => $model->id],
+                            ['class' => 'btn btn-navigation-primary'])
+                        ?>-->
+                        <?php
+                        echo \open20\amos\core\views\AmosGridView::widget([
+                            'dataProvider' => $dataProviderImages,
+                            'columns' => [
+                                'image' => [
+                                    'label' => FileModule::t('amosattachments', 'Image'),
+                                    'format' => 'html',
+                                    'value' => function ($model) {
+                                        $url = '';
+                                        if ($model->attachImage) {
+                                            $url = $model->attachImage->getUrl('square_small');
+                                        }
+                                        return \open20\amos\core\helpers\Html::img($url,
+                                                [
+                                                'class' => 'gridview-image',
+                                                'alt' => FileModule::t('amosattachments', 'Image')
+                                        ]);
                                     }
-                                    return \open20\amos\core\helpers\Html::img($url,
-                                            [
-                                            'class' => 'gridview-image',
-                                            'alt' => FileModule::t('amosattachments', 'Image')
-                                    ]);
-                                }
-                            ],
-//                        'name',
-                            [
-                                'attribute' => 'category.name',
-                                'label' => FileModule::t('amosattachments', "Category")
-                            ],
-                            [
-                                'class' => \open20\amos\core\views\grid\ActionColumn::className(),
-                                'controller' => 'attach-gallery-image',
+                                ],
+                                //'name',
+                                [
+                                    'attribute' => 'category.name',
+                                    'label' => FileModule::t('amosattachments', "Category")
+                                ],
+                                [
+                                    'class' => \open20\amos\core\views\grid\ActionColumn::className(),
+                                    'controller' => 'attach-gallery-image',
+                                ]
                             ]
-                        ]
-                    ]);
+                        ]);
+                        ?>
+                        <?php
+                    } else {
+                        echo "<p>".FileModule::t('amosattachments',
+                            "E' necessario salvare per poter inserire delle immagini alla galleria")."</p>";
+                    }
                     ?>
-                    <?php
-                } else {
-                    echo "<p>".FileModule::t('amosattachments',
-                        "E' necessario salvare per poter inserire delle immagini alla galleria")."</p>";
-                }
-                ?>
+                </div>
             </div>
+            
         </div>
     </div>
     <div class="clearfix"></div>

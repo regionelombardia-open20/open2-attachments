@@ -304,7 +304,12 @@ class FileBehavior extends Behavior
             }
 
             if ($cropData) {
-                $this->cropImage($file, $cropData);
+
+                $cropInfo = Json::decode($cropData);
+                if (((isset($cropInfo['width'])) &&  ($cropInfo['width'] > 0)) && ((isset($cropInfo['height'])) &&  ($cropInfo['height'] > 0))) {
+                    $this->cropImage($file, $cropData);
+                }
+               
             }
 
             if (!$file->saveAs($this->getModule()->getUserDirPath($attribute) . $file->name)) {

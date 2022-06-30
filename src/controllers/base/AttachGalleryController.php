@@ -22,6 +22,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use open20\amos\core\icons\AmosIcons;
+use open20\amos\admin\AmosAdmin;
 use open20\amos\core\helpers\Html;
 use open20\amos\core\helpers\T;
 use yii\helpers\Url;
@@ -61,6 +62,42 @@ class AttachGalleryController extends CrudController
 
         parent::init();
         $this->setUpLayout();
+    }
+
+    public function beforeAction($action)
+    {
+        if (\Yii::$app->user->isGuest) {
+            $titleSection = FileModule::t('amosattachments', 'Galleria');
+            $ctaLoginRegister = Html::a(
+                FileModule::t('amosattachments', 'accedi o registrati alla piattaforma'),
+                    isset(\Yii::$app->params['linkConfigurations']['loginLinkCommon']) ? \Yii::$app->params['linkConfigurations']['loginLinkCommon']
+                        : \Yii::$app->params['platform']['backendUrl'].'/'.AmosAdmin::getModuleName().'/security/login',
+                    [
+                    'title' => FileModule::t('amosattachments',
+                        'Clicca per accedere o registrarti alla piattaforma {platformName}',
+                        ['platformName' => \Yii::$app->name])
+                    ]
+            );
+        } else {
+            $titleSection = FileModule::t('amosattachments', 'Galleria');
+        }
+
+
+
+
+
+
+        $this->view->params = [
+            'titleSection' => $titleSection,
+        ];
+
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        // other custom code here
+
+        return true;
     }
 
     /**
@@ -219,6 +256,8 @@ class AttachGalleryController extends CrudController
 
         }
     }
+
+    
 
 
 

@@ -53,7 +53,7 @@ class AttachmentsList extends AttachmentsTableWithPreview
             $fileQuery = $this->model->hasMultipleFiles($attribute);
         }
 
-        $dataProvider = new ActiveDataProvider(['query' => $fileQuery, 'pagination' => false]);
+        $dataProvider = new ActiveDataProvider(['query' => $fileQuery]);
 
         $files = [];
         $filesQuantity = 0;

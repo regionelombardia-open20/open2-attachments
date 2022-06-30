@@ -35,6 +35,10 @@ IMPORT STYLE-CUSTOM
   .help-block{
     display: flex;
    }
+  .preview-pane {
+    padding: 0 !important;
+    position: relative !important;
+  }
 }
 
 .attachment-uploadcrop.uploadcrop {
@@ -70,6 +74,7 @@ IMPORT STYLE-CUSTOM
         font-family: inherit;
         line-height: 20px;
         color: @secondary-color;
+        display: none;
 
         &::after {
           content: '\e914';
@@ -96,6 +101,60 @@ IMPORT STYLE-CUSTOM
           }
         }
 
+      }
+    }
+
+    input[type="file"] {
+      display: block;
+      /* override uploadcrop.css */
+      text-align: left;
+      padding: 10px 6px;
+      position: relative;
+
+      /* same as amos-layout .input-style */
+      border: 1px solid @border-color-default;
+      border-bottom-color: darken(@border-color-default, 25%);
+      -webkit-border-radius: 0;
+      -moz-border-radius: 0;
+      border-radius: 6px;
+      box-shadow: none;
+      background: @white-color;
+
+      /* same as amos-layout .amos-font-form */
+      font-size: 10px;
+      font-weight: bold;
+      letter-spacing: 0.7px;
+      font-family: inherit;
+      line-height: 20px;
+      color: @secondary-color;
+
+      &:hover {
+        cursor: pointer;
+      }
+
+      &::after {
+        content: '\e914';
+        font-family: dashboard;
+        position: absolute;
+        right: 0px;
+        font-size: 1.5em;
+        bottom: -1px;
+        /* same as amos-layout .btn */
+        color: @primary-color;
+        background: contrast(@primary-color);
+        padding: 12px;
+
+        border-top-right-radius: 5px;
+        border-bottom-right-radius: 5px;
+
+      }
+
+      &:hover {
+        &::after {
+          background: @primary-color;
+          color: contrast(@primary-color);
+
+        }
       }
     }
   }
@@ -204,7 +263,7 @@ IMPORT STYLE-CUSTOM
     font-size: 16px;
     line-height: normal;
     position: relative;
-    
+
   }
 
   .am {
@@ -215,7 +274,7 @@ IMPORT STYLE-CUSTOM
   >button {
     +.btn.btn-primary {
       height: 45px;
-      
+
 
       +.btn.btn-primary {
         height: 45px;

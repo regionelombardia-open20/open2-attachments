@@ -18,6 +18,7 @@ use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
+use open20\amos\attachments\FileModule;
 use Yii;
 
 /**
@@ -101,6 +102,16 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
             }
         }
 
+        if (!\Yii::$app->user->isGuest) {
+            $this->view->params['titleSection'] = FileModule::t('amosattachments', 'Galleria');
+            $this->view->params['labelCreate']  = FileModule::t('amosattachments', 'Nuova immagine');
+            $this->view->params['titleCreate'] = FileModule::t('amosattachments', 'Inserisci una nuova immagine');
+            $this->view->params['urlCreate']   = '/attachments/attach-gallery-image/create?id='. $this->model->id;
+            
+           
+
+        }
+
         return $this->render('update', [
             'model' => $this->model,
             'fid' => NULL,
@@ -115,12 +126,33 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
      */
     private function setCreateNewBtnLabelSingle()
     {
-        Yii::$app->view->params['createNewBtnParams'] = [
-            'createNewBtnLabel' => Module::t('amossitemanagement', 'New')
-        ];
+     
         Yii::$app->view->params['createNewBtnParams']['layout'] = '';
-
+    
     }
 
+     /**
+     * @return array
+     */
+    public static function getManageLinks()
+    {
+ 
+        $links[] = [
+            'title' => FileModule::t('amosattachments', 'Categorie'),
+            'label' => FileModule::t('amosattachments', 'Tutte le categorie'),
+            'url' => '/attachments/attach-gallery-category/index'
+        ];
+        $links[] = [
+            'title' => FileModule::t('amosattachments', 'Galleria'),
+            'label' => FileModule::t('amosattachments', 'Vedi la galleria'),
+            'url' => '/attachments/attach-gallery/single-gallery'
+        ];
 
+      
+        
+
+        return $links;
+    }
+
+    
 }

@@ -83,6 +83,43 @@ class AttachGalleryCategoryController extends CrudController
         $this->setUpLayout();
     }
 
+    public function beforeAction($action)
+    {
+        if (\Yii::$app->user->isGuest) {
+            $titleSection = FileModule::t('amosattachments', 'Categorie');
+            $ctaLoginRegister = Html::a(
+                FileModule::t('amosattachments', 'accedi o registrati alla piattaforma'),
+                    isset(\Yii::$app->params['linkConfigurations']['loginLinkCommon']) ? \Yii::$app->params['linkConfigurations']['loginLinkCommon']
+                        : \Yii::$app->params['platform']['backendUrl'].'/'.AmosAdmin::getModuleName().'/security/login',
+                    [
+                    'title' => FileModule::t('amosattachments',
+                        'Clicca per accedere o registrarti alla piattaforma {platformName}',
+                        ['platformName' => \Yii::$app->name])
+                    ]
+            );
+        } else {
+            $titleSection = FileModule::t('amosattachments', 'Categorie');
+        }
+
+
+
+
+
+
+        $this->view->params = [
+            'titleSection' => $titleSection,
+        ];
+
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        // other custom code here
+
+        return true;
+    }
+
+
     /**
      * Lists all AttachGalleryCategory models.
      * @return mixed
@@ -95,6 +132,16 @@ class AttachGalleryCategoryController extends CrudController
         $this->setListViewsParams($setCurrentDashboard = true);
         $this->setDataProvider($this->modelSearch->search(Yii::$app->request->getQueryParams()));
         $this->getDataProvider()->query->orderBy('default_order ASC');
+
+        if (!\Yii::$app->user->isGuest) {
+            $this->view->params['labelCreate']  = FileModule::t('amosattachments', 'Nuova categoria');
+            $this->view->params['titleCreate'] = FileModule::t('amosattachments', 'Inserisci una nuova categoria');
+            $this->view->params['urlCreate']   = '/attachments/attach-gallery-category/create';
+            
+           
+
+        } 
+
         return parent::actionIndex($layout);
     }
 
@@ -240,4 +287,26 @@ class AttachGalleryCategoryController extends CrudController
 
     }
 
+      /**
+     * @return array
+     */
+    public static function getManageLinks()
+    {
+ 
+        $links[] = [
+            'title' => FileModule::t('amosattachments', 'Vedi tutte le categorie'),
+            'label' => FileModule::t('amosattachments', 'Categorie'),
+            'url' => '/attachments/attach-gallery-category/index'
+        ];
+        $links[] = [
+            'title' => FileModule::t('amosattachments', 'Vedi la galleria immagini'),
+            'label' => FileModule::t('amosattachments', 'Galleria immagini'),
+            'url' => '/attachments/attach-gallery/single-gallery'
+        ];
+
+      
+        
+
+        return $links;
+    }
 }

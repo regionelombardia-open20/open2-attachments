@@ -33,7 +33,7 @@ class FileModule extends AmosModule
      */
     public $cache_age = null;
     /**
-     * Папка, в которую прокинут линк для прямого доступа по http
+     * The folder into which the link is thrown for direct access via http
      * @var string
      */
     public $webDir = 'files';
@@ -53,6 +53,18 @@ class FileModule extends AmosModule
     public $disableGallery = true;
 
     public $enableSingleGallery = true;
+
+    /**
+     * If set to true it verifies that the parent record is visible to download
+     * @var bool  $checkParentRecordForDownload
+     */
+    public $checkParentRecordForDownload = false;
+
+    /**
+     * E.g: 'original'
+     * @var string $forceCrop
+     */
+    public $forceCrop;
 
     /**
      * @var null|\amos\statistics\models\AttachmentsStatsInterface

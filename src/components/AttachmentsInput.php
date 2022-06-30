@@ -118,11 +118,26 @@ class AttachmentsInput extends FileInput
 
         if ($this->pluginOptions['showPreview'] == false) {
             $this->pluginOptions['elErrorContainer'] = '#errorDropUpload-' . $this->attribute;
+            // OLD code to see that caption were converted in the 3 lines with file-caption classes.
+//            $this->pluginOptions['layoutTemplates']['main1'] = "<div id=\"errorDropUpload-{$this->attribute}\"></div>
+//                                                                {preview}
+//                                                                <div class=\"kv-upload-progress kv-hidden\"></div><div class=\"clearfix\"></div>
+//                                                                <div class=\"input-group {class}\">
+//                                                                  {caption}
+//                                                                  <div class=\"input-group-btn\">
+//                                                                    {cancel}
+//                                                                    {upload}
+//                                                                    {browse}" . $driveButton . "
+//                                                                  </div>
+//                                                                </div>";
             $this->pluginOptions['layoutTemplates']['main1'] = "<div id=\"errorDropUpload-{$this->attribute}\"></div>
                                                                 {preview}
                                                                 <div class=\"kv-upload-progress kv-hidden\"></div><div class=\"clearfix\"></div>
                                                                 <div class=\"input-group {class}\">
-                                                                  {caption}
+                                                                  <div class=\"file-caption form-control {class}\" tabindex=\"500\">
+                                                                    <span class=\"file-caption-icon\"></span>
+                                                                    <input class=\"file-caption-name\" onkeydown=\"return false;\" onpaste=\"return false;\" tabindex=\"-1\">
+                                                                  </div>
                                                                   <div class=\"input-group-btn\">
                                                                     {cancel}
                                                                     {upload}
@@ -135,10 +150,21 @@ class AttachmentsInput extends FileInput
                                                                 <div class=\"kv-upload-progress hide\"></div>
                                                                 {remove}{cancel}\n{upload}\n{browse}" . $driveButton;
         } else {
+            // OLD code to see that caption were converted in the 3 lines with file-caption classes.
+//            $this->pluginOptions['layoutTemplates']['main1'] = '{preview}
+//                <div class="kv-upload-progress kv-hidden"></div><div class="clearfix"></div>
+//                <div class="input-group {class}">
+//                  {caption}
+//                <div class="input-group-btn input-group-append"> {remove}{cancel}{upload}{browse}'. $driveButton.'
+//                 </div>
+//                </div>';
             $this->pluginOptions['layoutTemplates']['main1'] = '{preview}
                 <div class="kv-upload-progress kv-hidden"></div><div class="clearfix"></div>
                 <div class="input-group {class}">
-                  {caption}
+                <div class="file-caption form-control {class}" tabindex="500">
+                    <span class="file-caption-icon"></span>
+                    <input class="file-caption-name" onkeydown="return false;" onpaste="return false;" tabindex="-1">
+                </div>
                 <div class="input-group-btn input-group-append"> {remove}{cancel}{upload}{browse}'. $driveButton.'
                  </div>
                 </div>';

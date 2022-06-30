@@ -11,16 +11,17 @@
  * @var \yii\web\View $this
  * @var \open20\amos\attachments\components\CropInput $crop
  * @var string $inputField
+ * @var array|boolean $cropModalCloseButton
  */
 use yii\bootstrap\Modal;
-use yii\helpers\Html; 
+use yii\helpers\Html;
 use yii\helpers\Json;
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\assets\ModuleAttachmentsAsset;
 use uitrick\yii2\widget\upload\crop\UploadCropAsset;
 use open20\amos\core\icons\AmosIcons;
 
-$inputId    = Html::getInputId($crop->model, $crop->attribute);
+$inputId    = (isset($crop->options['id']) && (!empty($crop->options['id'])))? $crop->options['id']: Html::getInputId($crop->model, $crop->attribute);
 $moduleName = FileModule::getModuleName();
 
 
@@ -30,6 +31,9 @@ if (!empty(\Yii::$app->params['bsVersion']) && \Yii::$app->params['bsVersion'] =
     \open20\amos\attachments\assets\ModuleAttachmentsAsset::register($this);
 }
 
+$cropperInputId = (isset($crop->options['id']) && (!empty($crop->options['id'])))? ('cropInput_' . $crop->options['id']): ('cropInput_' . $crop->attribute);
+$closeButtonModalId = $crop->imageOptions['id'] . '_button_cancel';
+$modalId = 'cropper-modal-' . $crop->imageOptions['id'];
 
 $js2 = <<<JS
 
@@ -42,7 +46,7 @@ $this->registerJs($js2, \yii\web\View::POS_READY);
 
 $js = <<<JS
 //On delete button click
-jQuery('.deleteImageCrop', '#cropInput_{$crop->attribute}').on('click', function() {
+jQuery('.deleteImageCrop', '#{$cropperInputId}').on('click', function() {
     //Metadata
     var data = jQuery(this).data();
     
@@ -50,10 +54,10 @@ jQuery('.deleteImageCrop', '#cropInput_{$crop->attribute}').on('click', function
     jQuery(this).addClass('hidden');
     
     //Remove the image
-    jQuery('.preview-container img', '#cropInput_{$crop->attribute}').remove();
+    jQuery('.preview-container img', '#{$cropperInputId}').remove();
     
     //Clear crop if exists
-    jQuery('.cropper-data', '#cropInput_{$crop->attribute}').attr('val', '');
+    jQuery('.cropper-data', '#{$cropperInputId}').attr('val', '');
     
     jQuery.get('/{$moduleName}/file/delete',{
         'id': data.id,
@@ -65,14 +69,32 @@ jQuery('.deleteImageCrop', '#cropInput_{$crop->attribute}').on('click', function
     }, 'json');
 });
 
-jQuery('.modal-body .tools>.rotate_{$crop->attribute}', '#cropInput_{$crop->attribute}').on('click', function() {
+jQuery('.modal-body .tools>.rotate_{$crop->attribute}', '#{$cropperInputId}').on('click', function() {
     var data = jQuery(this).data();
-    $('.modal-body .cropper-wrapper>img', '#cropInput_{$crop->attribute}').cropper(data.type, data.option);
+    var image = $('.modal-body .cropper-wrapper>img', '#{$cropperInputId}');
+    image.cropper(data.type, data.option);
+    image.cropper('crop');
+});
+
+jQuery('.modal-body .tools>.aspectratio_{$crop->attribute}', '#{$cropperInputId}').on('click', function() {
+    var data = jQuery(this).data();
+    var image = $('.modal-body .cropper-wrapper>img', '#{$cropperInputId}');
+    if (data.option == 'x') {
+        image.cropper('clear');
+    } else {
+        image.cropper('crop');
+        image.cropper('setAspectRatio', data.option);
+    }
 });
 
 //On new image selected
-jQuery('.modal-footer button[class*="cropper-done"]', '#cropInput_{$crop->attribute}').on('click', function() {
-    jQuery('.deleteImageCrop', '#cropInput_{$crop->attribute}').removeClass('hidden');
+jQuery('.modal-footer button[class*="cropper-done"]', '#{$cropperInputId}').on('click', function() {
+    jQuery('.deleteImageCrop', '#{$cropperInputId}').removeClass('hidden');
+});
+
+jQuery('#{$closeButtonModalId}').click(function(e){
+    e.preventDefault();
+    $('#{$modalId}').modal('hide');
 });
 JS;
 
@@ -102,30 +124,30 @@ CSS;
 $this->registerCss($css);
 ?>
 
-<div class="uploadcrop attachment-uploadcrop" id="cropInput_<?= $crop->attribute; ?>">
-<?= FileModule::t('amosattachments', '#attach_label_title') ?>
+<div class="uploadcrop attachment-uploadcrop" id="<?= $cropperInputId ?>">
+<?php //FileModule::t('amosattachments', '#attach_label_title') task 10230 ?>
     <?php if( $aspectRatio == '1.7' && $customHint): ?>
-       <?php 
+       <?php
         $ratioTooltipText=FileModule::t('amosattachments', '#default_message');
         $ratioTooltip=" <button type='button' data-toggle='tooltip' style='border:0; background:transparent' data-placement='top' title=' $ratioTooltipText'>
                             <span class='am am-info'></span>
                         </button>";?>
-        
-            <?= 
+
+            <?=
                 $crop->form->field($crop->model, $crop->attribute)
                         ->fileInput($crop->options)
-                        ->label(FileModule::t('amosattachments', '#attach_label'), 
+                        ->label(FileModule::t('amosattachments', '#attach_label'),
                         ['title' => FileModule::t('amosattachments', '#attach_label_title')])
-                        ->hint($customHint.$ratioTooltip); 
+                        ->hint($customHint.$ratioTooltip);
             ?>
-       
+
 
     <?php else: ?>
 
-        <?= 
+        <?=
             $crop->form->field($crop->model, $crop->attribute)
                     ->fileInput($crop->options)
-                    ->label(FileModule::t('amosattachments', '#attach_label'), 
+                    ->label(FileModule::t('amosattachments', '#attach_label'),
                     ['title' => FileModule::t('amosattachments', '#attach_label_title')]);
         ?>
 
@@ -167,12 +189,14 @@ $this->registerCss($css);
 
     <?php if (!empty(\Yii::$app->params['bsVersion']) && \Yii::$app->params['bsVersion'] == '4.x') : ?>
 
-        <?php yii\bootstrap4\Modal::begin([
+        <?php
+        //\yii\helpers\VarDumper::dump($cropModalCloseButton,3,true);
+        yii\bootstrap4\Modal::begin([
               'id' => 'modal-image-crop cropper-modal-' . $crop->imageOptions['id'],
               'title' => '<h2>' . FileModule::t('amosattachments', '#crop_title') . '</h2>',
-              'closeButton' => [],
+              'closeButton' => $cropModalCloseButton,
               'footer' => '<div class="cropper-btns">'
-                  . Html::button(FileModule::t('amosattachments', '#cancel_btn'), ['id' => $crop->imageOptions['id'] . '_button_cancel', 'class' => 'btn btn-link mr-3', 'data-dismiss' => 'modal'])
+                  . Html::button(FileModule::t('amosattachments', '#cancel_btn'), ['id' => $crop->imageOptions['id'] . '_button_cancel', 'class' => 'btn btn-link mr-3'])
                   . Html::button(FileModule::t('amosattachments', '#accept_btn'), ['id' => $crop->imageOptions['id'] . '_button_accept', 'class' => 'btn btn-primary cropper-done']) . '</div>',
               'size' => yii\bootstrap4\Modal::SIZE_LARGE,
               'clientOptions' => ['backdrop' => 'static'] //To prevent closing when you drag outside the modal window
@@ -199,12 +223,33 @@ $this->registerCss($css);
                         </svg>
                     </button>
                 </div>
+
+                <?php
+                    if (isset($aspectRatioChoices) && !empty($aspectRatioChoices)):
+                ?>
+                <div class="btn-group tools">
+                    <?php
+                        foreach ($aspectRatioChoices as $choice):
+                        ?>
+                        <button type="button" class="btn btn-xs btn-info aspectratio_<?= $crop->attribute ?>" data-type="aspectRatio"
+                            data-option="<?= isset($choice['value'])? $choice['value']: '' ?>"
+                            title="<?= isset($choice['title'])? $choice['title']: '' ?>">
+                            <?= isset($choice['label'])? $choice['label']: '' ?>
+                        </button>
+                        <?php
+                        endforeach;
+                    ?>
+                </div>
+                <?php
+                    endif;
+                ?>
             </div>
             <?php if($aspectRatio == 1.7) : ?>
                 <div class="col-md-3 mt-3">
-                    <p>Si consiglia il caricamento di immagini orizzontali in proporzione 16:9 (dimensione consigliata minima: 1348x758px, ideale: 1920x1080px)</p>
+                    <p><?= FileModule::t('amosattachments', 'Si consiglia il caricamento di immagini orizzontali in proporzione 16:9 (dimensione consigliata minima: 1348x758px, ideale: 1920x1080px)') ?></p>
                 </div>
-            <?php endif; ?> 
+            <?php endif; ?>
+
 
         </div>
         <?php yii\bootstrap4\Modal::end(); ?>
@@ -252,8 +297,8 @@ $this->registerCss($css);
                     </div>
                 <?php endif; ?>
             </div>
-            
-            
+
+
         </div>
         <?php Modal::end(); ?>
 
@@ -283,5 +328,5 @@ $jsCropper = <<<JS
 JS;
 
 
-$this->registerJs($jsCropper);
+$this->registerJs($jsCropper, \yii\web\View::POS_READY);
 ?>
