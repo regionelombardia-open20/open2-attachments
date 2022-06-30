@@ -217,4 +217,15 @@ class File extends Record
                 ->andWhere(['itemId' => $this->itemId])
                 ->andWhere(['attribute' => $this->attribute]);
     }
+
+    /**
+     * @return string
+     */
+    public function getFormattedSize(){
+        $dimScale = ['B', 'Kb', 'Mb', 'Gb', 'Tb'];
+        $sizeFile = intval($this->size);
+        $power = $sizeFile > 0 ? floor(log($sizeFile, 1024)) : 0;
+        $size =  number_format($sizeFile / pow(1024, $power), 0, '.', ',') . ' ' . $dimScale[$power];
+        return $size;
+    }
 }

@@ -54,6 +54,8 @@ class FileModule extends AmosModule
 
     public $enableSingleGallery = true;
 
+    public $codiceTagGallery = 'root_preference_center';
+
     /**
      * If set to true it verifies that the parent record is visible to download
      * @var bool  $checkParentRecordForDownload

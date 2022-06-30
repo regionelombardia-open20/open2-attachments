@@ -32,6 +32,7 @@ class AttachmentsInput extends FileInput
 
     public $asyncMode = false;
     public $enableGoogleDrive = false;
+    public $enableUploadFromGallery = false;
 
     /**
      * @throws InvalidConfigException
@@ -74,6 +75,17 @@ class AttachmentsInput extends FileInput
         }
 
 
+        // GIMAGE GALLERY
+        $fileModule = \Yii::$app->getModule('attachments');
+        if($fileModule){
+            if($fileModule->disableGallery){
+                $this->enableUploadFromGallery = false;
+            }
+        }
+        if ($this->enableUploadFromGallery) {
+            $buttonGallery =  \open20\amos\attachments\components\GalleryInput::widget(['attribute' => $this->attribute]);
+        }
+
         if($this->enableGoogleDrive) {
                 $driveButton = Html::button(AmosIcons::show('google-drive'), ['id' => 'auth', 'class' => 'btn btn-primary']);
         }
@@ -114,7 +126,6 @@ class AttachmentsInput extends FileInput
             ],
             $this->pluginOptions
         );
-
 
         if ($this->pluginOptions['showPreview'] == false) {
             $this->pluginOptions['elErrorContainer'] = '#errorDropUpload-' . $this->attribute;
@@ -167,9 +178,9 @@ class AttachmentsInput extends FileInput
                 </div>
                 <div class="input-group-btn input-group-append"> {remove}{cancel}{upload}{browse}'. $driveButton.'
                  </div>
-                </div>';
+                </div>'.$buttonGallery;
             $this->pluginOptions['layoutTemplates']['main2'] = '{preview}<div class="kv-upload-progress kv-hidden"></div><div class="clearfix"></div>
-               {remove}{cancel}{upload}{browse}'. $driveButton.'';
+               {remove}{cancel}{upload}{browse}'. $driveButton.$buttonGallery;
         }
 
         $fileAttribute = $this->pluginOptions['maxFileCount'] != 1 ? '[]' : '';

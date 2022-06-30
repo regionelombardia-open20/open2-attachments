@@ -15,7 +15,9 @@
  */
 
 use open20\amos\attachments\FileModule;
-if(preg_match('/^[a-zA-Z]+$/', $attribute) == 0){
+use open20\amos\core\forms\ActiveForm;
+
+if (preg_match('/^[a-zA-Z]+$/', $attribute) == 0) {
     $attribute = '';
 }
 
@@ -30,19 +32,27 @@ $js = <<<JS
         var src_image = $(this).find('img').attr('src');
         var tag_img = "<img class='img-responsive' src='"+src_image+"' style='display:block;width:100%;height:auto; 'min-width:0!important;min-height:0!important; max-width:none!important;max-height:none!important; image-orientation:0deg!important;'>";
         
-        $.ajax({
-          method: 'get',
-          url: "/attachments/attach-gallery-image/upload-from-gallery-ajax",
-          data: {id: id_image, attribute: attribute,  csrf: csrf},
-          success: function(data){
-              if(data.success == true){
-                $('.preview-pane .hidden').removeClass('hidden');
-                $('.preview-container').html(tag_img);
-                $('#attach-gallery-$attribute').modal('hide');
-                $('.uploadcrop.attachment-uploadcrop').addClass('cropper-done');
-                }
-          }
-        }); 
+        
+        $('#container-preview-image-'+attribute).load('/attachments/attach-gallery-image/load-detail?id_image='+id_image+'&attribute='+attribute, function () {
+            $('#container-preview-image-'+attribute).show();
+            $('#container-gallery-'+attribute).hide();
+        //         $('.loading').hide();
+            });
+        return;
+        //
+        // $.ajax({
+        //   method: 'get',
+        //   url: "/attachments/attach-gallery-image/upload-from-gallery-ajax",
+        //   data: {id: id_image, attribute: attribute,  csrf: csrf},
+        //   success: function(data){
+        //       if(data.success == true){
+        //         $('.preview-pane .hidden').removeClass('hidden');
+        //         $('#preview-container-'+attribute).html(tag_img);
+        //         $('#attach-gallery-'+attribute).modal('hide');
+        //         $('.uploadcrop.attachment-uploadcrop').addClass('cropper-done');
+        //         }
+        //   }
+        // }); 
     });
 
     // delete the id of the file from session
@@ -68,26 +78,115 @@ $js = <<<JS
     $(document).on('change', '.cropper-data', function(){
          deleteFromSession();
     });
+    
+    $(document).on('click', '.exit-fullscreen-btn', function(e){
+        e.preventDefault();
+        var attribute = $(this).attr('data-attribute');
+          $('#container-preview-image-'+attribute).hide();
+          $('#container-gallery-'+attribute).show();
+    });
+    
+    $(document).on('click','#image-gallery-link-$attribute, .select-image-$attribute', function(e){
+        e.preventDefault();
+        var csrf = $('form input[name="_csrf-backend"]').val();
+        var id_image = $(this).attr('data-key');
+        var attribute = $(this).attr('data-attribute');
+        var src_image = $(this).attr('data-src');
+        var tag_img = "<img class='img-responsive' src='"+src_image+"' style='display:block;width:100%;height:auto; 'min-width:0!important;min-height:0!important; max-width:none!important;max-height:none!important; image-orientation:0deg!important;'>";
+          $.ajax({
+          method: 'get',
+          url: "/attachments/attach-gallery-image/upload-from-gallery-ajax",
+          data: {id: id_image, attribute: attribute,  csrf: csrf},
+          success: function(data){
+              if(data.success == true){
+                $('.preview-pane .hidden').removeClass('hidden');
+                $('#event-eventlogo').val('');
+                //for crop input
+                $('#preview-container-'+attribute).html(tag_img);
+                //for attchmentsinput
+                $('#container-preview-'+attribute+' .file-preview-image').each(function(){
+                    // console.log($(this).attr('src'));
+                    $(this).attr('src', src_image);
+                });
+                $('#attach-gallery-'+attribute).modal('hide');
+                $('.uploadcrop.attachment-uploadcrop').addClass('cropper-done');
+                }
+          }
+        }); 
+    });
 
 JS;
 
 $this->registerJs($js);
 
-foreach ($categories as $category) {
-    $images = $gallery->getAttachGalleryImages()->andWhere(['category_id' => $category->id])->all(); ?>
-    <div class="col-xs-12 title"><h3><?= $category->name ?></h3></div>
-    <div class="col-xs-12 images">
-        <?php foreach ($images as $image) { ?>
-            <div class="col-xs-4">
-                <?php echo \yii\helpers\Html::a(
-                    \yii\helpers\Html::img(!empty($image->attachImage) ? $image->attachImage->getUrl() : '', ['class' => 'img-responsive']),
-                    '', ['id' => 'img-' . $image->id, 'class' => 'link-image', 'title' => FileModule::t('amosattachments', '#select_gallery_image'),
-                    'data' => [
-                        'key' => $image->id,
-                        'attribute' => $attribute
-                    ]
-                ]) ?>
-            </div>
-        <?php } ?>
+$js2 = <<<JS
+    $(document).on('click', '#btn-search-gallery-$attribute', function(e){
+        e.preventDefault();
+         $.ajax({
+          method: 'get',
+          url: "/attachments/attach-gallery-image/search-gallery-ajax",
+          data: $('#form-gallery-$attribute').serialize()+'&attribute=$attribute',
+          success: function(data){
+                $('#image-gallery-$attribute').html(data);
+                }
+        }); 
+    });
+
+ $(document).on('click', '#btn-cancel-gallery-$attribute', function(e){
+        e.preventDefault();
+        var inputs = $('.content-search-gallery').find('input[type="text"]');
+        $(inputs).each(function(){
+            $(this).val('');
+        });
+        $('.content-search-gallery').find('select').each(function(){
+            $(this).val('');
+            $(this).trigger('change');
+        });
+        $('#custom-tags-search-id-$attribute').tagit("removeAll");
+        
+         $.ajax({
+          method: 'get',
+          url: "/attachments/attach-gallery-image/search-gallery-ajax",
+          data: {attribute: '$attribute'},
+          success: function(data){
+                $('#image-gallery-$attribute').html(data);
+                }
+        }); 
+    });
+ 
+ $(document).on('autocompleteresponse', '#form-gallery-$attribute .tagit-new input', function(){
+    $('.ui-menu.ui-widget-content.ui-autocomplete').each(function(){
+        $(this).show();
+    });
+ });
+
+JS;
+
+$this->registerJs($js2);
+?>
+
+<div id="container-gallery-<?= $attribute ?>">
+    <?php $modelSearch = new \open20\amos\attachments\models\search\AttachGalleryImageSearch(); ?>
+    <?= $this->render('_search_gallery_view', [
+        'modelSearch' => $modelSearch,
+        'attribute' => $attribute
+    ]) ?>
+
+    <div id="image-gallery-<?= $attribute ?>">
+        <?php
+        $dataProvider = $modelSearch->search([], $gallery->id);
+        $images = $gallery->getAttachGalleryImages()->all();
+        echo $this->render('images_gallery', [
+            'images' => $images,
+            'attribute' => $attribute,
+            'dataProvider' => $dataProvider
+        ]) ?>
     </div>
-<?php } ?>
+</div>
+
+<div style="display:none" id="container-preview-image-<?= $attribute ?>">
+
+</div>
+
+
+

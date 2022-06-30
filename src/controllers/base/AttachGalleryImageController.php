@@ -9,6 +9,7 @@
 
 namespace open20\amos\attachments\controllers\base;
 
+use open20\amos\attachments\FileModule;
 use open20\amos\attachments\models\AttachGallery;
 use Yii;
 use open20\amos\attachments\models\AttachGalleryImage;
@@ -98,7 +99,6 @@ class AttachGalleryImageController extends CrudController
     public function actionView($id)
     {
         $this->model = $this->findModel($id);
-
         if ($this->model->load(Yii::$app->request->post()) && $this->model->save()) {
             return $this->redirect(['view', 'id' => $this->model->id]);
         } else {
@@ -113,13 +113,21 @@ class AttachGalleryImageController extends CrudController
      */
     public function actionCreate($id)
     {
+        $module = \Yii::$app->getModule('attachments');
+
         $this->setUpLayout('form');
         $this->model = new AttachGalleryImage();
-        if ($this->model->load(Yii::$app->request->post()) && $this->model->validate()) {
+        if ($this->model->load(Yii::$app->request->post()) && $this->model->validate() && $this->model->validateFiles()) {
             if(AttachGallery::findOne($id)) {
                 $this->model->gallery_id = $id;
                 if ($this->model->save()) {
+                    $this->model->saveCustomTags();
+                    $this->model->saveImageTags();
+
                     Yii::$app->getSession()->addFlash('success', Yii::t('amoscore', 'Item created'));
+                    if($module->enableSingleGallery){
+                        return $this->redirect(['/attachments/attach-gallery/single-gallery']);
+                    }
                     return $this->redirect(['/attachments/attach-gallery/update', 'id' => $this->model->gallery_id]);
                 } else {
                     Yii::$app->getSession()->addFlash('danger', Yii::t('amoscore', 'Item not created, check data'));
@@ -162,19 +170,31 @@ class AttachGalleryImageController extends CrudController
     }
 
     /**
-     * Updates an existing AttachGalleryImage model.
-     * If update is successful, the browser will be redirected to the 'view' page.
-     * @param integer $id
-     * @return mixed
+     * @param $id
+     * @return string|\yii\web\Response
+     * @throws NotFoundHttpException
+     * @throws \yii\base\InvalidConfigException
      */
     public function actionUpdate($id)
     {
         $this->setUpLayout('form');
-        $this->model = $this->findModel($id);
+        $module = \Yii::$app->getModule('attachments');
 
-        if ($this->model->load(Yii::$app->request->post()) && $this->model->validate()) {
+        $this->model = $this->findModel($id);
+        $this->model->loadCustomTags();
+        $this->model->loadTagsImage();
+
+        $this->setCreateNewBtnLabelGeneral($id);
+
+        if ($this->model->load(Yii::$app->request->post()) && $this->model->validate() && $this->model->validateFiles()) {
             if ($this->model->save()) {
+                $this->model->saveCustomTags();
+                $this->model->saveImageTags();
+
                 Yii::$app->getSession()->addFlash('success', Yii::t('amoscore', 'Item updated'));
+                if($module->enableSingleGallery){
+                    return $this->redirect(['/attachments/attach-gallery/single-gallery']);
+                }
                 return $this->redirect(['/attachments/attach-gallery/update', 'id' => $this->model->gallery_id]);
             } else {
                 Yii::$app->getSession()->addFlash('danger', Yii::t('amoscore', 'Item not updated, check data'));
@@ -197,6 +217,8 @@ class AttachGalleryImageController extends CrudController
      */
     public function actionDelete($id)
     {
+        $module = \Yii::$app->getModule('attachments');
+
         $this->model = $this->findModel($id);
         if ($this->model) {
             $this->model->delete();
@@ -208,6 +230,27 @@ class AttachGalleryImageController extends CrudController
         } else {
             Yii::$app->getSession()->addFlash('danger', BaseAmosModule::tHtml('amoscore', 'Element not found.'));
         }
+        if($module->enableSingleGallery){
+            return $this->redirect(['/attachments/attach-gallery/single-gallery']);
+        }
         return $this->redirect(['/attachments/attach-gallery/update', 'id' => $this->model->gallery_id]);
+    }
+
+    /**
+     * Set a view param used in \open20\amos\core\forms\CreateNewButtonWidget
+     */
+    private function setCreateNewBtnLabelGeneral($id)
+    {
+
+        $btnUploadImage = Html::a(FileModule::t('amosattachments', "Carica nuova"), ['/attachments/attach-gallery-image/create', 'id' => $id], [
+            'class' => 'btn btn-primary',
+            'title' => FileModule::t('amosattachments', "Carica nuova immmagine")
+        ]);
+        $btnRequestImage = Html::a(FileModule::t('amosattachments', "Richiedi nuova"), ['/attachments/attach-gallery-request/create', 'id' => $id], [
+            'class' => 'btn btn-primary',
+            'title' => FileModule::t('amosattachments', "Richiedi nuova immagine")
+        ]);
+
+        Yii::$app->view->params['createNewBtnParams']['layout'] = $btnUploadImage.$btnRequestImage;
     }
 }

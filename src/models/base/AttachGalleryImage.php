@@ -12,6 +12,7 @@ use Yii;
  * @property integer $gallery_id
  * @property string $name
  * @property string $description
+ * @property string $aspect_ratio
  * @property string $created_at
  * @property string $updated_at
  * @property string $deleted_at
@@ -25,6 +26,9 @@ use Yii;
 class  AttachGalleryImage extends \open20\amos\core\record\Record
 {
 
+
+    public $customTags;
+    public $tagsImage;
 
     /**
      * @inheritdoc
@@ -40,13 +44,13 @@ class  AttachGalleryImage extends \open20\amos\core\record\Record
     public function rules()
     {
         return [
-            [['category_id', 'gallery_id'], 'required'],
+            [['gallery_id','name'], 'required'],
             [['category_id', 'gallery_id', 'created_by', 'updated_by', 'deleted_by'], 'integer'],
-            [['description'], 'string'],
-            [['created_at', 'updated_at', 'deleted_at'], 'safe'],
+            [['description', 'customTags'], 'string'],
+            [['aspect_ratio', 'tagsImage','customTags','created_at', 'updated_at', 'deleted_at'], 'safe'],
             [['name'], 'string', 'max' => 255],
             [['gallery_id'], 'exist', 'skipOnError' => true, 'targetClass' => AttachGallery::className(), 'targetAttribute' => ['gallery_id' => 'id']],
-            [['category_id'], 'exist', 'skipOnError' => true, 'targetClass' => AttachGalleryCategory::className(), 'targetAttribute' => ['category_id' => 'id']],
+//            [['category_id'], 'exist', 'skipOnError' => true, 'targetClass' => AttachGalleryCategory::className(), 'targetAttribute' => ['category_id' => 'id']],
         ];
     }
 
