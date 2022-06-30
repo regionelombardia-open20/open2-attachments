@@ -19,6 +19,7 @@ use open20\amos\attachments\models\search\FileSearch;
 use open20\amos\core\module\BaseAmosModule;
 use open20\amos\core\utilities\SortModelsUtility;
 use open20\amos\core\utilities\ZipUtility;
+use open20\amos\core\utilities\CurrentUser;
 use Yii;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
@@ -33,6 +34,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use open20\amos\attachments\utilities\AwsUtility;
 
 /**
  * Class FileController
@@ -58,7 +60,7 @@ class FileController extends Controller
                             'download',
                             'delete',
                             'view',
-                            'order-attachment'
+                            'order-attachment',
                         ],
                         'allow' => true,
                         'matchCallback' => function ($rule, $action) {
@@ -76,7 +78,8 @@ class FileController extends Controller
                     [
                         'actions' => [
                             'export',
-                            'export-by-query'
+                            'export-by-query',
+                            'sync-s3'
                         ],
                         'allow' => true,
                         'roles' => ['ADMIN'],
@@ -93,12 +96,17 @@ class FileController extends Controller
      */
     protected function checkAccess($rule, $action)
     {
-        $module    = \open20\amos\attachments\FileModule::getInstance();
+        $module = \open20\amos\attachments\FileModule::getInstance();
         switch ($action->id) {
             case 'view' : {
                     // Fire ref
                     $fileRef = FileRefs::findOne(['hash' => Yii::$app->request->get('hash')]);
-
+                    
+                    //If file exists
+                    if (!$fileRef || !$fileRef->attachFile) {
+                        return false;
+                    }
+                    
                     /**
                      * If the file is not under protection
                      */
@@ -106,12 +114,11 @@ class FileController extends Controller
                         && !\Yii::$app->user->isGuest))) {
                         return true;
                     }
-
-                    //If file exists
-                    if (!$fileRef || !$fileRef->attachFile) {
+                    
+                    if($fileRef->protected && CurrentUser::isPlatformGuest()){
                         return false;
                     }
-
+                    
                     // Find file
                     $file = $fileRef->attachFile;
                 }
@@ -146,17 +153,13 @@ class FileController extends Controller
             /**
              * @var $model ActiveRecord
              */
-            if (method_exists($modelClass, 'findOne')){
-                $model = $modelClass::findOne($file->item_id);
-            } else {
-                return true;
-            }
+            $model = $modelClass::findOne($file->item_id);
         }
 
 
-        if(empty($model)){
+        if (empty($model)) {
             throw new \yii\web\HttpException(404,
-                    FileModule::t('amosattachments', 'The requested Item could not be found.'));
+            FileModule::t('amosattachments', 'The requested Item could not be found.'));
         }
 
         if (\Yii::$app->user->isGuest && $module->checkParentRecordForDownload) {
@@ -271,7 +274,7 @@ class FileController extends Controller
 
                 if (array_key_exists($size, $crops)) {
                     $this->addDownloadNumber($file);
-                    return $this->getCroppedImage($file, $crops[$size]);
+                    return $this->getCroppedImage($file, $crops[$size], $size);
                 } else {
                     throw new \Exception('Size not found - '.$size);
                 }
@@ -371,13 +374,13 @@ class FileController extends Controller
 
                     if (array_key_exists($size, $crops)) {
                         $this->addDownloadNumber($file);
-                        return $this->getCroppedImage($file, $crops[$size]);
+                        return $this->getCroppedImage($file, $crops[$size], $size, $fileRef);
                     } else {
                         if (json_decode($size) != null) {
                             $this->addDownloadNumber($file);
                             $crops['custom'] = (array) json_decode('default');
                             $size            = 'custom';
-                            return $this->getCroppedImage($file, $crops[$size]);
+                            return $this->getCroppedImage($file, $crops[$size], 'default', $fileRef);
                         } else {
                             throw new \Exception('Size not found - '.$size);
                         }
@@ -395,15 +398,15 @@ class FileController extends Controller
      * @return \yii\console\Response|Response
      * @throws \yii\base\ErrorException
      */
-    public function getCroppedImage($file, $cropSettings)
+    public function getCroppedImage($file, $cropSettings, $crop, $fileRef = null)
     {
         $fileDir  = $this->getModule()->getFilesDirPath($file->hash).DIRECTORY_SEPARATOR;
         $filePath = $fileDir.$file->hash.'.'.$file->type;
         $cropPath = $fileDir.$file->hash.'.'.(!empty($cropSettings['width']) ? $cropSettings['width'] : '').'.'.(!empty($cropSettings['height'])
                 ? $cropSettings['height'] : '').'.'.$file->type;
 
-        if (file_exists($cropPath)) {
-            // return \Yii::$app->response->sendFile($cropPath, "$file->name.$file->type");
+        if (file_exists($cropPath)) { 
+            return \Yii::$app->response->sendFile($cropPath, "$file->name.$file->type");
         }
         //Crop and return
         $cropper = new ImageDriver();
@@ -460,6 +463,8 @@ class FileController extends Controller
             $image->background($cr_bg_color, $cr_bg_opacity);
         }
         $image->save($cropPath, $cr_quality);
+
+        AwsUtility::uploadS3ByPath($file, $cropPath, $crop, $fileRef);        
         //Return the new image
         return \Yii::$app->response->sendFile($cropPath, "$file->name.$file->type");
     }
@@ -708,6 +713,40 @@ class FileController extends Controller
                 return false;
             } else {
                 return $this->goBack((!empty(Yii::$app->request->referrer) ? Yii::$app->request->referrer : null));
+            }
+        }
+    }
+
+    public function actionSyncS3()
+    {
+        $i = 0;
+        try {
+            $files = FileRefs::find()->andWhere(['protected' => 0])->andWhere(['s3_url' => null])->limit(100)->all();
+
+            foreach ($files as $file) {
+                AwsUtility::uploadS3ByHash($file->hash);
+                $i++;
+            }
+            echo $i." files uploaded";
+        } catch (\Exception $e) {
+            echo $i." files uploaded, next the error: <br>";
+            echo $e->getMessage();
+        }
+    }
+
+    public function uploadAwsS3($file, $crop)
+    {
+        $module = FileModule::getInstance();
+        if ($module->enable_aws_s3) {
+            $fileRef = FileRefs::find()->andWhere([
+                    'attach_file_id' => $file->id,
+                    'model' => $file->model,
+                    'item_id' => $file->item_id,
+                    'attribute' => $file->attribute,
+                    'crop' => $crop,
+                ])->one();
+            if (!empty($fileRef) && empty($fileRef->s3_url)) {
+                AwsUtility::uploadS3($fileRef->hash);
             }
         }
     }

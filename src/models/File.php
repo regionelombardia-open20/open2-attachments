@@ -91,6 +91,25 @@ class File extends Record
      * Back Compat
      * @return mixed|null
      */
+    public function getitem_id()
+    {
+        return $this->item_id;
+    }
+
+    /**
+     * Back Compat
+     * @param $id
+     * @return mixed
+     */
+    public function setitem_id($id)
+    {
+        return $this->item_id = $id;
+    }
+
+    /**
+     * Back Compat
+     * @return mixed|null
+     */
     public function getItemId() {
         return $this->item_id;
     }
@@ -155,6 +174,11 @@ class File extends Record
      */
     public function generateUrlForHash($hash, $absolute, $canCache = false)
     {
+        $module = FileModule::getInstance();
+        if ($module->enable_aws_s3) {
+            $fileRef = FileRefs::find()->andWhere(['hash' => $hash])->one();
+            if (!empty($fileRef) && !empty($fileRef->s3_url)) return $fileRef->s3_url;
+        }
         $baseUrl = Url::to(['/'.FileModule::getModuleName().'/file/view', 'hash' => $hash, 'canCache' => $canCache]);
 
         if (!$absolute) return $baseUrl;
@@ -199,6 +223,14 @@ class File extends Record
     }
 
     /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getAttachFileRefsMany()
+    {
+        return $this->hasMany(FileRefs::className(), ['attach_file_id' => 'id']);
+    }
+
+    /**
      * @return integer
      */
     public function getNumDownloads()
@@ -233,5 +265,16 @@ class File extends Record
         return $this->hasMany(self::className(), ['model' => 'model'])
             ->andWhere(['item_id' => $this->item_id])
                 ->andWhere(['attribute' => $this->attribute]);
+    }
+
+    /**
+     * @return string
+     */
+    public function getFormattedSize(){
+        $dimScale = ['B', 'Kb', 'Mb', 'Gb', 'Tb'];
+        $sizeFile = intval($this->size);
+        $power = $sizeFile > 0 ? floor(log($sizeFile, 1024)) : 0;
+        $size =  number_format($sizeFile / pow(1024, $power), 0, '.', ',') . ' ' . $dimScale[$power];
+        return $size;
     }
 }

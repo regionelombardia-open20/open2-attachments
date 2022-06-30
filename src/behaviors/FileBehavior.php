@@ -258,7 +258,7 @@ class FileBehavior extends Behavior
          * BASE64 Encoded Files
          */
         $postData = \Yii::$app->request->post($ownerName);
-        $fileAsString = isset($postData[$attribute]) ? $postData[$attribute] : null;
+        $fileAsString = (isset($postData[$attribute]) && !is_array($postData[$attribute]))  ? $postData[$attribute] : null;
 
         if(!empty($fileAsString)) {
             $decodedFileTempName = md5(time().$attribute);
@@ -292,7 +292,6 @@ class FileBehavior extends Behavior
         //Upload file from gallery
         $csrf = \Yii::$app->request->post("_csrf-backend");
         $dataImage = \Yii::$app->session->get($csrf);
-
         if(!empty($dataImage)) {
             $this->saveFileFormGallery($attribute, $csrf, $dataImage);
         }
@@ -426,7 +425,7 @@ class FileBehavior extends Behavior
 
         if (!empty($attributes)) {
             foreach ($attributes as $attribute) {
-                $files = UploadedFile::getInstancesByName($attribute);
+                $files = UploadedFile::getInstancesByName( \open20\amos\core\utilities\ClassUtility::getClassBasename($this->owner->className()). "[" . $attribute. "]");
                 if (!empty($files)) {
                     $maxFiles = 1;
 
@@ -706,24 +705,29 @@ class FileBehavior extends Behavior
      * @throws \Exception
      */
     private function saveFileFormGallery($attribute, $csrf, $dataImage){
-        $idGalleryImage = $dataImage['id'];
-        $galleryAttribute = $dataImage['attribute'];
+        $ok = false;
+        foreach ($dataImage as $image) {
+            $idGalleryImage = $image['id'];
+            $galleryAttribute = $image['attribute'];
 
-        if($attribute == $galleryAttribute){
-            $imageGallery = AttachGalleryImage::findOne($idGalleryImage);
-            if ($imageGallery) {
-                $filePath = $imageGallery->attachImage->getPath();
-                if(file_exists($filePath)) {
-                    $this->deleteAttachments($this->owner, $attribute);
-                    if($this->getModule()->attachFile($filePath, $this->owner, $attribute, false)){
-                        \Yii::$app->session->remove($csrf);
-                        return true;
+            if ($attribute == $galleryAttribute) {
+                $imageGallery = AttachGalleryImage::findOne($idGalleryImage);
+                if ($imageGallery) {
+                    $filePath = $imageGallery->attachImage->getPath();
+                    if (file_exists($filePath)) {
+                        $this->deleteAttachments($this->owner, $attribute);
+                        if ($this->getModule()->attachFile($filePath, $this->owner, $attribute, false)) {
+                            $ok = $ok && true;
+                        }
                     }
-                } else {
-                    return false;
                 }
             }
         }
+        if($ok){
+            \Yii::$app->session->remove($csrf);
+            return true;
+        }
+        return false;
     }
 
 }

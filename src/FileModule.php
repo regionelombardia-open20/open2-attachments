@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Aria S.p.A.
  * OPEN 2.0
@@ -13,7 +12,6 @@ namespace open20\amos\attachments;
 
 use open20\amos\attachments\models\File;
 use open20\amos\core\module\AmosModule;
-
 use open20\amos\core\utilities\ZipUtility;
 use yii\base\Exception;
 use yii\db\ActiveQuery;
@@ -32,27 +30,22 @@ class FileModule extends AmosModule
      * @var integer
      */
     public $cache_age = null;
+
     /**
      * The folder into which the link is thrown for direct access via http
      * @var string
      */
-    public $webDir = 'files';
-
+    public $webDir              = 'files';
     public $controllerNamespace = 'open20\amos\attachments\controllers';
-
-    public $storePath = '@app/uploads/store';
-
-    public $tempPath = '@app/uploads/temp';
-
-    public $rules = [];
-
-    public $tableName = 'attach_file';
-
-    public $config = [];
-
-    public $disableGallery = true;
-
+    public $storePath           = '@app/uploads/store';
+    public $tempPath            = '@app/uploads/temp';
+    public $rules               = [];
+    public $tableName           = 'attach_file';
+    public $config              = [];
+    public $disableGallery      = true;
     public $enableSingleGallery = true;
+
+    public $codiceTagGallery = 'root_preference_center';
 
     /**
      * If set to true it verifies that the parent record is visible to download
@@ -70,6 +63,48 @@ class FileModule extends AmosModule
      * @var null|\amos\statistics\models\AttachmentsStatsInterface
      */
     public $statistics = null;
+
+    /**
+     *
+     * @var bool $enable_aws_s3
+     */
+    public $enable_aws_s3 = false;
+
+    /**
+     *
+     * @var string $aws_s3_bucket
+     */
+    public $aws_s3_bucket;
+
+    /**
+     *
+     * @var string $aws_s3_secret_key
+     */
+    public $aws_s3_secret_key;
+
+    /**
+     *
+     * @var string $aws_s3_access_key
+     */
+    public $aws_s3_access_key;
+
+    /**
+     *
+     * @var string $aws_s3_base_dir
+     */
+    public $aws_s3_base_dir = 'files';
+
+    /**
+     * The base url without the last slash. E.g.: 'https://www.domain.net'
+     * @var string  $aws_s3_base_url
+     */
+    public $aws_s3_base_url;
+
+    /**
+     *
+     * @var string $aws_s3_default_region
+     */
+    public $aws_s3_default_region = 'eu-central-1';
 
     public static function getModuleName()
     {
@@ -98,10 +133,10 @@ class FileModule extends AmosModule
         }
 
         //Configuration
-        $config = require(__DIR__ . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
+        $config = require(__DIR__.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'config.php');
         \Yii::configure($this, ArrayHelper::merge($config, $this));
 
-        $this->rules = ArrayHelper::merge(['maxFiles' => 3], $this->rules);
+        $this->rules        = ArrayHelper::merge(['maxFiles' => 3], $this->rules);
         $this->defaultRoute = 'attachments';
     }
 
@@ -114,23 +149,23 @@ class FileModule extends AmosModule
     {
         $sessionId = md5(0);
 
-        if(\Yii::$app->has('session')) {
+        if (\Yii::$app->has('session')) {
             \Yii::$app->session->open();
             $sessionId = \Yii::$app->session->id;
             \Yii::$app->session->close();
         }
 
-        $userDirPath = $this->getTempPath() . DIRECTORY_SEPARATOR . $sessionId . $suffix;
-        
+        $userDirPath = $this->getTempPath().DIRECTORY_SEPARATOR.$sessionId.$suffix;
+
         //Try dir creation
         FileHelper::createDirectory($userDirPath, 0777);
 
         //Check if the dir has been created
-        if(!is_dir($userDirPath)) {
+        if (!is_dir($userDirPath)) {
             throw new \Exception("Unable to create Upload Direcotory '{$userDirPath}'");
         }
 
-        return $userDirPath . DIRECTORY_SEPARATOR;
+        return $userDirPath.DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -162,34 +197,35 @@ class FileModule extends AmosModule
      * @throws \Exception
      * @throws \yii\base\InvalidConfigException
      */
-    public function attachFile($filePath, $owner, $attribute = 'file', $dropOriginFile = true, $saveWithoutModel = false, $encrypt = false)
+    public function attachFile($filePath, $owner, $attribute = 'file', $dropOriginFile = true,
+                               $saveWithoutModel = false, $encrypt = false)
     {
-        if(!$saveWithoutModel) {
+        if (!$saveWithoutModel) {
             if (!$owner->id) {
                 throw new \Exception(FileModule::t('amosattachments', 'Owner must have id when you attach file'));
             }
         }
 
         if (!file_exists($filePath)) {
-            throw new \Exception(FileModule::t('amosattachments', 'File not exist :') . $filePath);
+            throw new \Exception(FileModule::t('amosattachments', 'File not exist :').$filePath);
         }
-  
+
         //File infos
         $fileType = pathinfo($filePath, PATHINFO_EXTENSION);
         $fileName = pathinfo($filePath, PATHINFO_FILENAME);
-        $dirName = pathinfo($filePath, PATHINFO_DIRNAME);
+        $dirName  = pathinfo($filePath, PATHINFO_DIRNAME);
 
         //Create a clean name for file
-        $cleanName = preg_replace("([\.]{2,})", '_',preg_replace("([^\w\d\-_~,;\[\]\(\).])", '_', $fileName));
+        $cleanName = preg_replace("([\.]{2,})", '_', preg_replace("([^\w\d\-_~,;\[\]\(\).])", '_', $fileName));
 
         //New location for the file
-        $cleanFilePath = $dirName .DIRECTORY_SEPARATOR.$cleanName.'.'.$fileType;
+        $cleanFilePath = $dirName.DIRECTORY_SEPARATOR.$cleanName.'.'.$fileType;
 
         if ($encrypt) {
-            $fileTmp = new File();
-            $zipTempFileName = uniqid();
-            $zipTempCompletePath = $this->getTempPath() . DIRECTORY_SEPARATOR . $zipTempFileName . '.zip';
-            $zipUtility = new ZipUtility([
+            $fileTmp             = new File();
+            $zipTempFileName     = uniqid();
+            $zipTempCompletePath = $this->getTempPath().DIRECTORY_SEPARATOR.$zipTempFileName.'.zip';
+            $zipUtility          = new ZipUtility([
                 'filesToZip' => $filePath,
                 'zipFileName' => $zipTempFileName,
                 'destinationFolder' => $this->getTempPath(),
@@ -208,7 +244,7 @@ class FileModule extends AmosModule
             $image = imagecreatefromjpeg($cleanFilePath);
             imagejpeg($image, $cleanFilePath, 80);
         }
-        
+
         //SystemMd5Sum
         if (strtoupper(PHP_OS) == 'WINNT') {
             $fileHash = md5(file_get_contents($cleanFilePath));
@@ -217,20 +253,21 @@ class FileModule extends AmosModule
             exec("md5sum {$escapedFilePath}", $fileHash);
 
             $filesize = filesize($cleanFilePath);
-            $fileHash = md5(reset($fileHash). $filesize);
+            $fileHash = md5(reset($fileHash).$filesize);
         }
 
         //New file infos
-        $newFileName = $fileHash . '.' . $fileType;
+        $newFileName = $fileHash.'.'.$fileType;
         $fileDirPath = $this->getFilesDirPath($fileHash);
 
-        $newFilePath = $fileDirPath . DIRECTORY_SEPARATOR . $newFileName;
+        $newFilePath = $fileDirPath.DIRECTORY_SEPARATOR.$newFileName;
 
         if (!file_exists($cleanFilePath)) {
-            throw new \Exception(FileModule::t('amosattachments', 'Cannot copy file! ') . $cleanFilePath . FileModule::t('amosattachments', ' to ') . $newFilePath);
+            throw new \Exception(FileModule::t('amosattachments', 'Cannot copy file! ').$cleanFilePath.FileModule::t('amosattachments',
+                ' to ').$newFilePath);
         }
 
-        if($saveWithoutModel){
+        if ($saveWithoutModel) {
             $ownerId = null;
         } else {
             $ownerId = $owner->id;
@@ -239,23 +276,23 @@ class FileModule extends AmosModule
         $ownerClass = $this->getClass($owner);
 
         $tableNameOwner = null;
-        if($owner instanceof \open20\amos\core\record\RecordDynamicModel && method_exists($owner, 'getTableName')){
+        if ($owner instanceof \open20\amos\core\record\RecordDynamicModel && method_exists($owner, 'getTableName')) {
             $tblName = $owner->getTableName();
-            if(!empty($tblName)){
+            if (!empty($tblName)) {
                 $tableNameOwner = $tblName;
             }
         }
 
-        $query =  File::find()->andWhere([
+        $query = File::find()->andWhere([
             'hash' => $fileHash,
             'item_id' => $ownerId,
             'attribute' => $attribute,
             'model' => $ownerClass,
         ]);
-        if(!is_null($tableNameOwner)){
+        if (!is_null($tableNameOwner)) {
             $query->andFilterWhere(['table_name_form' => $tableNameOwner]);
         }
-        $exists =$query->one();
+        $exists = $query->one();
 
         if (!$exists) {
 
@@ -263,41 +300,41 @@ class FileModule extends AmosModule
 
             $file = new File();
 
-            $file->name = $fileName;
-            $file->model = $ownerClass;
-            $file->item_id = $ownerId;
-            $file->hash = $fileHash;
-            $file->size = filesize($cleanFilePath);
-            $file->type = $fileType;
-            $file->mime = FileHelper::getMimeType($cleanFilePath);
+            $file->name      = $fileName;
+            $file->model     = $ownerClass;
+            $file->item_id   = $ownerId;
+            $file->hash      = $fileHash;
+            $file->size      = filesize($cleanFilePath);
+            $file->type      = $fileType;
+            $file->mime      = FileHelper::getMimeType($cleanFilePath);
             $file->attribute = $attribute;
-            if(!empty($tableNameOwner)){
-            $file->table_name_form = $tableNameOwner;
+            if (!empty($tableNameOwner)) {
+                $file->table_name_form = $tableNameOwner;
             }
             if ($encrypt) {
                 $file->encrypted = File::IS_ENCRYPTED;
             }
 
             /** @var ActiveQuery $query */
-            $query = File::find();
+            $query      = File::find();
             $query->andWhere(['model' => $ownerClass]);
             $query->andWhere(['attribute' => $attribute]);
             $query->andWhere(['item_id' => $ownerId]);
-            $maxSort = $query->max('sort');
+            $maxSort    = $query->max('sort');
             $file->sort = ($maxSort + 1);
 
             if ($file->save()) {
-                if($dropOriginFile) {
+                if ($dropOriginFile) {
                     unlink($cleanFilePath);
                 }
 
                 try {
-                    if(!is_null($this->statistics))
-                    {
+                    if (!is_null($this->statistics)) {
                         $stat = \Yii::createObject($this->statistics);
-                        $ok = $stat->save($file);
+                        $ok   = $stat->save($file);
                         if (!$ok) {
-                            \Yii::getLogger()->log(FileModule::t('amosattachments', 'Statistics: error while saving'), Logger::LEVEL_WARNING);
+                            \Yii::getLogger()->log(FileModule::t('amosattachments', 'Statistics: error while saving'),
+                                Logger::LEVEL_WARNING);
                         }
                     }
                 } catch (\Exception $exception) {
@@ -308,13 +345,13 @@ class FileModule extends AmosModule
             } else {
                 if (count($file->getErrors()) > 0) {
                     $errors = $file->getErrors();
-                    $ar = array_shift($errors);
+                    $ar     = array_shift($errors);
 
-                    if($dropOriginFile) {
+                    if ($dropOriginFile) {
                         unlink($newFilePath);
                     }
 
-                    if($session = \Yii::$app->has('session')) {
+                    if ($session = \Yii::$app->has('session')) {
                         \Yii::$app->session->addFlash('error', array_shift($ar));
                     }
                 }
@@ -322,7 +359,7 @@ class FileModule extends AmosModule
                 return false;
             }
         } else {
-            if($dropOriginFile) {
+            if ($dropOriginFile) {
                 unlink($cleanFilePath);
             }
             if ($encrypt) {
@@ -341,9 +378,9 @@ class FileModule extends AmosModule
     public function getFilesDirPath($fileHash, $useStorePath = true)
     {
         if ($useStorePath) {
-            $path = $this->getStorePath() . DIRECTORY_SEPARATOR . $this->getSubDirs($fileHash);
+            $path = $this->getStorePath().DIRECTORY_SEPARATOR.$this->getSubDirs($fileHash);
         } else {
-            $path = DIRECTORY_SEPARATOR . $this->getSubDirs($fileHash);
+            $path = DIRECTORY_SEPARATOR.$this->getSubDirs($fileHash);
         }
 
         FileHelper::createDirectory($path, 0777);
@@ -367,12 +404,12 @@ class FileModule extends AmosModule
     public function getSubDirs($fileHash, $depth = 3)
     {
         $depth = min($depth, 9);
-        $path = '';
+        $path  = '';
 
         for ($i = 0; $i < $depth; $i++) {
             $folder = substr($fileHash, $i * 3, 2);
-            $path .= $folder;
-            if ($i != $depth - 1) $path .= DIRECTORY_SEPARATOR;
+            $path   .= $folder;
+            if ($i != $depth - 1) $path   .= DIRECTORY_SEPARATOR;
         }
 
         return $path;
@@ -396,30 +433,38 @@ class FileModule extends AmosModule
     {
         /** @var File $file */
         $file = File::findOne(['id' => $id]);
-        if(!is_null($file))
-        {
-            $anyMore = File::findAll(['hash' => $file->hash]);
-            $filePath = $this->getFilesDirPath($file->hash) . DIRECTORY_SEPARATOR . $file->hash . '.' . $file->type;
+        if (!is_null($file)) {
+            $anyMore  = File::findAll(['hash' => $file->hash]);
+            $filePath = $this->getFilesDirPath($file->hash).DIRECTORY_SEPARATOR.$file->hash.'.'.$file->type;
             if (file_exists($filePath) && count($anyMore) == 1) {
                 unlink($filePath);
             }
 
             try {
-                if(!is_null($this->statistics))
-                {
+                if (!is_null($this->statistics)) {
                     $stat = \Yii::createObject($this->statistics);
                     /** @var \amos\statistics\models\AttachmentsStatsInterface $stat */
-                    $ok = $stat->delete($file);
-                    if (!$ok)
-                    {
-                        \Yii::getLogger()->log(FileModule::t('amosattachments', 'Statistics: error while saving'), Logger::LEVEL_WARNING);
+                    $ok   = $stat->delete($file);
+                    if (!$ok) {
+                        \Yii::getLogger()->log(FileModule::t('amosattachments', 'Statistics: error while saving'),
+                            Logger::LEVEL_WARNING);
                     }
                 }
             } catch (\Exception $exception) {
                 \Yii::getLogger()->log($exception->getMessage(), Logger::LEVEL_ERROR);
             }
 
-            $file->delete();
+            $ok = $file->delete();
+
+            if ($ok && $this->enable_aws_s3) {
+                $allRefs = $file->attachFileRefsMany;
+                foreach ((array) $allRefs as $v) {
+                    if (!empty($v->s3_url)) {
+                        utilities\AwsUtility::deleteFileFromS3($v->s3_url);
+                    }
+                }
+            }
+            return $ok;
         }
     }
 
@@ -429,12 +474,13 @@ class FileModule extends AmosModule
      */
     public function getWebPath(File $file)
     {
-        $fileName = $file->hash . '.' . $file->type;
-        $webPath = '/' . $this->webDir . '/' . $this->getSubDirs($file->hash) . '/' . $fileName;
+        $fileName = $file->hash.'.'.$file->type;
+        $webPath  = '/'.$this->webDir.'/'.$this->getSubDirs($file->hash).'/'.$fileName;
         return $webPath;
     }
 
-    public function getDefaultModels() {
+    public function getDefaultModels()
+    {
         return File::classname();
     }
 }

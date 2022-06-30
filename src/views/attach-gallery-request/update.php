@@ -20,8 +20,6 @@ $this->params['breadcrumbs'][] = ['label' => Yii::t('amoscore', 'Attach Gallery 
 //$this->params['breadcrumbs'][] = ['label' => strip_tags($model), 'url' => ['view', 'id' => $model->id]];
 $this->params['breadcrumbs'][] = $this->title;
 
-$module = \Yii::$app->getModule('attachments');
-$disableFreeCropGallery = $module->disableFreeCropGallery;
 
 
 $js = <<<JS
@@ -94,12 +92,32 @@ $this->registerJs($js);
     </div>
     <div class="row">
         <div class="col-xs-6">
-            <?php $aspectRatioChoices = \open20\amos\attachments\utility\AttachmentsUtility::getConfigCropGallery(); ?>
             <?=
             $form->field($model, 'attachImage')->widget(\open20\amos\attachments\components\CropInput::classname(),
                 [
                     'enableUploadFromGallery' => false,
-                    'aspectRatioChoices' => $aspectRatioChoices,
+                    'aspectRatioChoices' => [
+                        [
+                            'title' => 'Elimina Crop',
+                            'value' => 'x',
+                            'label' => \open20\amos\core\icons\AmosIcons::show('close'),
+                        ],
+                        [
+                            'title' => 'Fattore di crop libero',
+                            'value' => 'NaN',
+                            'label' => 'Libero',
+                        ],
+                        [
+                            'title' => '16:9',
+                            'value' => '1.7',
+                            'label' => '16:9',
+                        ],
+                        [
+                            'title' => '1:1',
+                            'value' => '1',
+                            'label' => '1:1',
+                        ],
+                    ],
                     'jcropOptions' => [
                         'aspectRatio' => '1.7',
                         'placeholder' => 'Scegli crop'],

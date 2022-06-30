@@ -70,7 +70,8 @@ class FileRefs extends Record
             [['model', 'attribute', 'item_id', 'attach_file_id', 'hash'], 'required'],
             [['item_id', 'is_main', 'sort'], 'integer'],
             [['protected'], 'safe'],
-            [['model', 'hash', 'crop'], 'string', 'max' => 255]
+            [['model', 'hash', 'crop'], 'string', 'max' => 255],
+            [['s3_url'], 'string']
         ];
     }
 
@@ -90,6 +91,7 @@ class FileRefs extends Record
             'protected' => FileModule::t('amosattachments', 'Is Protected'),
             'is_main' => FileModule::t('amosattachments', 'Is main'),
             'sort' => FileModule::t('amosattachments', 'Sort'),
+            's3_url' => FileModule::t('amosattachments', 'S3 Url'),
         ];
     }
 
@@ -119,7 +121,12 @@ class FileRefs extends Record
      */
     public function getPath($size = 'original')
     {
-        return $this->attachFile->getPath($size);
+        $attachFile = $this->attachFile;
+        if (empty($attachFile)) {
+            return null;
+        } else {
+            return $this->attachFile->getPath($size);
+        }
     }
 
     /**
@@ -156,7 +163,7 @@ class FileRefs extends Record
         }
 
         /**
-         * Mew record data
+         * New record data
          */
         $data = [
             'attach_file_id' => $attachFile->id,
@@ -166,7 +173,7 @@ class FileRefs extends Record
             'is_main' => $attachFile->is_main,
             'sort' => $attachFile->sort ?: 0,
             'crop' => $crop,
-            'protected' => $protected
+            'protected' => $protected,
         ];
 
         $newFileRef       = new FileRefs();

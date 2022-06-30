@@ -29,8 +29,6 @@ use open20\amos\attachments\FileModule;
  * @var yii\widgets\ActiveForm $form
  */
 
-$module = \Yii::$app->getModule('attachments');
-$disableFreeCropGallery = $module->disableFreeCropGallery;
 
 ?>
 <div class="attach-gallery-request-form">
@@ -84,16 +82,11 @@ $disableFreeCropGallery = $module->disableFreeCropGallery;
                 ])->label(FileModule::t('amosevents', 'Tag liberi')) ?>
             </div>
             <div class="col-sm-6">
-                <?php
-                $aspectRatio = [
-                    '1.7' => '16:9',
-                    '1' => '1:1',
-                ];
-                if(!$disableFreeCropGallery){
-                    $aspectRatio['other']= FileModule::t('amosattachments', 'Other');
-                }
-                ?>
-                <?= $form->field($model, 'aspect_ratio')->inline(true)->radioList($aspectRatio ) ?><!-- text_request text -->
+                <?= $form->field($model, 'aspect_ratio')->inline(true)->radioList( [
+                        '1.7' => '16:9',
+                        '1' => '1:1',
+                        'other' => FileModule::t('amosattachments', 'Other'),
+                ]) ?><!-- text_request text -->
             </div>
 
             <div class="col-xs-12">

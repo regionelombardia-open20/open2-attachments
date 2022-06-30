@@ -14,7 +14,7 @@ return [
             'square_medium' => ['width' => 500, 'height' => 500, 'quality' => 80],
             'square_large' => ['width' => 1000, 'height' => 1000, 'quality' => 90],
             'social' => ['width' => 1600, 'quality' => 85],
-            'thumb' => ['width' => 200, 'height' => 200, 'quality' => 80],            
+            'thumb' => ['width' => 200, 'height' => 200, 'quality' => 80],
             'dashboard_discussioni' => ['width' => 150, 'quality' => 80],
             'dashboard_small_old' => ['width' => 55, 'quality' => 80],
             'scope_community_old' => ['width' => 285, 'quality' => 80],
@@ -33,6 +33,15 @@ return [
             'item_organizations' => ['width' => 146, 'quality' => 80],
             'landing_news' => ['width' => 500, 'height' => 220, 'quality' => 80],
             'default' => ['width' => 500, 'quality' => 80],
-        ]
+        ],
+
+    ],
+    'params' => [
+        'searchParams' => [
+            'attach-gallery' => [
+                'enable' => true,
+            ]
+        ],
+
     ]
 ];

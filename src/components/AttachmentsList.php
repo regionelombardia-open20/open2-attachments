@@ -57,8 +57,7 @@ class AttachmentsList extends AttachmentsTableWithPreview
 
         $files = [];
         $filesQuantity = 0;
-        // $dataProviderModels = $dataProvider->getModels();
-        $dataProviderModels = $dataProvider->query->all();
+        $dataProviderModels = $dataProvider->getModels();
         $counter = 1;
         $countModels = count($dataProviderModels);
 
@@ -84,7 +83,7 @@ class AttachmentsList extends AttachmentsTableWithPreview
                     Html::tag('span', '', ['class' => 'am am-search']),
                     $model->getUrl(),
                     [
-                        'class' => 'att' . $model->item_id . ' cboxElement btn btn-icon',
+                        'class' => 'att' . $model->item_id . ' cboxElement',
                         'title' => FileModule::t('amosattachments', '#attach_list_preview_icon_title')
                     ]
                 );

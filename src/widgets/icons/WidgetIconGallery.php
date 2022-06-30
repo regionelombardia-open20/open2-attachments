@@ -29,7 +29,7 @@ class WidgetIconGallery extends WidgetIcon
     {
         parent::init();
 
-        $this->setLabel(FileModule::tHtml('amosattachments', '#label_gallery'));
+        $this->setLabel(FileModule::tHtml('amosattachments', '#label_image'));
         $this->setDescription(FileModule::t('amosattachments', '#desc_gallery'));
         $this->setIcon('linentita');
         $this->setUrl(['/attachments/attach-gallery/index']);

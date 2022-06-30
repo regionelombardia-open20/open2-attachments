@@ -10,7 +10,7 @@ class m190401_180611_alter_column_attach_file extends Migration
      */
     public function safeUp()
     {
-        $this->alterColumn('attach_file','itemId', $this->integer()->defaultValue(null));
+        $this->alterColumn('attach_file','item_id', $this->integer()->defaultValue(null));
     }
 
     /**

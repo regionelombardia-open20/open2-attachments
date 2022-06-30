@@ -27,7 +27,7 @@ class m150127_040544_add_attachments extends Migration
             'name' => Schema::TYPE_STRING . ' NOT NULL',
             'model' => Schema::TYPE_STRING . ' NOT NULL',
             'attribute' => Schema::TYPE_STRING . ' NOT NULL',
-            'itemId' => Schema::TYPE_INTEGER . ' NOT NULL',
+            'item_id' => Schema::TYPE_INTEGER . ' NOT NULL',
             'hash' => Schema::TYPE_STRING . ' NOT NULL',
             'size' => Schema::TYPE_INTEGER . ' NOT NULL',
             'type' => Schema::TYPE_STRING . ' NOT NULL',
@@ -38,7 +38,7 @@ class m150127_040544_add_attachments extends Migration
         ]);
 
         $this->createIndex('file_model', 'attach_file', 'model');
-        $this->createIndex('file_item_id', 'attach_file', 'itemId');
+        $this->createIndex('file_item_id', 'attach_file', 'item_id');
     }
 
     /**
