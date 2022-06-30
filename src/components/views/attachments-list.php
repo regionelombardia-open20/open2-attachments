@@ -65,7 +65,7 @@ JS
 
 ?>
 
-<div class="attachments-list col-xs-12 nop">
+<div class="attachments-list col-xs-12 nop" style="width: auto; height: 250px; overflow: auto;">
 
     <?php if ($filesList) : ?>
 

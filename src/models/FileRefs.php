@@ -145,7 +145,7 @@ class FileRefs extends Record
         $result = FileRefs::find()->andWhere([
                 'attach_file_id' => $attachFile->id,
                 'model' => $attachFile->model,
-                'item_id' => $attachFile->itemId,
+            'item_id' => $attachFile->item_id,
                 'attribute' => $attachFile->attribute,
                 'crop' => $crop,
                 'protected' => $protected
@@ -161,7 +161,7 @@ class FileRefs extends Record
         $data = [
             'attach_file_id' => $attachFile->id,
             'model' => $attachFile->model,
-            'item_id' => $attachFile->itemId,
+            'item_id' => $attachFile->item_id,
             'attribute' => $attachFile->attribute,
             'is_main' => $attachFile->is_main,
             'sort' => $attachFile->sort ?: 0,

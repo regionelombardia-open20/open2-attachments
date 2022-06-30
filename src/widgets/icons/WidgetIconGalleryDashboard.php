@@ -30,10 +30,9 @@ class WidgetIconGalleryDashboard extends WidgetIcon
         parent::init();
 
         $module = \Yii::$app->getModule('attachments');
-        $this->setLabel(FileModule::tHtml('amosattachments', '#label_gallery_image_databank'));
+        $this->setLabel(FileModule::tHtml('amosattachments', '#label_gallery_image'));
         $this->setDescription(FileModule::t('amosattachments', '#desc_gallery_image'));
-        $this->setIcon('collection-image');
-        $this->setIconFramework('am');
+        $this->setIcon('linentita');
 
         if ($module->enableSingleGallery) {
             $this->setUrl(['/attachments/attach-gallery/single-gallery']);

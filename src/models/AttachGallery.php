@@ -24,23 +24,18 @@ class AttachGallery extends \open20\amos\attachments\models\base\AttachGallery
                     'ensureUnique' => true
                     // 'slugAttribute' => 'slug',
                 ],
-            ]);
+        ]);
     }
-
+    public function representingColumn()
+    {
+        return [
+//inserire il campo o i campi rappresentativi del modulo
+        ];
+    }
 
     public function attributeHints()
     {
         return [
-        ];
-    }
-
-    /**
-     * @see\open20\amos\core\record\Record::representingColumn() or more info.
-     */
-    public function representingColumn()
-    {
-        return [
-            'name'
         ];
     }
 
@@ -133,11 +128,6 @@ class AttachGallery extends \open20\amos\attachments\models\base\AttachGallery
     public function getTitleEvent()
     {
         return NULL; //TODO
-    }
-
-    public function getFullViewUrl()
-    {
-        return '/attachments/attach-gallery-image?id='.$this->id;
     }
 
 

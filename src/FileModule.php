@@ -54,10 +54,6 @@ class FileModule extends AmosModule
 
     public $enableSingleGallery = true;
 
-    public $codiceTagGallery = 'root_preference_center';
-
-    public $disableFreeCropGallery = false;
-
     /**
      * If set to true it verifies that the parent record is visible to download
      * @var bool  $checkParentRecordForDownload
@@ -252,7 +248,7 @@ class FileModule extends AmosModule
 
         $query =  File::find()->andWhere([
             'hash' => $fileHash,
-            'itemId' => $ownerId,
+            'item_id' => $ownerId,
             'attribute' => $attribute,
             'model' => $ownerClass,
         ]);
@@ -269,7 +265,7 @@ class FileModule extends AmosModule
 
             $file->name = $fileName;
             $file->model = $ownerClass;
-            $file->itemId = $ownerId;
+            $file->item_id = $ownerId;
             $file->hash = $fileHash;
             $file->size = filesize($cleanFilePath);
             $file->type = $fileType;
@@ -286,7 +282,7 @@ class FileModule extends AmosModule
             $query = File::find();
             $query->andWhere(['model' => $ownerClass]);
             $query->andWhere(['attribute' => $attribute]);
-            $query->andWhere(['itemId' => $ownerId]);
+            $query->andWhere(['item_id' => $ownerId]);
             $maxSort = $query->max('sort');
             $file->sort = ($maxSort + 1);
 

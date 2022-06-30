@@ -81,7 +81,7 @@ class AttachmentsListBS4 extends AttachmentsTableWithPreview
                     Html::tag('span', '', ['class' => 'btn btn-icon am am-search']),
                     $model->getUrl(),
                     [
-                        'class' => 'att' . $model->itemId . ' cboxElement',
+                        'class' => 'att' . $model->item_id . ' cboxElement',
                         'title' => FileModule::t('amosattachments', '#attach_list_preview_icon_title')
                     ]
                 );

@@ -86,11 +86,6 @@ class CropInput extends InputWidget
     var $cropModalCloseButton = [];
 
     /**
-     * @var bool
-     */
-    var $hidePreviewDeleteButton = false;
-
-    /**
      * only call this method after a form closing and
      *    when user hasn't used in the widget call the parameter $form
      *    this adds to every form in the view the field validation.
@@ -122,9 +117,7 @@ class CropInput extends InputWidget
                 $this->enableUploadFromGallery = false;
             }
         }
-
-        $oldGetAttribute = 'get'.ucfirst($this->attribute);
-        if ((property_exists($this->model, $this->attribute) || isset($this->model->{$this->attribute})) && ($this->model->{$this->attribute} || method_exists($this->model,$oldGetAttribute))) {
+        if ((property_exists($this->model, $this->attribute) || isset($this->model->{$this->attribute})) && $this->model->{$this->attribute}) {
             if (is_null($this->defaultPreviewImage)) {
                 $this->defaultPreviewImage = $this->model->{$this->attribute}->url;
             }
@@ -161,7 +154,6 @@ class CropInput extends InputWidget
         ];
         $default_options = [
             'accept' => "image/*",
-            'aria-label' => 'Seleziona file',
         ];
 
         $this->jcropOptions = array_merge($default_jcropOptions, $this->jcropOptions);

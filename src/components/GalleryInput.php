@@ -68,26 +68,12 @@ class GalleryInput extends Widget
         $attribute = $this->attribute;
 
         $this->registerAssets($galleryId, $attribute);
-        $loaderHtml =
-        "<div class=\"dimmable position-fixed loader loading\" style=\"display:none\">
-            <div class=\"dimmer d-flex align-items-center\" id=\"dimmer1\">
-                <div class=\"dimmer-inner\">
-                    <div class=\"dimmer-icon\">
-                        <div class=\"progress-spinner progress-spinner-active loading m-auto\">
-                            <span class=\"sr-only\">Caricamento...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>";
 
-        return $loaderHtml .
+        return "<div class='loading' hidden></div>" .
             \open20\amos\core\helpers\Html::tag('div',
                 \open20\amos\core\helpers\Html::a(
-                    AmosIcons::show('collection-image') . FileModule::t('amosattachments', 'Carica da databank immagini'), '#', [
+                    AmosIcons::show('collection-image') . FileModule::t('amosattachments', '#choose_image_from_gallery'), '#', [
                     'class' => 'open-modal-gallery',
-                    'data-attribute' => $attribute,
-                    'data-gallery' => $galleryId,
                 ]),
                 ['class' => 'modal-gallery-container']
             )
@@ -108,18 +94,13 @@ class GalleryInput extends Widget
      */
     public function registerAssets($galleryId, $attribute)
     {
-        if (!(!empty(\Yii::$app->params['bsVersion']) && \Yii::$app->params['bsVersion'] == '4.x')){
-            SpinnerWaitAsset::register($this->getView());
-        }
-
+        SpinnerWaitAsset::register($this->getView());
         $js = <<<JS
-        $(document).on('click', '.open-modal-gallery', function (event) {
+        $('.open-modal-gallery').click(function (event) {
             event.preventDefault();
             $('.loading').show();
-            var attribute = $(this).attr('data-attribute');
-            var gallery_id = $(this).attr('data-gallery');
-           $('#attach-gallery-'+attribute+' > .modal-dialog > .modal-content > .modal-body').load('/attachments/attach-gallery/load-modal?galleryId='+gallery_id+'&attribute='+attribute, function () {
-                $('#attach-gallery-'+attribute).modal('show');
+           $('#attach-gallery-$attribute > .modal-dialog > .modal-content > .modal-body').load('/attachments/attach-gallery/load-modal?galleryId=$galleryId&attribute=$attribute', function () {
+                $('#attach-gallery-$attribute').modal('show');
                 $('.loading').hide();
             });
          });

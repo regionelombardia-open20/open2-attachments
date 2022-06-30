@@ -15,7 +15,7 @@ $this->title = \open20\amos\attachments\FileModule::t('amosattachments', 'Update
 $this->params['breadcrumbs'][] = ['label' => '', 'url' => ['/attachments']];
 $this->params['breadcrumbs'][] = ['label' => Yii::t('amoscore', 'Attach Gallery Image'), 'url' => ['index']];
 //$this->params['breadcrumbs'][] = ['label' => strip_tags($model), 'url' => ['view', 'id' => $model->id]];
-$this->params['breadcrumbs'][] = $this->title;
+$this->params['breadcrumbs'][] = '';
 ?>
 <div class="attach-gallery-image-update">
 

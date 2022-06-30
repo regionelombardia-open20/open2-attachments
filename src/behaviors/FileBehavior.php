@@ -292,6 +292,7 @@ class FileBehavior extends Behavior
         //Upload file from gallery
         $csrf = \Yii::$app->request->post("_csrf-backend");
         $dataImage = \Yii::$app->session->get($csrf);
+
         if(!empty($dataImage)) {
             $this->saveFileFormGallery($attribute, $csrf, $dataImage);
         }
@@ -357,7 +358,7 @@ class FileBehavior extends Behavior
         return File::deleteAll([
             'model' => get_class($model),
             'attribute' => $attribute,
-            'itemId' => $model->id
+            'item_id' => $model->id
         ]);
     }
 
@@ -508,7 +509,7 @@ class FileBehavior extends Behavior
         $fileQuery = File::find()
             ->where(
                 [
-                    'itemId' => $this->owner->getAttribute('id'),
+                    'item_id' => $this->owner->getAttribute('id'),
                     'model' => $this->getModule()->getClass($this->owner)
                 ]
             );
@@ -551,7 +552,7 @@ class FileBehavior extends Behavior
     {
         $fileQuery = File::find()
             ->where([
-                'itemId' => $this->owner->id,
+                'item_id' => $this->owner->id,
                 'model' => $this->getModule()->getClass($this->owner),
                 'attribute' => $attribute,
             ]);
@@ -682,7 +683,7 @@ class FileBehavior extends Behavior
     {
         $count = File::find()
             ->where([
-                'itemId' => $this->owner->getAttribute('id'),
+                'item_id' => $this->owner->getAttribute('id'),
                 'model' => $this->getModule()->getClass($this->owner)
             ])
             ->count();
@@ -705,29 +706,24 @@ class FileBehavior extends Behavior
      * @throws \Exception
      */
     private function saveFileFormGallery($attribute, $csrf, $dataImage){
-        $ok = false;
-        foreach ($dataImage as $image) {
-            $idGalleryImage = $image['id'];
-            $galleryAttribute = $image['attribute'];
+        $idGalleryImage = $dataImage['id'];
+        $galleryAttribute = $dataImage['attribute'];
 
-            if ($attribute == $galleryAttribute) {
-                $imageGallery = AttachGalleryImage::findOne($idGalleryImage);
-                if ($imageGallery) {
-                    $filePath = $imageGallery->attachImage->getPath();
-                    if (file_exists($filePath)) {
-                        $this->deleteAttachments($this->owner, $attribute);
-                        if ($this->getModule()->attachFile($filePath, $this->owner, $attribute, false)) {
-                            $ok = $ok && true;
-                        }
+        if($attribute == $galleryAttribute){
+            $imageGallery = AttachGalleryImage::findOne($idGalleryImage);
+            if ($imageGallery) {
+                $filePath = $imageGallery->attachImage->getPath();
+                if(file_exists($filePath)) {
+                    $this->deleteAttachments($this->owner, $attribute);
+                    if($this->getModule()->attachFile($filePath, $this->owner, $attribute, false)){
+                        \Yii::$app->session->remove($csrf);
+                        return true;
                     }
+                } else {
+                    return false;
                 }
             }
         }
-        if($ok){
-            \Yii::$app->session->remove($csrf);
-            return true;
-        }
-        return false;
     }
 
 }

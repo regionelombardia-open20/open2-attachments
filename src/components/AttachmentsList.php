@@ -57,7 +57,8 @@ class AttachmentsList extends AttachmentsTableWithPreview
 
         $files = [];
         $filesQuantity = 0;
-        $dataProviderModels = $dataProvider->getModels();
+        // $dataProviderModels = $dataProvider->getModels();
+        $dataProviderModels = $dataProvider->query->all();
         $counter = 1;
         $countModels = count($dataProviderModels);
 
@@ -80,10 +81,10 @@ class AttachmentsList extends AttachmentsTableWithPreview
             if (in_array(strtolower($model->type), ['jpg', 'jpeg', 'png', 'gif'])) {
 
                 $renderedPreviewHtml = Html::a(
-                    Html::tag('span', '', ['class' => 'btn btn-icon am am-search']),
+                    Html::tag('span', '', ['class' => 'am am-search']),
                     $model->getUrl(),
                     [
-                        'class' => 'att' . $model->itemId . ' cboxElement',
+                        'class' => 'att' . $model->item_id . ' cboxElement btn btn-icon',
                         'title' => FileModule::t('amosattachments', '#attach_list_preview_icon_title')
                     ]
                 );
@@ -178,10 +179,11 @@ class AttachmentsList extends AttachmentsTableWithPreview
             if ($this->viewDownloadBtn) {
 
                 $btn = Html::a(
-                    Html::tag('span', '', ['class' => 'btn btn-icon am am-download']),
+                    Html::tag('span', '', ['class' => 'am am-download']),
                     $model->getUrl(),
                     [
-                        'title' => FileModule::t('amosattachments', '#attach_list_download_title')
+                        'title' => FileModule::t('amosattachments', '#attach_list_download_title'),
+                        'class' => 'btn btn-icon'
                     ]
                 );
 

@@ -10,7 +10,6 @@
 namespace open20\amos\attachments\controllers\base;
 
 use open20\amos\attachments\FileModule;
-use open20\amos\attachments\models\search\AttachGalleryImageSearch;
 use open20\amos\attachments\widgets\icons\WidgetIconGalleryDashboard;
 use open20\amos\dashboard\controllers\TabDashboardControllerTrait;
 use Yii;
@@ -54,17 +53,11 @@ class AttachGalleryController extends CrudController
         $this->setModelSearch(new AttachGallerySearch());
 
         $this->setAvailableViews([
-            'list' => [
-                'name' => 'list',
-                'label' => AmosIcons::show('view-list') . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'List')),
-                'url' => '?currentView=list'
-            ],
             'grid' => [
                 'name' => 'grid',
                 'label' => AmosIcons::show('view-list-alt') . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'Table')),
                 'url' => '?currentView=grid'
             ],
-
         ]);
 
         parent::init();
@@ -77,17 +70,21 @@ class AttachGalleryController extends CrudController
             $titleSection = FileModule::t('amosattachments', 'Galleria');
             $ctaLoginRegister = Html::a(
                 FileModule::t('amosattachments', 'accedi o registrati alla piattaforma'),
-                isset(\Yii::$app->params['linkConfigurations']['loginLinkCommon']) ? \Yii::$app->params['linkConfigurations']['loginLinkCommon']
-                    : \Yii::$app->params['platform']['backendUrl'] . '/' . AmosAdmin::getModuleName() . '/security/login',
-                [
+                    isset(\Yii::$app->params['linkConfigurations']['loginLinkCommon']) ? \Yii::$app->params['linkConfigurations']['loginLinkCommon']
+                        : \Yii::$app->params['platform']['backendUrl'].'/'.AmosAdmin::getModuleName().'/security/login',
+                    [
                     'title' => FileModule::t('amosattachments',
                         'Clicca per accedere o registrarti alla piattaforma {platformName}',
                         ['platformName' => \Yii::$app->name])
-                ]
+                    ]
             );
         } else {
             $titleSection = FileModule::t('amosattachments', 'Galleria');
         }
+
+
+
+
 
 
         $this->view->params = [
@@ -112,14 +109,6 @@ class AttachGalleryController extends CrudController
         Url::remember();
         $this->setListViewsParams($setCurrentDashboard = true);
         $this->setDataProvider($this->modelSearch->search(Yii::$app->request->getQueryParams()));
-
-        $this->setAvailableViews([
-            'grid' => [
-                'name' => 'grid',
-                'label' => AmosIcons::show('view-list-alt') . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'Table')),
-                'url' => '?currentView=grid'
-            ],
-        ]);
         return parent::actionIndex($layout);
     }
 
@@ -200,13 +189,12 @@ class AttachGalleryController extends CrudController
      */
     public function actionUpdate($id)
     {
-        $this->setUpLayout('list');
+        $this->setUpLayout('form');
         $this->model = $this->findModel($id);
 
-        $modelSearch = new AttachGalleryImageSearch();
-        $this->setListViewsParams($setCurrentDashboard = true);
-        $dataProviderImages = $modelSearch->search(\Yii::$app->request->get(), $this->model->id);
-
+        $dataProviderImages = new ActiveDataProvider([
+            'query' => $this->model->getAttachGalleryImages()
+        ]);
 
         if ($this->model->load(Yii::$app->request->post()) && $this->model->validate()) {
             if ($this->model->save()) {
@@ -222,9 +210,7 @@ class AttachGalleryController extends CrudController
             'fid' => NULL,
             'dataField' => NULL,
             'dataEntity' => NULL,
-            'dataProviderImages' => $dataProviderImages,
-            'modelSearch' => $modelSearch,
-            'currentView' => $this->getCurrentView(),
+            'dataProviderImages' => $dataProviderImages
         ]);
     }
 
@@ -239,11 +225,11 @@ class AttachGalleryController extends CrudController
     public function actionDelete($id)
     {
         $this->model = $this->findModel($id);
-        if ($this->model->slug == 'general') {
+        if($this->model->slug == 'general'){
             throw new ForbiddenHttpException(FileModule::t('amosattachments', 'You cannot delete the general category!'));
         }
         if ($this->model) {
-            foreach ($this->model->attachGalleryImages as $image) {
+            foreach ($this->model->attachGalleryImages as $image){
                 $image->delete();
             }
             $this->model->delete();
@@ -270,6 +256,9 @@ class AttachGalleryController extends CrudController
 
         }
     }
+
+    
+
 
 
 }

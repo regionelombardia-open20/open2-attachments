@@ -104,7 +104,7 @@ class AttachmentsTableWithPreview extends Widget
                     if (in_array($model->type, ['jpg', 'jpeg', 'png', 'gif'])) {
                         return
                             Html::beginTag('div', ['class' => 'file-preview-other']) .
-                            Html::beginTag('a', ['href' => $model->getUrl(), 'class' => ' group' . $model->itemId . ' cboxElement',]) .
+                            Html::beginTag('a', ['href' => $model->getUrl(), 'class' => ' group' . $model->item_id . ' cboxElement',]) .
                             Html::img($model->getUrl('square_small'), [
                                 'onclick' => 'return false;',
                             ]) .

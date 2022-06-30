@@ -139,11 +139,25 @@ class FileController extends Controller
             return true;
         }
 
-        /**
-         * @var $model ActiveRecord
-         */
-        $model = new $modelClass;
-        $model->findOne(['id' => $file->itemId]);
+        if ($modelClass == \open20\amos\core\record\RecordDynamicModel::className()) {
+            $model = new $modelClass;
+            $model = $model->findOne(['id' => $file->item_id]);
+        } else {
+            /**
+             * @var $model ActiveRecord
+             */
+            if (method_exists($modelClass, 'findOne')){
+                $model = $modelClass::findOne($file->item_id);
+            } else {
+                return true;
+            }
+        }
+
+
+        if(empty($model)){
+            throw new \yii\web\HttpException(404,
+                    FileModule::t('amosattachments', 'The requested Item could not be found.'));
+        }
 
         if (\Yii::$app->user->isGuest && $module->checkParentRecordForDownload) {
 
@@ -172,7 +186,6 @@ class FileController extends Controller
                 }
             }
         }
-
 
         //The base class name
         $baseClassName = \yii\helpers\StringHelper::basename($modelClass);

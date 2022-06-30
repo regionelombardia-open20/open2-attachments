@@ -27,7 +27,7 @@ use Yii;
  * @property string $name
  * @property string $model
  * @property string $attribute
- * @property integer $itemId
+ * @property integer $item_id
  * @property string $hash
  * @property integer $size
  * @property string $type
@@ -82,9 +82,26 @@ class File extends Record
     {
         return [
             [['model', 'attribute', 'hash', 'size', 'mime'], 'required'],
-            [['itemId', 'size', 'is_main', 'date_upload', 'sort', 'num_downloads'], 'integer'],
+            [['item_id', 'size', 'is_main', 'date_upload', 'sort', 'num_downloads'], 'integer'],
             [['name', 'model', 'hash', 'type', 'mime', 'table_name_form'], 'string', 'max' => 255]
         ];
+    }
+
+    /**
+     * Back Compat
+     * @return mixed|null
+     */
+    public function getItemId() {
+        return $this->item_id;
+    }
+
+    /**
+     * Back Compat
+     * @param $id
+     * @return mixed
+     */
+    public function setItemId($id) {
+        return $this->item_id = $id;
     }
 
     /**
@@ -97,7 +114,7 @@ class File extends Record
             'name' => FileModule::t('amosattachments', 'Name'),
             'model' => FileModule::t('amosattachments', 'Model'),
             'attribute' => FileModule::t('amosattachments', 'Attribute'),
-            'itemId' => FileModule::t('amosattachments', 'Item ID'),
+            'item_id' => FileModule::t('amosattachments', 'Item ID'),
             'hash' => FileModule::t('amosattachments', 'Hash'),
             'size' => FileModule::t('amosattachments', 'Size'),
             'type' => FileModule::t('amosattachments', 'Type'),
@@ -201,7 +218,7 @@ class File extends Record
     public function getOwner()
     {
         if (class_exists($this->model) && method_exists($this->model, 'find')) {
-            return $this->hasOne($this->model, ['id' => 'itemId']);
+            return $this->hasOne($this->model, ['id' => 'item_id']);
         }
 
         return null;
@@ -214,18 +231,7 @@ class File extends Record
     public function getAttachmentWithBrothers()
     {
         return $this->hasMany(self::className(), ['model' => 'model'])
-                ->andWhere(['itemId' => $this->itemId])
+            ->andWhere(['item_id' => $this->item_id])
                 ->andWhere(['attribute' => $this->attribute]);
-    }
-
-    /**
-     * @return string
-     */
-    public function getFormattedSize(){
-        $dimScale = ['B', 'Kb', 'Mb', 'Gb', 'Tb'];
-        $sizeFile = intval($this->size);
-        $power = $sizeFile > 0 ? floor(log($sizeFile, 1024)) : 0;
-        $size =  number_format($sizeFile / pow(1024, $power), 0, '.', ',') . ' ' . $dimScale[$power];
-        return $size;
     }
 }
