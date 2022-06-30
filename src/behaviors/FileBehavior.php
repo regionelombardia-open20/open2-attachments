@@ -11,6 +11,7 @@
 
 namespace open20\amos\attachments\behaviors;
 
+use open20\amos\attachments\components\CustomUploadFile;
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\FileModuleTrait;
 use open20\amos\attachments\models\AttachGalleryImage;
@@ -254,6 +255,33 @@ class FileBehavior extends Behavior
         $files = UploadedFile::getInstancesByName($attribute) ?: UploadedFile::getInstancesByName("{$ownerName}[{$attribute}]");
 
         /**
+         * BASE64 Encoded Files
+         */
+        $postData = \Yii::$app->request->post($ownerName);
+        $fileAsString = isset($postData[$attribute]) ? $postData[$attribute] : null;
+
+        if(!empty($fileAsString)) {
+            $decodedFileTempName = md5(time().$attribute);
+            $decodedFilePath = sys_get_temp_dir() . '/' . $decodedFileTempName;
+
+            //Decode
+            file_put_contents($decodedFilePath, base64_decode($fileAsString));
+
+            //Get File Type
+            $mime = mime_content_type($decodedFilePath);
+            $mimes = new \Mimey\MimeTypes;
+            $extension = $mimes->getExtension($mime);
+
+            //Create new file instance
+            $newFile = new CustomUploadFile();
+            $newFile->name = $decodedFileTempName.'.'.$extension;
+            $newFile->tempName = $decodedFilePath;
+            $newFile->type = $mime;
+
+            $files[] = $newFile;
+        }
+
+        /**
          * @var FileValidator $fileValidator
          */
         $fileValidator = $this->getFileValidator($attribute);
@@ -264,6 +292,7 @@ class FileBehavior extends Behavior
         //Upload file from gallery
         $csrf = \Yii::$app->request->post("_csrf-backend");
         $dataImage = \Yii::$app->session->get($csrf);
+
         if(!empty($dataImage)) {
             $this->saveFileFormGallery($attribute, $csrf, $dataImage);
         }
@@ -275,10 +304,16 @@ class FileBehavior extends Behavior
             }
 
             if ($cropData) {
-                $this->cropImage($file, $cropData);
+
+                $cropInfo = Json::decode($cropData);
+                if (((isset($cropInfo['width'])) &&  ($cropInfo['width'] > 0)) && ((isset($cropInfo['height'])) &&  ($cropInfo['height'] > 0))) {
+                    $this->cropImage($file, $cropData);
+                }
+               
             }
 
             if (!$file->saveAs($this->getModule()->getUserDirPath($attribute) . $file->name)) {
+                //pr($file,"Failed");die;
                 continue;
             }
         }

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Aria S.p.A.
  * OPEN 2.0
@@ -17,6 +16,7 @@ use open20\amos\core\record\Record;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveQuery;
 use yii\helpers\Url;
+use Yii;
 
 /**
  * Class File
@@ -45,13 +45,12 @@ use yii\helpers\Url;
  */
 class File extends Record
 {
+
     use FileModuleTrait;
-
-    const MAIN = 1;
-    const NOT_MAIN = 0;
-
+    const MAIN             = 1;
+    const NOT_MAIN         = 0;
     // Const to encrypted files
-    const IS_ENCRYPTED = 1;
+    const IS_ENCRYPTED     = 1;
     const IS_NOT_ENCRYPTED = 0;
 
     /**
@@ -139,20 +138,39 @@ class File extends Record
      */
     public function generateUrlForHash($hash, $absolute, $canCache = false)
     {
-        $baseUrl = Url::to(['/' . FileModule::getModuleName() . '/file/view', 'hash' => $hash, 'canCache' => $canCache]);
+        $baseUrl = Url::to(['/'.FileModule::getModuleName().'/file/view', 'hash' => $hash, 'canCache' => $canCache]);
 
-        if (!$absolute)
-            return $baseUrl;
-        else
-            return \Yii::$app->getUrlManager()->createAbsoluteUrl($baseUrl);
+        if (!$absolute) return $baseUrl;
+        else return \Yii::$app->getUrlManager()->createAbsoluteUrl($baseUrl);
     }
 
     /**
      * @return string
      */
-    public function getPath()
+    public function getPath($size = 'original')
     {
-        return $this->getModule()->getFilesDirPath($this->hash) . DIRECTORY_SEPARATOR . $this->hash . '.' . $this->type;
+        if ($size == 'original') {
+            return $this->getModule()->getFilesDirPath($this->hash).DIRECTORY_SEPARATOR.$this->hash.'.'.$this->type;
+        } else {
+            $moduleConfig = Yii::$app->getModule('attachments')->config;
+            $crops        = $moduleConfig['crops'] ?: [];
+
+            if (json_decode($size) != null) {
+                $crops['custom'] = (array) json_decode($size);
+                $size            = 'custom';
+            }
+
+            if (array_key_exists($size, $crops)) {
+                $cropSettings = $crops[$size];
+            } else {
+                $crops['custom'] = (array) json_decode('default');
+                $size            = 'custom';
+                $cropSettings    = $crops[$size];
+            }
+
+            return $this->getModule()->getFilesDirPath($this->hash).DIRECTORY_SEPARATOR.$this->hash.'.'.(!empty($cropSettings['width'])
+                    ? $cropSettings['width'] : '').'.'.(!empty($cropSettings['height']) ? $cropSettings['height'] : '').'.'.$this->type;
+        }
     }
 
     /**
@@ -196,7 +214,7 @@ class File extends Record
     public function getAttachmentWithBrothers()
     {
         return $this->hasMany(self::className(), ['model' => 'model'])
-            ->andWhere(['itemId' => $this->itemId])
-            ->andWhere(['attribute' => $this->attribute]);
+                ->andWhere(['itemId' => $this->itemId])
+                ->andWhere(['attribute' => $this->attribute]);
     }
 }

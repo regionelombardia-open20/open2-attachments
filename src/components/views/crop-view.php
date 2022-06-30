@@ -17,10 +17,9 @@ use yii\helpers\Html;
 use yii\helpers\Json;
 use open20\amos\attachments\FileModule;
 use uitrick\yii2\widget\upload\crop\UploadCropAsset;
-
 use open20\amos\core\icons\AmosIcons;
 
-$inputId = Html::getInputId($crop->model, $crop->attribute);
+$inputId = (isset($crop->options['id']) && (!empty($crop->options['id'])))? $crop->options['id']: Html::getInputId($crop->model, $crop->attribute);
 $moduleName = FileModule::getModuleName();
 
 
@@ -30,10 +29,11 @@ if (!empty(\Yii::$app->params['bsVersion']) && \Yii::$app->params['bsVersion'] =
     \open20\amos\attachments\assets\ModuleAttachmentsAsset::register($this);
 }
 
+$cropperInputId = (isset($crop->options['id']) && (!empty($crop->options['id'])))? ('cropInput_' . $crop->options['id']): ('cropInput_' . $crop->attribute);
 
 $js = <<<JS
 //On delete button click
-jQuery('.deleteImageCrop', '#cropInput_{$crop->attribute}').on('click', function() {
+jQuery('.deleteImageCrop', '#{$cropperInputId}').on('click', function() {
     //Metadata
     var data = jQuery(this).data();
     
@@ -41,10 +41,10 @@ jQuery('.deleteImageCrop', '#cropInput_{$crop->attribute}').on('click', function
     jQuery(this).addClass('hidden');
     
     //Remove the image
-    jQuery('.preview-container img', '#cropInput_{$crop->attribute}').remove();
+    jQuery('.preview-container img', '#{$cropperInputId}').remove();
     
     //Clear crop if exists
-    jQuery('.cropper-data', '#cropInput_{$crop->attribute}').attr('val', '');
+    jQuery('.cropper-data', '#{$cropperInputId}').attr('val', '');
     
     jQuery.get('/{$moduleName}/file/delete',{
         'id': data.id,
@@ -56,14 +56,25 @@ jQuery('.deleteImageCrop', '#cropInput_{$crop->attribute}').on('click', function
     }, 'json');
 });
 
-jQuery('.modal-body .tools>.rotate_{$crop->attribute}', '#cropInput_{$crop->attribute}').on('click', function() {
+jQuery('.modal-body .tools>.rotate_{$crop->attribute}', '#{$cropperInputId}').on('click', function() {
     var data = jQuery(this).data();
-    $('.modal-body .cropper-wrapper>img', '#cropInput_{$crop->attribute}').cropper(data.type, data.option);
+    $('.modal-body .cropper-wrapper>img', '#{$cropperInputId}').cropper(data.type, data.option);
+});
+
+jQuery('.modal-body .tools>.aspectratio_{$crop->attribute}', '#{$cropperInputId}').on('click', function() {
+    var data = jQuery(this).data();
+    var image = $('.modal-body .cropper-wrapper>img', '#{$cropperInputId}');
+    if (data.option == 'x') {
+        image.cropper('clear');
+    } else {
+        image.cropper('crop');
+        image.cropper('setAspectRatio', data.option);
+    }
 });
 
 //On new image selected
-jQuery('.modal-footer button[class*="cropper-done"]', '#cropInput_{$crop->attribute}').on('click', function() {
-    jQuery('.deleteImageCrop', '#cropInput_{$crop->attribute}').removeClass('hidden');
+jQuery('.modal-footer button[class*="cropper-done"]', '#{$cropperInputId}').on('click', function() {
+    jQuery('.deleteImageCrop', '#{$cropperInputId}').removeClass('hidden');
 });
 
 JS;
@@ -92,7 +103,7 @@ $this->registerCss($css);
 <STYLE>
 
 </STYLE>
-    <div class="uploadcrop attachment-uploadcrop" id="cropInput_<?= $crop->attribute; ?>">
+    <div class="uploadcrop attachment-uploadcrop" id="<?= $cropperInputId ?>">
         <?= $crop->form->field($crop->model, $crop->attribute)->fileInput($crop->options)->label(FileModule::t('amosattachments', '#attach_label'), ['title' => FileModule::t('amosattachments', '#attach_label_title')]); ?>
         <?= Html::hiddenInput($crop->attribute . '_data', '', ['class' => 'cropper-data']); ?>
 
@@ -156,7 +167,28 @@ $this->registerCss($css);
                         </svg>
                     </button>
                 </div>
+
+                <?php
+                    if (isset($aspectRatioChoices) && !empty($aspectRatioChoices)):
+                ?>
+                <div class="btn-group tools">
+                    <?php
+                        foreach ($aspectRatioChoices as $choice):
+                        ?>
+                        <button type="button" class="btn btn-xs btn-info aspectratio_<?= $crop->attribute ?>" data-type="aspectRatio" 
+                            data-option="<?= isset($choice['value'])? $choice['value']: '' ?>" 
+                            title="<?= isset($choice['title'])? $choice['title']: '' ?>">
+                            <?= isset($choice['label'])? $choice['label']: '' ?>
+                        </button>
+                        <?php
+                        endforeach;
+                    ?>
+                </div>
+                <?php
+                    endif;
+                ?>
             </div>
+            
         </div>
         <?php yii\bootstrap4\Modal::end(); ?>
 
@@ -223,5 +255,5 @@ $jsCropper = <<<JS
 JS;
 
 
-$this->registerJs($jsCropper);
+$this->registerJs($jsCropper, \yii\web\View::POS_READY);
 ?>

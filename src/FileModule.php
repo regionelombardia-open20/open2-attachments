@@ -55,6 +55,12 @@ class FileModule extends AmosModule
     public $enableSingleGallery = true;
 
     /**
+     * E.g: 'original'
+     * @var string $forceCrop
+     */
+    public $forceCrop;
+
+    /**
      * @var null|\amos\statistics\models\AttachmentsStatsInterface
      */
     public $statistics = null;

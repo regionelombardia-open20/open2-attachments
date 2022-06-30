@@ -28,6 +28,33 @@ class CropInput extends InputWidget
     /** @var array */
     var $imageOptions;
 
+    /**
+     * Example:
+     *   [
+     *       [
+     *           'label' => 'X',
+     *           'value' => 'x',
+     *           'title' => 'Elimina il crop',
+     *       ],
+     *       [
+     *           'label' => '1:1',
+     *          'value' => 1,
+     *           'title' => 'Fattore di crop 1:1',
+     *       ],
+     *       [
+     *           'label' => '19:9',
+     *           'value' => (16/9),
+     *           'title' => 'Fattore di crop 16:9',
+     *       ],
+     *       [
+     *           'label' => 'free',
+     *           'value' => 'NaN',
+     *           'title' => 'Fattore di crop libero',
+     *       ],
+     *   ], 
+     *  @var array */
+    var $aspectRatioChoices;
+
     /** @var array */
     var $jcropOptions = [];
 
@@ -98,7 +125,7 @@ class CropInput extends InputWidget
 
         $this->imageOptions['id'] = Yii::$app->getSecurity()->generateRandomString(10);
 
-        $inputField = Html::getInputId($this->model, $this->attribute, ['data-image_id' => $this->imageOptions['id']]);
+        $inputField = (isset($this->options['id']) && (!empty($this->options['id'])))? $this->options['id']: Html::getInputId($this->model, $this->attribute, ['data-image_id' => $this->imageOptions['id']]);
 
         $default_jcropOptions = [
             'aspectRatio' => 1,
@@ -116,7 +143,8 @@ class CropInput extends InputWidget
 
         return $this->render('crop-view', [
         'inputField' => $inputField,
-        'crop' => $this
+        'crop' => $this,
+        'aspectRatioChoices' => $this->aspectRatioChoices,
         ]);
     }
 }
