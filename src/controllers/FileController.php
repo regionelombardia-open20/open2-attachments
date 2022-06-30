@@ -65,6 +65,7 @@ class FileController extends Controller
 
 
     }
+
     /**
      * @inheritdoc
      */
@@ -117,13 +118,21 @@ class FileController extends Controller
     protected function checkAccess($rule, $action)
     {
         switch ($action->id) {
-            case 'view' : {
+            case 'view' :
+                {
                     // Fire ref
                     $fileRef = FileRefs::findOne(['hash' => Yii::$app->request->get('hash')]);
 
                     //If file exists
                     if (!$fileRef || !$fileRef->attachFile) {
                         return false;
+                    }
+
+                    // se il file è protetto ma il contenuto è visibile posso sempre scaricarlo
+                    if ($fileRef->protected) {
+                        if ($this->isFileContentVisible($fileRef)) {
+                            return true;
+                        }
                     }
 
                     /**
@@ -136,13 +145,13 @@ class FileController extends Controller
                             || (
                                 $this->FileModule->checkParentRecordForDownload
                                 && !\Yii::$app->user->isGuest
-                                )
+                            )
                         )
                     ) {
                         return true;
                     }
 
-                    if($fileRef->protected && CurrentUser::isPlatformGuest()){
+                    if ($fileRef->protected && CurrentUser::isPlatformGuest()) {
                         return false;
                     }
 
@@ -150,9 +159,10 @@ class FileController extends Controller
                     $file = $fileRef->attachFile;
                 }
                 break;
-            default: {
-                // Find file
-                $file = File::findOne(['id' => Yii::$app->request->get('id')]);
+            default:
+                {
+                    // Find file
+                    $file = File::findOne(['id' => Yii::$app->request->get('id')]);
                 }
                 break;
         }
@@ -178,7 +188,7 @@ class FileController extends Controller
             /**
              * @var $model ActiveRecord
              */
-            if (method_exists($modelClass, 'findOne')){
+            if (method_exists($modelClass, 'findOne')) {
                 $model = $modelClass::findOne($file->item_id);
             } else {
                 return true;
@@ -187,17 +197,17 @@ class FileController extends Controller
 
         if (empty($model)) {
             throw new \yii\web\HttpException(404,
-            FileModule::t('amosattachments', 'The requested Item could not be found.'));
+                FileModule::t('amosattachments', 'The requested Item could not be found.'));
         }
 
+        // SE IL FILE è NON PROTETTO E L'UTENTE è GUEST
         if ((\Yii::$app->user->isGuest) && ($this->FileModule->checkParentRecordForDownload)) {
-
             // se lo stato non è pubblicato (validato) (getValidatedStatus)
             // non scarico il file e genero un'eccezione
             if (method_exists($model, 'getValidatedStatus')) {
                 if ($model->status != $model->getValidatedStatus()) {
                     throw new \yii\web\HttpException(404,
-                    FileModule::t('amosattachments', 'The requested Item could not be found.'));
+                        FileModule::t('amosattachments', 'The requested Item could not be found.'));
                 }
             }
 
@@ -206,7 +216,7 @@ class FileController extends Controller
             if (method_exists($model, 'getPublicatedFrom')) {
                 if (\Yii::$app->formatter->asDatetime('now', 'php:Y-m-d') < $model->getPublicatedFrom()) {
                     throw new \yii\web\HttpException(404,
-                    FileModule::t('amosattachments', 'The requested Item could not be found.'));
+                        FileModule::t('amosattachments', 'The requested Item could not be found.'));
                 }
             }
 
@@ -221,7 +231,7 @@ class FileController extends Controller
                         'php:Y-m-d')
                 ) {
                     throw new \yii\web\HttpException(404,
-                    FileModule::t('amosattachments', 'The requested Item could not be found.'));
+                        FileModule::t('amosattachments', 'The requested Item could not be found.'));
                 }
             }
         }
@@ -232,7 +242,7 @@ class FileController extends Controller
         //If is delete mode
         if ($action->id == 'delete') {
             //Delete permission name
-            $updatePremission = strtoupper($baseClassName.'_UPDATE');
+            $updatePremission = strtoupper($baseClassName . '_UPDATE');
 
             //User can update?
             if (!\Yii::$app->user->can($updatePremission, ['model' => $model])) {
@@ -244,7 +254,7 @@ class FileController extends Controller
             $readPremissionAttribute = strtoupper(
                 $baseClassName
                 . '_'
-                . strtoupper($file->attribute).'_READ'
+                . strtoupper($file->attribute) . '_READ'
             );
 
             //User can read?
@@ -289,7 +299,7 @@ class FileController extends Controller
 
         $filePath = $this->getModule()->getFilesDirPath(
                 $file->hash
-            ).DIRECTORY_SEPARATOR.$file->hash.'.'.$file->type;
+            ) . DIRECTORY_SEPARATOR . $file->hash . '.' . $file->type;
 
         if (file_exists($filePath)) {
             if ($size == 'original' || !in_array($file->type, ['jpg', 'jpeg', 'png', 'gif'])) {
@@ -298,13 +308,13 @@ class FileController extends Controller
                 if ($file->encrypted) {
                     $zipUtility = new ZipUtility(
                         [
-                        'zipFileName' => $filePath,
-                        'destinationFolder' => $this->getModule()->getTempPath().DIRECTORY_SEPARATOR.$zipTmpFolderName,
-                        'password' => $file->getDecryptPassword(),
+                            'zipFileName' => $filePath,
+                            'destinationFolder' => $this->getModule()->getTempPath() . DIRECTORY_SEPARATOR . $zipTmpFolderName,
+                            'password' => $file->getDecryptPassword(),
                         ]
                     );
                     $zipUtility->unZip();
-                    $zipTmpFile = $this->getModule()->getTempPath().DIRECTORY_SEPARATOR.$zipTmpFolderName
+                    $zipTmpFile = $this->getModule()->getTempPath() . DIRECTORY_SEPARATOR . $zipTmpFolderName
                         . DIRECTORY_SEPARATOR
                         . $file->name
                         . '.'
@@ -316,13 +326,13 @@ class FileController extends Controller
                 return \Yii::$app->response->sendFile($filePath, "$file->name.$file->type");
             } else {
                 $moduleConfig = Yii::$app->getModule('attachments')->config;
-                $crops        = $moduleConfig['crops'] ?: [];
+                $crops = $moduleConfig['crops'] ?: [];
 
                 if (array_key_exists($size, $crops)) {
                     $this->addDownloadNumber($file);
                     return $this->getCroppedImage($file, $crops[$size], $size);
                 } else {
-                    throw new \Exception('Size not found - '.$size);
+                    throw new \Exception('Size not found - ' . $size);
                 }
             }
         }
@@ -358,7 +368,7 @@ class FileController extends Controller
         if (!empty($this->FileModule->cache_age) && $canCache) {
             \Yii::$app->response->headers->set(
                 "Cache-Control",
-                "max-age=" . $this->FileModule->cache_age .", public"
+                "max-age=" . $this->FileModule->cache_age . ", public"
             );
         } else {
             \Yii::$app->response->headers->set('Pragma', 'no-cache');
@@ -401,7 +411,7 @@ class FileController extends Controller
                         $zipUtility = new ZipUtility([
                             'zipFileName' => $filePath,
                             'destinationFolder' => $this->getModule()
-                                ->getTempPath() . DIRECTORY_SEPARATOR . $zipTmpFolderName,
+                                    ->getTempPath() . DIRECTORY_SEPARATOR . $zipTmpFolderName,
                             'password' => $file->getDecryptPassword(),
                         ]);
                         $zipUtility->unZip();
@@ -419,11 +429,11 @@ class FileController extends Controller
                     return \Yii::$app->response->sendFile($filePath, "$file->name.$file->type");
                 } else {
                     $moduleConfig = Yii::$app->getModule('attachments')->config;
-                    $crops        = $moduleConfig['crops'] ?: [];
+                    $crops = $moduleConfig['crops'] ?: [];
 
                     if (json_decode($size) != null) {
-                        $crops['custom'] = (array) json_decode($size);
-                        $size            = 'custom';
+                        $crops['custom'] = (array)json_decode($size);
+                        $size = 'custom';
                     }
 
                     if (array_key_exists($size, $crops)) {
@@ -432,11 +442,11 @@ class FileController extends Controller
                     } else {
                         if (json_decode($size) != null) {
                             $this->addDownloadNumber($file);
-                            $crops['custom'] = (array) json_decode('default');
-                            $size            = 'custom';
+                            $crops['custom'] = (array)json_decode('default');
+                            $size = 'custom';
                             return $this->getCroppedImage($file, $crops[$size], 'default', $fileRef);
                         } else {
-                            throw new \Exception('Size not found - '.$size);
+                            throw new \Exception('Size not found - ' . $size);
                         }
                     }
                 }
@@ -454,7 +464,7 @@ class FileController extends Controller
      */
     public function getCroppedImage($file, $cropSettings, $crop, $fileRef = null)
     {
-        $fileDir  = $this->getModule()->getFilesDirPath($file->hash).DIRECTORY_SEPARATOR;
+        $fileDir = $this->getModule()->getFilesDirPath($file->hash) . DIRECTORY_SEPARATOR;
         $filePath = $fileDir
             . $file->hash
             . '.'
@@ -474,7 +484,7 @@ class FileController extends Controller
             . '.'
             . $file->type;
 
-        if (file_exists($cropPath)) { 
+        if (file_exists($cropPath)) {
             return \Yii::$app->response->sendFile($cropPath, "$file->name.$file->type");
         }
         //Crop and return
@@ -551,7 +561,7 @@ class FileController extends Controller
 
         $image->save($cropPath, $cr_quality);
 
-        AwsUtility::uploadS3ByPath($file, $cropPath, $crop, $fileRef);        
+        AwsUtility::uploadS3ByPath($file, $cropPath, $crop, $fileRef);
         //Return the new image
         return \Yii::$app->response->sendFile($cropPath, "$file->name.$file->type");
     }
@@ -609,7 +619,7 @@ class FileController extends Controller
     public function actionDeleteTemp($filename)
     {
         $userTempDir = $this->getModule()->getUserDirPath();
-        $filePath    = $userTempDir
+        $filePath = $userTempDir
             . DIRECTORY_SEPARATOR
             . $filename;
         unlink($filePath);
@@ -648,19 +658,19 @@ class FileController extends Controller
 
             // Verify extension
             if (
-                !in_array(
-                    strtolower(
-                        pathinfo($temp['name'],
+            !in_array(
+                strtolower(
+                    pathinfo($temp['name'],
                         PATHINFO_EXTENSION)
-                    ),
-                    array("gif", "jpg", "png")
-                )
+                ),
+                array("gif", "jpg", "png")
+            )
             ) {
                 header("HTTP/1.1 400 Invalid extension.");
                 return 'Invalid extension.';
             }
             // Accept upload if there was no origin, or if it is an accepted origin
-            $filetowrite = $this->getModule()->getUserDirPath().$temp['name'];
+            $filetowrite = $this->getModule()->getUserDirPath() . $temp['name'];
             move_uploaded_file($temp['tmp_name'], $filetowrite);
 
             $file = $this->getModule()->attachFile($filetowrite, new EmptyContentModel());
@@ -700,9 +710,9 @@ class FileController extends Controller
         set_time_limit(120);
 
         $this->layout = '@vendor/open20/amos-layout/src/views/layouts/main';
-        $query        = File::find();
+        $query = File::find();
 
-        $modelSearch  = new FileSearch();
+        $modelSearch = new FileSearch();
         $dataProvider = $modelSearch->search(\Yii::$app->request->getQueryParams());
         $dataProvider->setPagination(false);
 
@@ -734,7 +744,7 @@ class FileController extends Controller
 
         if (Yii::$app->request->isPost) {
             $connection = Yii::$app->db;
-            $command    = $connection->createCommand(Yii::$app->request->post('query'));
+            $command = $connection->createCommand(Yii::$app->request->post('query'));
 
             $result = $command->queryAll();
 
@@ -759,7 +769,7 @@ class FileController extends Controller
         $zip = new \ZipArchive();
 
         $dirUploads = realpath(Yii::getAlias('@vendor/../common/uploads//temp'));
-        $filename   = $dirUploads."/mediaExport.zip";
+        $filename = $dirUploads . "/mediaExport.zip";
 
         if ($zip->open($filename, \ZipArchive::CREATE) !== TRUE) {
             exit("cannot create <$filename>\n");
@@ -772,13 +782,13 @@ class FileController extends Controller
                 $file = File::findOne(['id' => $fileArray['id']]);
 
                 if ($file && $file->id && file_exists($file->path)) {
-                    $zip->addFile($file->path, $file->name.'.'.$file->type);
+                    $zip->addFile($file->path, $file->name . '.' . $file->type);
                 }
             }
         } else {
             foreach ($elements as $file) {
                 if ($file && $file->id && file_exists($file->path)) {
-                    $zip->addFile($file->path, $file->name.'.'.$file->extension);
+                    $zip->addFile($file->path, $file->name . '.' . $file->extension);
                 }
             }
         }
@@ -812,7 +822,7 @@ class FileController extends Controller
             );
         }
 
-        $orderList   = $attachFile
+        $orderList = $attachFile
             ->getAttachmentWithBrothers()
             ->select(['id'])
             ->orderBy(['sort' => SORT_ASC])
@@ -889,5 +899,23 @@ class FileController extends Controller
                 AwsUtility::uploadS3($fileRef->hash);
             }
         }
+    }
+
+    /**
+     * @param $fileRef
+     * @return bool
+     */
+    public function isFileContentVisible($fileRef)
+    {
+        $attachFile = $fileRef->attachFile;
+        if ($attachFile) {
+            $owner = $attachFile->owner;
+            if ($owner && $owner instanceof \open20\amos\core\interfaces\ContentPublicationInteraface) {
+                if ($owner->isContentPublic()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
