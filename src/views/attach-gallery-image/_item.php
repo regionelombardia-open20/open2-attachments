@@ -39,7 +39,9 @@ $contentImage = Html::img(
         <?= Html::a($contentImage, $model->getFullViewUrl(), [
             'title' => "Apri immagine " . $model->name,
             'class' => 'open-modal-detail-btn',
-            'data-key' => $model->id
+            'data-key' => $model->id,
+            'title' => FileModule::t('amosattachments', 'Apri immagine' . ' ' . $model->name),
+            
         ]) ?>
         
         <div class="info-item">

@@ -67,6 +67,7 @@ class m210931_170225_permission_workflow_gallery_image_request extends AmosMigra
             ],
             [
                 'name' => \open20\amos\attachments\widgets\icons\WidgetIconCategory::className(),
+                'type' => Permission::TYPE_PERMISSION,
                 'update' => true,
                 'newValues' => [
                     'removeParents' => ['ATTACH_GALLERY_ADMINISTRATOR']

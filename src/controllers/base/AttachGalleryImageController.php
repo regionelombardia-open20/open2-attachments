@@ -42,11 +42,18 @@ class AttachGalleryImageController extends CrudController
     
     /**
      * 
+     * @var type
+     */
+    public $module;
+    
+    /**
+     * 
      */
     public function init()
     {
         $this->setModelObj(new AttachGalleryImage());
         $this->setModelSearch(new AttachGalleryImageSearch());
+        $this->module = \Yii::$app->getModule('attachments');
 
         $this->setAvailableViews([
             'grid' => [
@@ -66,6 +73,10 @@ class AttachGalleryImageController extends CrudController
      */
     public function actionIndex($layout = null)
     {
+        if ($this->module->enableSingleGallery) {
+            return $this->redirect(['/attachments/attach-gallery/single-gallery']);
+        }
+
         Url::remember();
         $this->setDataProvider($this->modelSearch->search(Yii::$app->request->getQueryParams()));
         return parent::actionIndex($layout);
@@ -93,10 +104,9 @@ class AttachGalleryImageController extends CrudController
      */
     public function actionCreate($id)
     {
-        $module = \Yii::$app->getModule('attachments');
-
         $this->setUpLayout('form');
         $this->model = new AttachGalleryImage();
+        
         if ($this->model->load(Yii::$app->request->post()) && $this->model->validate() && $this->model->validateFiles()) {
             if(AttachGallery::findOne($id)) {
                 $this->model->gallery_id = $id;
@@ -105,9 +115,10 @@ class AttachGalleryImageController extends CrudController
                     $this->model->saveImageTags();
 
                     Yii::$app->getSession()->addFlash('success', Yii::t('amoscore', 'Item created'));
-                    if($module->enableSingleGallery){
+                    if ($this->module->enableSingleGallery){
                         return $this->redirect(['/attachments/attach-gallery/single-gallery']);
                     }
+                    
                     return $this->redirect(['/attachments/attach-gallery/update', 'id' => $this->model->gallery_id]);
                 } else {
                     Yii::$app->getSession()->addFlash('danger', Yii::t('amoscore', 'Item not created, check data'));
@@ -155,7 +166,6 @@ class AttachGalleryImageController extends CrudController
     public function actionUpdate($id)
     {
         $this->setUpLayout('form');
-        $module = \Yii::$app->getModule('attachments');
 
         $this->model = $this->findModel($id);
         $this->model->loadCustomTags();
@@ -169,9 +179,10 @@ class AttachGalleryImageController extends CrudController
                 $this->model->saveImageTags();
 
                 Yii::$app->getSession()->addFlash('success', Yii::t('amoscore', 'Item updated'));
-                if($module->enableSingleGallery){
+                if ($this->module->enableSingleGallery) {
                     return $this->redirect(['/attachments/attach-gallery/single-gallery']);
                 }
+
                 return $this->redirect(['/attachments/attach-gallery/update', 'id' => $this->model->gallery_id]);
             } else {
                 Yii::$app->getSession()->addFlash('danger', Yii::t('amoscore', 'Item not updated, check data'));
@@ -194,8 +205,6 @@ class AttachGalleryImageController extends CrudController
      */
     public function actionDelete($id)
     {
-        $module = \Yii::$app->getModule('attachments');
-
         $this->model = $this->findModel($id);
         if ($this->model) {
             $this->model->delete();
@@ -207,9 +216,11 @@ class AttachGalleryImageController extends CrudController
         } else {
             Yii::$app->getSession()->addFlash('danger', BaseAmosModule::tHtml('amoscore', 'Element not found.'));
         }
-        if($module->enableSingleGallery){
+        
+        if ($this->module->enableSingleGallery) {
             return $this->redirect(['/attachments/attach-gallery/single-gallery']);
         }
+        
         return $this->redirect(['/attachments/attach-gallery/update', 'id' => $this->model->gallery_id]);
     }
 
@@ -218,15 +229,31 @@ class AttachGalleryImageController extends CrudController
      */
     private function setCreateNewBtnLabelGeneral($id)
     {
-        $btnUploadImage = Html::a(FileModule::t('amosattachments', "Carica nuova"), ['/attachments/attach-gallery-image/create', 'id' => $id], [
-            'class' => 'btn btn-primary',
-            'title' => FileModule::t('amosattachments', "Carica nuova immmagine")
-        ]);
-        $btnRequestImage = Html::a(FileModule::t('amosattachments', "Richiedi nuova"), ['/attachments/attach-gallery-request/create', 'id' => $id], [
-            'class' => 'btn btn-primary',
-            'title' => FileModule::t('amosattachments', "Richiedi nuova immagine")
-        ]);
+        $btnUploadImage = Html::a(
+            FileModule::t('amosattachments', 'Carica nuova'),
+            [
+                '/attachments/attach-gallery-image/create',
+                'id' => $id
+            ],
+            [
+                'class' => 'btn btn-primary',
+                    'title' => FileModule::t('amosattachments', "Carica nuova immmagine")
+            ]
+        );
+        
+        $btnRequestImage = Html::a(
+            FileModule::t('amosattachments', "Richiedi nuova"),
+            [
+                '/attachments/attach-gallery-request/create',
+                'id' => $id
+            ],
+            [
+                'class' => 'btn btn-primary',
+                'title' => FileModule::t('amosattachments', "Richiedi nuova immagine")
+            ]
+        );
 
-        Yii::$app->view->params['createNewBtnParams']['layout'] = $btnUploadImage.$btnRequestImage;
+        Yii::$app->view->params['createNewBtnParams']['layout'] = $btnUploadImage . $btnRequestImage;
     }
+
 }

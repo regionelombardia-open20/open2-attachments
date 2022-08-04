@@ -28,7 +28,7 @@ if($model->attachImage){
             [
                 'id' => 'img-' . $model->id,
                 'class' => 'open-modal-detail-btn link-image',
-                'title' => FileModule::t('amosattachments', 'Apri immagine'),
+                'title' => FileModule::t('amosattachments', 'Apri immagine' .' '.  $model->name),
                 'data' => [
                     'key' => $model->id,
                     'attribute' => $attribute

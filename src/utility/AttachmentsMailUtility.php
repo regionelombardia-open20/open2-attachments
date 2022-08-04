@@ -43,7 +43,6 @@ class AttachmentsMailUtility
             $email = new Email();
             $email->sendMail($from, $to, $subject, $message, $files);
         } catch (\Exception $ex) {
-            //pr($ex->getMessage());
             \Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
         }
         return true;

@@ -127,7 +127,6 @@ class AttachGalleryRequestController extends CrudController
                 Yii::$app->getSession()->addFlash('danger', BaseAmosModule::t('amoscore', 'Item not created, check data'));
             }
         }
-        //pr($this->model->getErrors());
 
         return $this->render('create', [
             'model' => $this->model,

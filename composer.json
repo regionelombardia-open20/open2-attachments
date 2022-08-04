@@ -21,6 +21,7 @@
     "require": {
         "php": ">=5.4.0",
         "open20/amos-core":"^1.26.0",
+        "ext-sockets": "*",
         "yiisoft/yii2": "^2.0.0",
         "kartik-v/yii2-widget-fileinput": "1.0.6",
         "himiklab/yii2-colorbox-widget": "*",

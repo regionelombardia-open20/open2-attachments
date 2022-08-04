@@ -13,11 +13,13 @@ namespace open20\amos\attachments\models;
 
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\FileModuleTrait;
+use open20\amos\attachments\helpers\AttachemntsHelper;
 use open20\amos\core\record\Record;
 
 use Yii;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveQuery;
+use yii\db\ActiveRecord;
 use yii\helpers\Url;
 
 /**
@@ -172,8 +174,8 @@ class File extends Record
      */
     public function getUrl($size = 'original', $absolute = false, $canCache = false)
     {
-        $hash = FileRefs::getHashByAttachFile($this, $size);
-        return $this->generateUrlForHash($hash, $absolute, $canCache);
+        $ref = FileRefs::getRefByAttachFile($this, $size);
+        return $ref ? $ref->getUrl($size, $absolute, $canCache) : null;
     }
 
     /**
@@ -182,47 +184,16 @@ class File extends Record
      */
     public function getWebUrl($size = 'original', $absolute = false, $canCache = false)
     {
-        $hash = FileRefs::getHashByAttachFile($this, $size, false);
-        return $this->generateUrlForHash($hash, $absolute, $canCache);
-    }
-
-    /**
-     * @param $hash
-     * @param $absolute
-     * @param bool $canCache
-     * @return string
-     */
-    public function generateUrlForHash($hash, $absolute, $canCache = false)
-    {
-        $module = FileModule::getInstance();
-        if ($module->enable_aws_s3) {
-            $fileRef = FileRefs::find()->andWhere(['hash' => $hash])->one();
-            if (!empty($fileRef) && !empty($fileRef->s3_url)) {
-                return $fileRef->s3_url;
-            }
-        }
-        
-        $baseUrl = Url::to([
-            '/'
-            . FileModule::getModuleName()
-            . '/file/view',
-            'hash' => $hash,
-            'canCache' => $canCache
-        ]);
-
-        if (!$absolute) {
-            return $baseUrl;
-        }
-        
-        return \Yii::$app->getUrlManager()->createAbsoluteUrl($baseUrl);
+        $ref = FileRefs::getRefByAttachFile($this, $size, false);
+        return $ref ? $ref->getUrl($size, $absolute, $canCache) : null;
     }
 
     /**
      * @return string
      */
-    public function getPath($size = 'original')
+    public function getPath($size = 'original', $isPrivateFile = true)
     {
-        $filesDirPath = $this->getModule()->getFilesDirPath($this->hash);
+        $filesDirPath = AttachemntsHelper::getPathByHash($this->hash, !$isPrivateFile);
 
         if ($size == 'original') {
             return $filesDirPath
@@ -299,7 +270,7 @@ class File extends Record
 
     /**
      * 
-     * @return type
+     * @return ActiveRecord|ActiveQuery|null
      */
     public function getOwner()
     {

@@ -162,7 +162,8 @@ $this->registerJs($js);
                                                 '',
                                                 [
                                                     'class' => 'open-modal-detail-btn btn btn-tools-secondary',
-                                                    'data-key' => $model->id
+                                                    'data-key' => $model->id,
+                                                    'title' => FileModule::t('amosattachments', 'Apri immagine' . ' ' . $model->name),
                                                 ]
                                             );
                                         }

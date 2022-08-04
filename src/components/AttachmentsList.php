@@ -13,6 +13,7 @@ namespace open20\amos\attachments\components;
 
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\models\File;
+use open20\amos\core\helpers\StringHelper;
 use open20\amos\core\utilities\SortModelsUtility;
 use yii\data\ActiveDataProvider;
 use yii\helpers\Html;
@@ -39,6 +40,14 @@ class AttachmentsList extends AttachmentsTableWithPreview
     public $hideExtensionFile = false;
 
     public $requireModalMoveFile = true;
+
+    public $label;
+
+    public function __construct(array $config = []) {
+        $this->label = FileModule::t('amosattachments', '#attach');
+        
+        parent::__construct($config);
+    }
 
     // EDITED 
     public function drawWidget($attribute = null)
@@ -67,13 +76,20 @@ class AttachmentsList extends AttachmentsTableWithPreview
 
             $file = [];
 
+            $filnameLength = 30;
+            $stingExtension = ($this->hideExtensionFile ? '' : "." . $model->type);
+            if (strlen($model->name) > $filnameLength) {
+                $stingExtension = '';
+            }
+
             // Get rendered filename and download link
-            $file_name = $model->name . ($this->hideExtensionFile ? '' : "." . $model->type);
+            $file_name = '<span>' . StringHelper::truncate($model->name, $filnameLength) . '</span>' . $stingExtension;
+            $file_name_long = $model->name . ($this->hideExtensionFile ? '' : "." . $model->type);
 
             $file['filename'] = Html::tag('div',Html::a($file_name, $model->getUrl(), [
                 'class' => 'filename',
-                'title' => "Dowload file ". $file_name,
-            ]).html::tag('span',strtoupper($model->type) . " (". ($model->size%1024) . " Kb)", ['class' => 'small']),['class'=> 'fileinfos']);
+                'title' => "Dowload file ". $file_name_long,
+            ]).html::tag('span',strtoupper($model->type) . " (". $model->formattedSize . ")", ['class' => 'small']),['class'=> 'fileinfos']);
             $file['type'] = $model->type;
 
             // Get rendered preview button
@@ -205,6 +221,7 @@ class AttachmentsList extends AttachmentsTableWithPreview
         }
 
         return $this->render('attachments-list', [
+            'label' => $this->label,
             'filesList' => $files,
             'viewFilesCounter' => $this->viewFilesCounter,
             'filesQuantity' => $filesQuantity

@@ -14,6 +14,7 @@ namespace open20\amos\attachments\behaviors;
 use open20\amos\attachments\components\CustomUploadFile;
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\FileModuleTrait;
+use open20\amos\attachments\interfaces\VirusScanInterface;
 use open20\amos\attachments\models\AttachGalleryImage;
 use open20\amos\attachments\models\File;
 use open20\amos\core\views\toolbars\StatsToolbarPanels;
@@ -23,7 +24,7 @@ use Imagine\Image\Box;
 use Imagine\Image\Point;
 
 use yii\base\Behavior;
-use yii\db\ActiveQuery;
+use yii\base\ModelEvent;
 use yii\db\ActiveRecord;
 use yii\helpers\FileHelper;
 use yii\helpers\Html;
@@ -32,6 +33,7 @@ use yii\validators\FileValidator;
 use yii\web\UploadedFile;
 use yii\imagine\Image;
 use yii\helpers\Json;
+use yii\base\InvalidArgumentException;
 
 /**
  * Class FileBehavior
@@ -278,7 +280,7 @@ class FileBehavior extends Behavior
             : null;
 
         if (!empty($fileAsString)) {
-            $decodedFileTempName = md5(time().$attribute);
+            $decodedFileTempName = hash('sha256',time().$attribute);
             $decodedFilePath = sys_get_temp_dir() . '/' . $decodedFileTempName;
 
             //Decode
@@ -326,7 +328,13 @@ class FileBehavior extends Behavior
             }
 
             if ($cropData) {
-                $cropInfo = Json::decode($cropData);
+                try {
+                    $cropInfo = Json::decode($cropData);
+                    // yii\base\InvalidArgumentException if there is any decoding error - so we catch the error
+                } catch (InvalidArgumentException $iae) {
+                    $cropInfo = array();
+                }
+
                 if (
                     (
                         isset($cropInfo['width'])
@@ -423,17 +431,16 @@ class FileBehavior extends Behavior
 
     /**
      * When update save files before the validation
-     * @param $event
+     * @param $event ModelEvent
      * @return bool|void
      */
     public function evalAttributes($event)
     {
         $attributes = $this->getFileAttributes();
         $sessImg    = null;
-        if (\Yii::$app->request->isPost) {
 
+        if ( !(\Yii::$app instanceof \yii\console\Application) && \Yii::$app->request->isPost) {
             $csrfParam = \Yii::$app->request->csrfParam;
-
             $csrf    = \Yii::$app->request->post($csrfParam);
             $sessImg = \Yii::$app->session->get($csrf);
         }
@@ -444,17 +451,48 @@ class FileBehavior extends Behavior
                         ClassUtility::getClassBasename($this->owner->className())."[".$attribute."]"
                 );
 
+                //Let check if we need to scan the file
+                $module = FileModule::getInstance();
+
+                if($module->enableVirusScan) {
+                    /**
+                     * @var $scanner VirusScanInterface
+                     */
+                    $scanner = \Yii::createObject($module->virusScanClass);
+
+                    foreach ($files as $file) {
+                        $basePath = \Yii::getAlias('@common/uploads/temp');
+                        $scanPath = realpath($basePath) .'/'. hash('md5',$file->tempName). '.scan';
+                        $scanReady = $file->saveAs($scanPath, false);
+                        $scanResult = $scanner->scanFile($scanPath);
+
+                        if($scanReady && !$scanResult) {
+                            unlink($file->tempName);
+
+                            $this->owner->addError(
+                                $attribute,
+                                FileModule::t('amosattachments', 'The file {filename} is not safe and has been dropped', ['filename' => $file->name])
+                            );
+                        }
+
+                        //Drop Copy Anyway
+                        unlink($scanPath);
+                    }
+                }
+
                 if (!empty($sessImg) && is_array($sessImg) && array_key_exists($attribute, $sessImg)) {
                     if (!empty($sessImg[$attribute]['id'])) {
                         $imgGallery = AttachGalleryImage::findOne($sessImg[$attribute]['id']);
-                        if (!empty($imgGallery)) {
 
+                        if (!empty($imgGallery)) {
                             if (array_key_exists($attribute.'_data', \Yii::$app->request->post())) {
                                 $newBody = [];
+
                                 foreach (\Yii::$app->request->post() as $k => $post) {
                                     $newBody[$k] = $post;
                                 }
-                                $newBody[$attribute.'_data'] = 'ok';
+                                //commentato perchè  a riga 316 si aspetta un json ed il json_decode si romperebbe, da capire a che serviva
+                               // $newBody[$attribute.'_data'] = 'ok';
                                 \Yii::$app->request->setBodyParams($newBody);
                             }
                         }
@@ -463,15 +501,17 @@ class FileBehavior extends Behavior
 
                 if (!empty($files)) {
                     $maxFiles = 1;
-                    foreach ($this->fileValidators as $fileValidator) {
 
+                    foreach ($this->fileValidators as $fileValidator) {
                         if (!empty($fileValidator)) {
                             if (in_array($attribute, $fileValidator->attributes)) {
                                 $maxFiles = $fileValidator->maxFiles;
                             }
                         }
                     }
+
                     $setter = 'set'.ucfirst($attribute);
+
                     if (method_exists($this->owner, $setter)) {
                         $this->owner->{$setter}($maxFiles == 1 ? reset($files) : $files);
                     } else {
@@ -504,7 +544,10 @@ class FileBehavior extends Behavior
         $attributes = $this->getFileAttributes();
 
         foreach ($attributes as $attribute) {
-            //Enruse var is unsetted from override
+            //Drop Attribute Values, now let saveUploads do his job
+            unset($this->owner->{$attribute});
+
+            //Ensure var is unsetted from override
             if (isset($this->overrideAttributes[$attribute])) {
                 unset($this->overrideAttributes[$attribute]);
             }

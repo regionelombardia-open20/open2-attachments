@@ -28,21 +28,45 @@ $inputId = isset($crop->options['id']) && (!empty($crop->options['id']))
     ? $crop->options['id']
     : Html::getInputId($crop->model, $crop->attribute)
 ;
+$modalId = 'cropper-modal-' . $crop->imageOptions['id'];
+$csrfParam = \Yii::$app->request->csrfParam;
 
+$jsCrop = <<<JS
+    $('#$inputId').change(function(){
+         var csrf = $('form input[name="$csrfParam"]').val();
+
+         $.ajax({
+          method: 'get',
+          url: "/attachments/attach-gallery-image/delete-from-session-ajax",
+          data: {csrf: csrf},
+          success: function(data){
+              if(data.success == true){
+                }
+          }
+        });
+    });
+
+//pulsante cancella nel modale
+$('.crop-cancel-button').on('click',function(){
+    $('#$inputId').val(null);
+    $('#$modalId').modal('hide');
+});
+
+JS;
+
+$this->registerJs($jsCrop);
 
 if (!empty(\Yii::$app->params['bsVersion']) && \Yii::$app->params['bsVersion'] == '4.x') {
     BootstrapItaliaCustomSpriteAsset::register($this);
 } else {
     ModuleAttachmentsAsset::register($this);
 }
-
 $cropperInputId = isset($crop->options['id']) && (!empty($crop->options['id']))
     ? ('cropInput_' . $crop->options['id'])
     : ('cropInput_' . $crop->attribute)
 ;
 
 $closeButtonModalId = $crop->imageOptions['id'] . '_button_cancel';
-$modalId = 'cropper-modal-' . $crop->imageOptions['id'];
 
 if ($crop->isFrontend == false) {
     ModuleAttachmentsAsset::register($this);
@@ -114,7 +138,7 @@ $alertString = FileModule::t('amosattachment', "Estensione file non permessa, in
 
         <?php
         yii\bootstrap4\Modal::begin([
-            'id' => 'modal-image-crop cropper-modal-' . $crop->imageOptions['id'],
+            'id' => 'cropper-modal-' . $crop->imageOptions['id'],
             'title' => '<h2>' . FileModule::t('amosattachments', '#crop_title') . '</h2>',
             'closeButton' => $cropModalCloseButton,
             'footer' => '<div class="cropper-btns">'
@@ -122,7 +146,7 @@ $alertString = FileModule::t('amosattachment', "Estensione file non permessa, in
                     FileModule::t('amosattachments', '#cancel_btn'),
                     [
                         'id' => $crop->imageOptions['id'] . '_button_cancel',
-                        'class' => 'btn btn-link mr-3'
+                        'class' => 'crop-cancel-button btn btn-link mr-3'
                     ]
                 )
                 . Html::button(
@@ -147,17 +171,17 @@ $alertString = FileModule::t('amosattachment', "Estensione file non permessa, in
             </div>
             <div class="col-md-3 mt-3">
                 <div class="btn-group tools">
-                    <button type="button" class="btn btn-xs btn-info rotate_<?= $crop->attribute ?>"
-                            data-type="rotate" data-option="-90" title="Rotate Left">
-                        <svg class="icon icon-sm icon-white">
-                            <use xlink:href="<?= $spriteAsset->baseUrl ?>/material-sprite.svg#ic_rotate_left"></use>
-                        </svg>
+                    <button type="button" class="btn btn-primary rotate_<?= $crop->attribute ?>" data-type="rotate"
+                            data-option="-90" title="Rotate Left">
+                        <span class="docs-tooltip" data-animation="false">
+                            <?= AmosIcons::show('rotate-left', ['class' => 'am']); ?>
+                        </span>
                     </button>
-                    <button type="button" class="btn btn-xs btn-info rotate_<?= $crop->attribute ?>"
-                            data-type="rotate" data-option="90" title="Rotate Right">
-                        <svg class="icon icon-sm icon-white">
-                            <use xlink:href="<?= $spriteAsset->baseUrl ?>/material-sprite.svg#ic_rotate_right"></use>
-                        </svg>
+                    <button type="button" class="btn btn-primary rotate_<?= $crop->attribute ?>" data-type="rotate"
+                            data-option="90" title="Rotate Right">
+                        <span class="docs-tooltip" data-animation="false">
+                            <?= AmosIcons::show('rotate-right', ['class' => 'am']); ?>
+                        </span>
                     </button>
                 </div>
 
@@ -194,7 +218,7 @@ $alertString = FileModule::t('amosattachment', "Estensione file non permessa, in
 
     <?php else : ?>
         <?php Modal::begin([
-            'id' => 'modal-image-crop cropper-modal-' . $crop->imageOptions['id'],
+            'id' => 'cropper-modal-' . $crop->imageOptions['id'],
             'header' => '<h2>' . FileModule::t('amosattachments', '#crop_title') . '</h2>',
             'closeButton' => [],
             'footer' => '<div class="row cropper-btns">'

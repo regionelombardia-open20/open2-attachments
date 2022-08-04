@@ -22,7 +22,7 @@ use yii\widgets\Pjax;
  */
 
 $this->title = FileModule::t('amosattachments', 'Gallery');
-$this->params['breadcrumbs'][] = ['label' => '', 'url' => ['/attachments']];
+$this->params['breadcrumbs'][] = ['label' => '', 'url' => ['attachments/attach-gallery/single-gallery']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="attach-gallery-index">

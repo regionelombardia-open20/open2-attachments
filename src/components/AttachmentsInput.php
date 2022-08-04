@@ -165,7 +165,7 @@ class AttachmentsInput extends FileInput
                                                                 {preview}
                                                                 <div class=\"kv-upload-progress kv-hidden\"></div><div class=\"clearfix\"></div>
                                                                 <div class=\"input-group {class}\">
-                                                                  <div class=\"file-caption form-control {class}\" tabindex=\"500\">
+                                                                  <div class=\"file-caption form-control {class}\" tabindex=\"1\">
                                                                     <span class=\"file-caption-icon\"></span>
                                                                     <input class=\"file-caption-name\" onkeydown=\"return false;\" onpaste=\"return false;\" tabindex=\"-1\">
                                                                   </div>
@@ -191,9 +191,9 @@ class AttachmentsInput extends FileInput
             $this->pluginOptions['layoutTemplates']['main1'] = '{preview}
                 <div class="kv-upload-progress kv-hidden"></div><div class="clearfix"></div>
                 <div class="input-group {class}">
-                <div class="file-caption form-control {class}" tabindex="500">
+                <div class="file-caption form-control {class}" tabindex="1">
                     <span class="file-caption-icon"></span>
-                    <input class="file-caption-name" onkeydown="return false;" onpaste="return false;" tabindex="-1">
+                    <input class="file-caption-name" onkeydown="return false;" onpaste="return false;" tabindex="1">
                 </div>
                 <div class="input-group-btn input-group-append"> {remove}{cancel}{upload}{browse}'. $driveButton.'
                  </div>

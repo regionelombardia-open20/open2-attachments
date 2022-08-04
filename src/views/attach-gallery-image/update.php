@@ -19,7 +19,7 @@ $this->title = FileModule::t('amosattachments', 'Update image')
     . " '"
     . $model->name
     . "'";
-$this->params['breadcrumbs'][] = ['label' => '', 'url' => ['/attachments']];
+//$this->params['breadcrumbs'][] = ['label' => '', 'url' => ['/attachments']];
 $this->params['breadcrumbs'][] = [
     'label' => Yii::t('amoscore', 'Attach Gallery Image'),
     'url' => ['index']

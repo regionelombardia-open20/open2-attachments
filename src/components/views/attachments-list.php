@@ -69,61 +69,43 @@ JS
 
     <?php if ($filesList) : ?>
 
-        <label class="text-uppercase col-md-12"><?= FileModule::t('amosattachments', '#attach'); ?></label>
+        <label class="text-uppercase col-md-12"><?= $label ?></label>
 
     <?php else: ?>
 
-        <label class="text-uppercase col-md-12"><?= FileModule::t('amosattachments', '#attach'); ?></label>
+        <label class="text-uppercase col-md-12"><?= $label ?></label>
         <div class="no-items text-muted col-md-12"><?= FileModule::t('amosattachments', '#no_attach'); ?></div>
 
 
     <?php endif; ?>
 
+    <?php
+    list($array1, $array2) = array_chunk($filesList, ceil(count($filesList) / 2));
+    ?>
 
-    <?php foreach ($filesList as $file) : ?>
+<div class="d-flex flex-column flex-nowrap">
+    <?php
+    $i = 1;
+    foreach ($array1 as $file) :
+        echo $this->render('_item_attachments-list', [
+            'file' => $file,
+            'i' => $i,
+            'label' => $label,
+        ]);
+        $i++;
+    endforeach; ?>
+</div>
 
-        <div id="attachment-list-item-<?=$file['file_id']?>" class="attachment-list-item col-md-6">
-            <div class="attachment-list-item-name">
-                <div>
-                    <?php if ((in_array(strtolower($file['type']), ['jpg', 'png', 'jpeg', 'svg']))) : ?>
-                        <span class="icon icon-image icon-sm mdi mdi-image"></span>
-                    <?php elseif ((in_array(strtolower($file['type']), ['pdf']))) : ?>
-                        <span class="icon icon-pdf icon-sm mdi mdi-file-pdf-box"></span>
-                    <?php elseif ((in_array(strtolower($file['type']), ['doc', 'docx']))) : ?>
-                        <span class="icon icon-word icon-sm mdi mdi-file-word-box"></span>
-                    <?php elseif ((in_array(strtolower($file['type']), ['xls', 'xlsx']))) : ?>
-                        <span class="icon icon-excel icon-sm mdi mdi-file-excel-box"></span>
-                    <?php elseif ((in_array(strtolower($file['type']), ['zip', 'rar']))) : ?>
-                        <span class="icon icon-link icon-sm mdi mdi-folder-zip"></span>
-                    <?php else : ?>
-                        <span class="icon icon-link icon-sm mdi mdi-link-box"></span>
-                    <?php endif ?>
-                </div>
-                <?= $file['filename']; ?>
-            </div>
-            <div class="attachment-list-item-action">
-                <?= $file['preview']; ?>
-                <!-- < ?= $file['downloadButton']; ?> -->
-                <?= $file['sortButtons']; ?>
-                <?= $file['deleteButton']; ?>
-            </div>
-        </div>
-
-        <?= Colorbox::widget([
-            'targets' => [
-                '.att' . $file['id'] => [
-                    'rel' => '.att' . $file['id'],
-                    'photo' => true,
-                    'scalePhotos' => true,
-                    'width' => '100%',
-                    'height' => '100%',
-                    'maxWidth' => 800,
-                    'maxHeight' => 600,
-                ],
-            ],
-            'coreStyle' => 4,
-        ]); ?>
-
-    <?php endforeach; ?>
-
+<div class="d-flex flex-column flex-nowrap">
+    <?php
+    $i = 1;
+    foreach ($array2 as $file) :
+        echo $this->render('_item_attachments-list', [
+            'file' => $file,
+            'i' => $i,
+            'label' => $label,
+        ]);
+        $i++;
+    endforeach; ?>
+</div>
 </div>

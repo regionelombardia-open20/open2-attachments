@@ -10,6 +10,7 @@
 
 namespace open20\amos\attachments;
 
+use open20\amos\attachments\helpers\AttachemntsHelper;
 use open20\amos\attachments\models\File;
 use open20\amos\core\module\AmosModule;
 use open20\amos\core\utilities\ZipUtility;
@@ -150,6 +151,16 @@ class FileModule extends AmosModule
      * @var string $aws_s3_default_region
      */
     public $aws_s3_default_region = 'eu-central-1';
+
+    /**
+     * @var bool If true $virusScanClass must be set and required software must beinstalled
+     */
+    public $enableVirusScan = false;
+
+    /**
+     * @var string What class use to scan files or directories, $enableVirusScan must be true to use
+     */
+    public $virusScanClass = '\open20\amos\attachments\scanners\ClamAVScanner';
 
     /**
      * 
@@ -322,15 +333,15 @@ class FileModule extends AmosModule
             imagejpeg($image, $cleanFilePath, 80);
         }
 
-        //SystemMd5Sum
+        //SystemHashSum
         if (strtoupper(PHP_OS) == 'WINNT') {
-            $fileHash = md5(file_get_contents($cleanFilePath));
+            $fileHash = hash_file('sha256', $cleanFilePath);
         } else {
             $escapedFilePath = escapeshellarg($cleanFilePath);
-            exec("md5sum {$escapedFilePath}", $fileHash);
+            exec("sha256sum {$escapedFilePath}", $fileHash);
 
             $filesize = filesize($cleanFilePath);
-            $fileHash = md5(reset($fileHash).$filesize);
+            $fileHash = hash('sha256', reset($fileHash).$filesize);
         }
 
         //New file infos
@@ -458,12 +469,12 @@ class FileModule extends AmosModule
      * @param $useStorePath
      * @return string
      */
-    public function getFilesDirPath($fileHash, $useStorePath = true)
+    public function getFilesDirPath($fileHash, $isPrivateFile = true)
     {
-        if ($useStorePath) {
-            $path = $this->getStorePath() . DIRECTORY_SEPARATOR . $this->getSubDirs($fileHash);
-        } else {
-            $path = DIRECTORY_SEPARATOR . $this->getSubDirs($fileHash);
+        $path = $this->getStorePath() . DIRECTORY_SEPARATOR . $this->getSubDirs($fileHash);
+
+        if (!$isPrivateFile && AttachemntsHelper::getIsStaticServed()) {
+            $path = \Yii::getAlias('@webroot/static') . DIRECTORY_SEPARATOR . $this->getSubDirs($fileHash);
         }
 
         FileHelper::createDirectory($path, 0777);

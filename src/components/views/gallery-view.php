@@ -16,12 +16,7 @@ if (preg_match('/^[a-zA-Z]+$/', $attribute) == 0) {
     $attribute = '';
 }
 
-if (empty($csrf)) {
-//    $csrfParam = \Yii::$app->request->csrfParam;
-    $csrfToken = \Yii::$app->request->csrfToken;
-} else {
-    $csrfToken = $csrf;
-}
+$csrfParam = \Yii::$app->request->csrfParam;
 
 $js = <<<JS
     // Add the preview of the image and set in session the id of the file to attach
@@ -40,29 +35,16 @@ $js = <<<JS
         //         $('.loading').hide();
             });
         return;
-        //
-        // $.ajax({
-        //   method: 'get',
-        //   url: "/attachments/attach-gallery-image/upload-from-gallery-ajax",
-        //   data: {id: id_image, attribute: attribute,  csrf: "$csrfToken"},
-        //   success: function(data){
-        //       if(data.success == true){
-        //         $('.preview-pane .hidden').removeClass('hidden');
-        //         $('#preview-container-'+attribute).html(tag_img);
-        //         $('#attach-gallery-'+attribute).modal('hide');
-        //         $('.uploadcrop.attachment-uploadcrop').addClass('cropper-done');
-        //         }
-        //   }
-        // });
     });
 
     // delete the id of the file from session
     function deleteFromSession(){
+         var csrf = $('form input[name="$csrfParam"]').val();
 
          $.ajax({
           method: 'get',
           url: "/attachments/attach-gallery-image/delete-from-session-ajax",
-          data: {csrf: "$csrfToken"},
+          data: {csrf: csrf},
           success: function(data){
               if(data.success == true){
                 }
@@ -89,6 +71,7 @@ $js = <<<JS
 
     $(document).on('click','#image-gallery-link-$attribute, .select-image-$attribute', function(e){
         e.preventDefault();
+         var csrf = $('form input[name="$csrfParam"]').val();
 
         var id_image = $(this).attr('data-key');
         var attribute = $(this).attr('data-attribute');
@@ -97,7 +80,7 @@ $js = <<<JS
           $.ajax({
           method: 'get',
           url: "/attachments/attach-gallery-image/upload-from-gallery-ajax",
-          data: {id: id_image, attribute: attribute,  csrf: "$csrfToken"},
+          data: {id: id_image, attribute: attribute,  csrf: csrf},
           success: function(data){
               if(data.success == true){
                 $('.preview-pane .hidden').removeClass('hidden');

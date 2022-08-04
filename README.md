@@ -44,18 +44,6 @@ to the require section of your `composer.json` file.
 ],
 ```
 
-Also, add these lines to your console config:
-	
-```php
-<?php
-'controllerMap' => [
-    'attachments' => [
-        'class' => 'yii\console\controllers\MigrateController',
-        'migrationPath' => '@amos_attachments/migrations'
-    ],
-],
-```
-
 3. Apply migrations
 
 ```bash
@@ -95,4 +83,4 @@ public function rules()
 	
 6. Make sure that you specified `maxFiles` in module rules and `maxFileCount` on `AttachmentsInput` to the number that you want
 
-7. Youre ready to use, [See How](https://badbreze.github.io/yii2-attachments/docs/)
+7. Youre ready to use, [See How](docs/index.md)

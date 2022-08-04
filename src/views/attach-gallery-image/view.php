@@ -25,7 +25,7 @@ ModuleAttachmentsAsset::register($this);
  */
 
 $this->title = $model->name;
-$this->params['breadcrumbs'][] = ['label' => '', 'url' => ['/attachments']];
+$this->params['breadcrumbs'][] = ['label' => '', 'url' => ['/attachments/attach-gallery/single-gallery']];
 $this->params['breadcrumbs'][] = [
     'label' => Yii::t('amoscore', 'Attach Gallery Image'),
     'url' => ['index']

@@ -11,8 +11,10 @@
 
 namespace open20\amos\attachments\models;
 
+use open20\amos\attachments\bootstrap\StaticFilesManagement;
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\FileModuleTrait;
+use open20\amos\attachments\helpers\AttachemntsHelper;
 use open20\amos\core\record\Record;
 
 use yii\behaviors\TimestampBehavior;
@@ -33,22 +35,22 @@ use yii\helpers\Url;
  * @property integer $is_main
  * @property integer $sort
  * @property File $attachFile
+ * @property string $s3_url
  */
-
 class FileRefs extends Record
 {
     /**
-     * 
+     *
      */
     use FileModuleTrait;
-    
+
     /**
-     * 
+     *
      */
-    const MAIN     = 1;
-    
+    const MAIN = 1;
+
     /**
-     * 
+     *
      */
     const NOT_MAIN = 0;
 
@@ -112,16 +114,35 @@ class FileRefs extends Record
      * @param string $size
      * @return string
      */
-    public function getUrl($size = 'original')
+    public function getUrl($size = 'original', $absolute = false, $canCache = false)
     {
-        return Url::to([
-            '/'
-            . FileModule::getModuleName()
-            . '/file/view',
-            'id' => $this->id,
-            'hash' => $this->hash,
-            'size' => $size
-        ]);
+        $module = FileModule::getInstance();
+
+        if ($module->enable_aws_s3) {
+            if (!empty($this) && !empty($this->s3_url)) {
+                return $this->s3_url;
+            }
+        }
+
+        if ($this->protected == false && AttachemntsHelper::getIsStaticServed()) {
+            $subdirs = AttachemntsHelper::getSubDirs($this->hash);
+
+            $baseUrl = Url::to([
+                                   '/static/' . $subdirs . DIRECTORY_SEPARATOR . $this->hash . '.' . $this->attachFile->type
+                               ]);
+        } else {
+            $baseUrl = Url::to([
+                                   '/' . FileModule::getModuleName() . '/file/view',
+                                   'hash' => $this->hash,
+                                   'canCache' => $canCache
+                               ]);
+        }
+
+        if (!$absolute) {
+            return $baseUrl;
+        }
+
+        return \Yii::$app->getUrlManager()->createAbsoluteUrl($baseUrl);
     }
 
     /**
@@ -132,13 +153,13 @@ class FileRefs extends Record
     {
         return \Yii::$app->getUrlManager()->createAbsoluteUrl(
             Url::to([
-                '/'
-                . FileModule::getModuleName()
-                . '/file/download',
-                'id' => $this->id,
-                'hash' => $this->hash,
-                'size' => $size
-            ])
+                        '/'
+                        . FileModule::getModuleName()
+                        . '/file/download',
+                        'id' => $this->id,
+                        'hash' => $this->hash,
+                        'size' => $size
+                    ])
         );
     }
 
@@ -147,14 +168,26 @@ class FileRefs extends Record
      * @param string $size
      * @return string
      */
-    public function getPath($size = 'original')
+    public function getPath()
     {
         $attachFile = $this->attachFile;
+
         if (empty($attachFile)) {
             return null;
         }
-        
-        return $this->attachFile->getPath($size);
+
+        $refDirPath = AttachemntsHelper::getPathByHash($this->hash, !$this->protected);
+        $additionalStorageName = $this->crop == 'original' ? '' : md5($this->crop);
+        $refPath = $refDirPath . DIRECTORY_SEPARATOR . $this->hash . $additionalStorageName . '.' . $attachFile->type;
+
+        $source = $this->attachFile->getPath();
+
+        //Copy static file when required (old files, non statically served
+        if (!file_exists($refPath) && file_exists($source) && $this->crop == 'original') {
+            copy($source, $refPath);
+        }
+
+        return $refPath;
     }
 
     /**
@@ -167,28 +200,31 @@ class FileRefs extends Record
 
     /**
      * @param File $attachFile
-     * @param string $crop
-     * @return bool|string
+     * @param string|array $crop
+     * @param bool $protected
+     * @return FileRefs|null
+     * @throws \yii\base\InvalidConfigException
      */
-    public static function getHashByAttachFile(File $attachFile, $crop, $protected = true)
+    public static function getRefByAttachFile(File $attachFile, $crop, $protected = true)
     {
         // Custom crops values?
         if (is_array($crop)) {
             $crop = json_encode($crop);
         }
 
-        $result = FileRefs::find()->andWhere([
-            'attach_file_id' => $attachFile->id,
-            'model' => $attachFile->model,
-            'item_id' => $attachFile->item_id,
-            'attribute' => $attachFile->attribute,
-            'crop' => $crop,
-            'protected' => $protected
-            ])
+        $result = FileRefs::find()
+            ->andWhere([
+                           'attach_file_id' => $attachFile->id,
+                           'model' => $attachFile->model,
+                           'item_id' => $attachFile->item_id,
+                           'attribute' => $attachFile->attribute,
+                           'crop' => $crop,
+                           'protected' => $protected
+                       ])
             ->one();
 
         if ($result && $result->id) {
-            return $result->hash;
+            return $result;
         }
 
         /**
@@ -200,23 +236,33 @@ class FileRefs extends Record
             'item_id' => $attachFile->item_id,
             'attribute' => $attachFile->attribute,
             'is_main' => $attachFile->is_main,
-            'sort' => $attachFile->sort
-                ?
-                : 0,
+            'sort' => $attachFile->sort ?: 0,
             'crop' => $crop,
             'protected' => $protected,
         ];
 
-        $newFileRef       = new FileRefs();
+        $newFileRef = new FileRefs();
         $newFileRef->load(['FileRefs' => $data]);
-        $newFileRef->hash = md5(json_encode($data));
+        $newFileRef->hash = hash('sha256', json_encode($data));
 
         if ($newFileRef->validate()) {
             $newFileRef->save();
 
-            return $newFileRef->hash;
+            return $newFileRef;
         }
 
-        return false;
+        return null;
+    }
+
+    /**
+     * @param File $attachFile
+     * @param string $crop
+     * @return bool|string
+     */
+    public static function getHashByAttachFile(File $attachFile, $crop, $protected = true)
+    {
+        $fileRef = self::getRefByAttachFile($attachFile, $crop, $protected);
+
+        return $fileRef ? $fileRef->hash : null;
     }
 }
