@@ -106,7 +106,7 @@ $alertString = FileModule::t('amosattachment', "Estensione file non permessa, in
 
     <div class="preview-pane <?= (!is_null($crop->defaultPreviewImage)) ? 'image-find' : '' ?>">
         <?php
-        $closeButtonClass = is_null($crop->defaultPreviewImage) ? ' hidden' : '';
+        $closeButtonClass = is_null($crop->defaultPreviewImage) ? ' hidden d-none' : '';
         if (!$crop->hidePreviewDeleteButton) {
             echo Html::a(AmosIcons::show('close', ['class' => '']), 'javascript:void(0)',
                 [
@@ -121,15 +121,18 @@ $alertString = FileModule::t('amosattachment', "Estensione file non permessa, in
                 ]);
         }
         ?>
-        <div id="preview-container-<?= $crop->attribute ?>" class="preview-container">
+        <div id="preview-container-<?= $cropperInputId ?>" >
             <?php
+
             if (!is_null($crop->defaultPreviewImage)) {
                 $defaultPreviewImageOptions = [
                     'id' => Yii::$app->getSecurity()->generateRandomString(10),
+                    'width' => '100%',
                     'class' => 'preview_image'
                 ];
                 echo Html::img($crop->defaultPreviewImage, $defaultPreviewImageOptions);
             }
+
             ?>
         </div>
     </div>
@@ -324,12 +327,14 @@ jQuery('.deleteImageCrop', '#{$cropperInputId}').on('click', function() {
     
     //Hide the button
     jQuery(this).addClass('hidden');
+    jQuery(this).addClass('d-none');
     
     //Remove the image
-    jQuery('.preview-container img', '#{$cropperInputId}').remove();
+    jQuery('#preview-container-{$cropperInputId} img, canvas').remove();
     
     //Clear crop if exists
-    jQuery('.cropper-data', '#{$cropperInputId}').attr('val', '');
+    jQuery('.cropper-data').attr('val', '');
+    jQuery('#{$inputId}').val('');
     
     jQuery.get('/{$moduleName}/file/delete',{
         'id': data.id,
@@ -340,6 +345,7 @@ jQuery('.deleteImageCrop', '#{$cropperInputId}').on('click', function() {
         //TODO
     }, 'json');
 });
+
 
 jQuery('.modal-body .tools>.rotate_{$crop->attribute}', '#{$cropperInputId}').on('click', function() {
     var data = jQuery(this).data();
@@ -362,6 +368,15 @@ jQuery('.modal-body .tools>.aspectratio_{$crop->attribute}', '#{$cropperInputId}
 //On new image selected
 jQuery('.modal-footer button[class*="cropper-done"]', '#{$cropperInputId}').on('click', function() {
     jQuery('.deleteImageCrop', '#{$cropperInputId}').removeClass('hidden');
+    jQuery('.deleteImageCrop', '#{$cropperInputId}').removeClass('d-none');
+        
+    let image = $('.modal-body .cropper-wrapper>img', '#{$cropperInputId}');
+    let box = document.querySelector('#{$inputId}');
+    let width = box.offsetWidth;
+    let mycanvas = image.cropper('getCroppedCanvas', { width: width });
+    if (mycanvas) {
+        jQuery('#preview-container-{$cropperInputId}').html(mycanvas);
+    }
 });
 
 jQuery('#{$closeButtonModalId}').click(function(e){
