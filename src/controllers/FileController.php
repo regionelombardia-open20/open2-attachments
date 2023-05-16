@@ -336,7 +336,7 @@ class FileController extends Controller
 
                 if (array_key_exists($size, $crops)) {
                     $this->addDownloadNumber($file);
-                    return $this->getCroppedImage($file, $crops[$size], $size, null, false);
+                    return $this->getCroppedImage($file, $crops[$size], $size);
                 } else {
                     throw new \Exception('Size not found - ' . $size);
                 }
@@ -373,7 +373,8 @@ class FileController extends Controller
 
         if (!empty($this->FileModule->cache_age) && $canCache) {
             \Yii::$app->response->headers->set(
-                "Cache-Control", "max-age=".$this->FileModule->cache_age.", public"
+                "Cache-Control",
+                "max-age=" . $this->FileModule->cache_age . ", public"
             );
         } else {
             \Yii::$app->response->headers->set('Pragma', 'no-cache');
@@ -403,7 +404,10 @@ class FileController extends Controller
             $filePath = $file->getPath();
 
             if (file_exists($filePath)) {
-                if ($size == 'original' && !in_array(strtolower($file->type), ['jpg', 'jpeg', 'png', 'gif'])) {
+                if (
+                    $size == 'original'
+                    || !in_array(strtolower($file->type), ['jpg', 'jpeg', 'png', 'gif'])
+                ) {
                     $this->addDownloadNumber($file);
                     $zipTmpFolderName = uniqid();
 
@@ -411,36 +415,32 @@ class FileController extends Controller
                         $zipUtility = new ZipUtility([
                             'zipFileName' => $filePath,
                             'destinationFolder' => $this->getModule()
-                                ->getTempPath().DIRECTORY_SEPARATOR.$zipTmpFolderName,
+                                    ->getTempPath() . DIRECTORY_SEPARATOR . $zipTmpFolderName,
                             'password' => $file->getDecryptPassword(),
                         ]);
                         $zipUtility->unZip();
                         $zipTmpFile = $this->getModule()->getTempPath()
-                            .DIRECTORY_SEPARATOR
-                            .$zipTmpFolderName
-                            .DIRECTORY_SEPARATOR
-                            .$file->name
-                            .'.'
-                            .$file->type;
+                            . DIRECTORY_SEPARATOR
+                            . $zipTmpFolderName
+                            . DIRECTORY_SEPARATOR
+                            . $file->name
+                            . '.'
+                            . $file->type;
                         if (file_exists($zipTmpFile)) {
                             $filePath = $zipTmpFile;
                         }
                     }
 
-                    return \Yii::$app->response->sendFile($filePath, "$file->name.$file->type",
-                            [
-                            'inline' => true
+                    return \Yii::$app->response->sendFile($filePath, "$file->name.$file->type", [
+                        'inline' => true
                     ]);
-                } else if ($size == 'original' && in_array(strtolower($file->type), ['jpg', 'jpeg', 'png', 'gif'])) {
-                    $this->addDownloadNumber($file);
-                    return $this->getCroppedImage($file, $crops[$size], $size, $fileRef);
                 } else {
                     $moduleConfig = Yii::$app->getModule('attachments')->config;
-                    $crops        = $moduleConfig['crops'] ?: [];
+                    $crops = $moduleConfig['crops'] ?: [];
 
                     if (json_decode($size) != null) {
-                        $crops['custom'] = (array) json_decode($size);
-                        $size            = 'custom';
+                        $crops['custom'] = (array)json_decode($size);
+                        $size = 'custom';
                     }
 
                     if (array_key_exists($size, $crops)) {
@@ -449,20 +449,19 @@ class FileController extends Controller
                     } else {
                         if (json_decode($size) != null) {
                             $this->addDownloadNumber($file);
-                            $crops['custom'] = (array) json_decode('default');
-                            $size            = 'custom';
+                            $crops['custom'] = (array)json_decode('default');
+                            $size = 'custom';
                             return $this->getCroppedImage($file, $crops[$size], 'default', $fileRef);
                         } else {
-                            throw new \Exception('Size not found - '.$size);
+                            throw new \Exception('Size not found - ' . $size);
                         }
                     }
                 }
             } else {
-                return $this->redirect(['/', 'file-not-found' => $hash]);
+                throw new NotFoundHttpException('file-not-found: ' . $hash);
             }
         }
-
-        return $this->redirect(['/', 'ref-not-found' => $hash]);
+        throw new NotFoundHttpException('ref-not-found: ' . $hash);
     }
 
     /**
@@ -472,7 +471,7 @@ class FileController extends Controller
      * @return \yii\console\Response|Response
      * @throws \yii\base\ErrorException
      */
-    public function getCroppedImage($file, $cropSettings, $crop, $fileRef = null, $inline = true)
+    public function getCroppedImage($file, $cropSettings, $crop, $fileRef = null)
     {
         //Original file
         $filePath = $file->getPath();
@@ -497,20 +496,9 @@ class FileController extends Controller
                 . $file->type;
         }
 
-        if (file_exists($filePath) && (!empty($fileRef) && $crop == 'original')) {
-            if (!empty($fileRef->s3_url)) {
-                return \Yii::$app->response->sendFile($filePath, "$file->name.$file->type", [
-                'inline' => $inline
-            ]);
-            } else {
-                AwsUtility::uploadS3ByPath($file, $filePath, $crop, $fileRef);
-                return \Yii::$app->response->sendFile($filePath, "$file->name.$file->type", [
-                'inline' => $inline
-            ]);
-            }
-        } else if (file_exists($cropPath)) {
+        if (file_exists($cropPath)) {
             return \Yii::$app->response->sendFile($cropPath, "$file->name.$file->type", [
-                'inline' => $inline
+                'inline' => true
             ]);
         }
 
