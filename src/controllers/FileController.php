@@ -18,13 +18,15 @@ use open20\amos\attachments\models\File;
 use open20\amos\attachments\models\FileRefs;
 use open20\amos\attachments\models\search\FileSearch;
 use open20\amos\attachments\utilities\AwsUtility;
+use open20\amos\attachments\exceptions\AmosAbuseReplyAttemptsException;
 use open20\amos\core\module\BaseAmosModule;
 use open20\amos\core\record\RecordDynamicModel;
 use open20\amos\core\utilities\SortModelsUtility;
 use open20\amos\core\utilities\ZipUtility;
 use open20\amos\core\utilities\CurrentUser;
-
+use Imagine\Image\ImageInterface;
 use Yii;
+use yii\base\Exception;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\db\ActiveRecord;
@@ -32,9 +34,12 @@ use yii\filters\AccessControl;
 use yii\helpers\ArrayHelper;
 use yii\helpers\FileHelper;
 use yii\helpers\StringHelper;
+use Imagine\Image\Box;
+use Imagine\Image\Point;
 use yii\image\drivers\Image_GD;
 use yii\image\drivers\Image_Imagick;
 use yii\image\ImageDriver;
+use yii\imagine\Image;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -46,6 +51,8 @@ use yii\web\Response;
  */
 class FileController extends Controller
 {
+    const LAST_ATTACHMENT_TIME_NAME = 'file_controller.upload_files.last_attachment_time';
+
     /**
      *
      */
@@ -62,9 +69,9 @@ class FileController extends Controller
      */
     public function init()
     {
-        $thisFileModule = FileModule::getInstance();
+        $this->FileModule = FileModule::getInstance();
 
-
+        return parent::init();
     }
 
     /**
@@ -75,7 +82,7 @@ class FileController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::class,
-                'only' => ['download', 'delete', 'view'],
+                // 'only' => ['download', 'delete', 'view'], Commentato in quanto sono state aggiunte regole ma non aggiornata la voce only...
                 'rules' => [
                     [
                         'actions' => [
@@ -140,12 +147,9 @@ class FileController extends Controller
                      * If the file is not under protection
                      */
                     if (
-                        !$fileRef->protected
-                        && (
-                            !$this->FileModule->checkParentRecordForDownload
-                            || (
-                                $this->FileModule->checkParentRecordForDownload
-                                && !\Yii::$app->user->isGuest
+                        !$fileRef->protected && (
+                            !$this->FileModule->checkParentRecordForDownload || (
+                                $this->FileModule->checkParentRecordForDownload && !\Yii::$app->user->isGuest
                             )
                         )
                     ) {
@@ -170,6 +174,9 @@ class FileController extends Controller
 
         //If file exists
         if (!$file || !$file->id) {
+            if (Yii::$app->request->isAjax && $action->id == 'delete') {
+                return true;
+            }
             return false;
         }
 
@@ -227,9 +234,7 @@ class FileController extends Controller
             if (method_exists($model, 'getPublicatedAt')) {
                 if (
                     !empty($model->getPublicatedAt()
-                    )
-                    && $model->getPublicatedAt() < \Yii::$app->formatter->asDatetime('now',
-                        'php:Y-m-d')
+                    ) && $model->getPublicatedAt() < \Yii::$app->formatter->asDatetime('now', 'php:Y-m-d')
                 ) {
                     throw new \yii\web\HttpException(404,
                         FileModule::t('amosattachments', 'The requested Item could not be found.'));
@@ -260,8 +265,8 @@ class FileController extends Controller
 
             //User can read?
             if (
-                !\Yii::$app->user->can($readPremission, ['model' => $model])
-                && (\Yii::$app->user->can($readPremissionAttribute, ['model' => $model])
+                !\Yii::$app->user->can($readPremission, ['model' => $model]) && (\Yii::$app->user->can($readPremissionAttribute,
+                    ['model' => $model])
                 )
             ) {
                 return false;
@@ -286,67 +291,6 @@ class FileController extends Controller
     }
 
     /**
-     * @param $id
-     * @param $hash
-     * @param string $size
-     * @return bool|\yii\console\Response|Response
-     * @throws \open20\amos\core\exceptions\AmosException
-     * @throws \yii\base\ErrorException
-     */
-    public function actionDownload($id, $hash, $size = 'original', $download = false)
-    {
-        $download = boolval($download);
-        /** @var File $file */
-        $file = File::findOne(['id' => $id, 'hash' => $hash]);
-
-        $filePath = $this->getModule()->getFilesDirPath(
-                $file->hash
-            ) . DIRECTORY_SEPARATOR . $file->hash . '.' . $file->type;
-
-        if (file_exists($filePath)) {
-            if ($size == 'original' || !in_array($file->type, ['jpg', 'jpeg', 'png', 'gif']) || $download) {
-                $this->addDownloadNumber($file);
-                $zipTmpFolderName = uniqid();
-                if ($file->encrypted) {
-                    $zipUtility = new ZipUtility(
-                        [
-                            'zipFileName' => $filePath,
-                            'destinationFolder' => $this->getModule()->getTempPath() . DIRECTORY_SEPARATOR . $zipTmpFolderName,
-                            'password' => $file->getDecryptPassword(),
-                        ]
-                    );
-                    $zipUtility->unZip();
-                    $zipTmpFile = $this->getModule()->getTempPath() . DIRECTORY_SEPARATOR . $zipTmpFolderName
-                        . DIRECTORY_SEPARATOR
-                        . $file->name
-                        . '.'
-                        . $file->type;
-                    if (file_exists($zipTmpFile)) {
-                        $filePath = $zipTmpFile;
-                    }
-                }
-                if ($download)
-                    \Yii::$app->response->headers->add('Content-Disposition', 'attachment; filename="'.rawurlencode($file->name.'.'.$file->type).'"');
-                return \Yii::$app->response->sendFile($filePath, "$file->name.$file->type", [
-                    'inline' => $download ? false : true
-                ]);
-            } else {
-                $moduleConfig = Yii::$app->getModule('attachments')->config;
-                $crops = $moduleConfig['crops'] ?: [];
-
-                if (array_key_exists($size, $crops)) {
-                    $this->addDownloadNumber($file);
-                    return $this->getCroppedImage($file, $crops[$size], $size);
-                } else {
-                    throw new \Exception('Size not found - ' . $size);
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * @param File $file
      */
     private function addDownloadNumber($file)
@@ -367,14 +311,13 @@ class FileController extends Controller
      * @throws \open20\amos\core\exceptions\AmosException
      * @throws \yii\base\ErrorException
      */
-    public function actionView($hash, $canCache = false, $crop = null)
+    public function actionView($hash, $canCache = false, $crop = null, $inLine = true)
     {
         $forceCrop = $this->FileModule->forceCrop;
 
         if (!empty($this->FileModule->cache_age) && $canCache) {
             \Yii::$app->response->headers->set(
-                "Cache-Control",
-                "max-age=" . $this->FileModule->cache_age . ", public"
+                "Cache-Control", "max-age=" . $this->FileModule->cache_age . ", public"
             );
         } else {
             \Yii::$app->response->headers->set('Pragma', 'no-cache');
@@ -405,8 +348,7 @@ class FileController extends Controller
 
             if (file_exists($filePath)) {
                 if (
-                    $size == 'original'
-                    || !in_array(strtolower($file->type), ['jpg', 'jpeg', 'png', 'gif'])
+                    $size == 'original' || !in_array(strtolower($file->type), ['jpg', 'jpeg', 'png', 'gif'])
                 ) {
                     $this->addDownloadNumber($file);
                     $zipTmpFolderName = uniqid();
@@ -431,9 +373,10 @@ class FileController extends Controller
                         }
                     }
 
-                    return \Yii::$app->response->sendFile($filePath, "$file->name.$file->type", [
-                        'inline' => true
-                    ]);
+                    return \Yii::$app->response->sendFile($filePath, "$file->name.$file->type",
+                        [
+                            'inline' => $inLine
+                        ]);
                 } else {
                     $moduleConfig = Yii::$app->getModule('attachments')->config;
                     $crops = $moduleConfig['crops'] ?: [];
@@ -444,11 +387,15 @@ class FileController extends Controller
                     }
 
                     if (array_key_exists($size, $crops)) {
-                        $this->addDownloadNumber($file);
+                        if ($this->FileModule->disableCounterForCroppedImage === false) {
+                            $this->addDownloadNumber($file);
+                        }
                         return $this->getCroppedImage($file, $crops[$size], $size, $fileRef);
                     } else {
                         if (json_decode($size) != null) {
-                            $this->addDownloadNumber($file);
+                            if ($this->FileModule->disableCounterForCroppedImage === false) {
+                                $this->addDownloadNumber($file);
+                            }
                             $crops['custom'] = (array)json_decode('default');
                             $size = 'custom';
                             return $this->getCroppedImage($file, $crops[$size], 'default', $fileRef);
@@ -476,12 +423,12 @@ class FileController extends Controller
         //Original file
         $filePath = $file->getPath();
 
-        if($fileRef) {
+        if ($fileRef) {
             $cropPath = $fileRef->getPath();
         } else {
-            $fileDir  = AttachemntsHelper::getPathByHash($file->hash, false).DIRECTORY_SEPARATOR;
+            $fileDir = AttachemntsHelper::getPathByHash($file->hash, false) . DIRECTORY_SEPARATOR;
             $cropPath = $fileDir
-            . $file->hash
+                . $file->hash
                 . '.'
                 . (!empty($cropSettings['width'])
                     ? $cropSettings['width']
@@ -497,6 +444,10 @@ class FileController extends Controller
         }
 
         if (file_exists($cropPath)) {
+            if($this->getModule()->enable_aws_s3 && is_null($fileRef->s3_url)){
+                //Store to s3
+                AwsUtility::uploadS3ByPath($file, $cropPath, $crop, $fileRef);
+            }
             return \Yii::$app->response->sendFile($cropPath, "$file->name.$file->type", [
                 'inline' => true
             ]);
@@ -591,13 +542,17 @@ class FileController extends Controller
 
         $image->save($cropPath, $cr_quality);
 
+        //WebP Version
+        //$image->save($fileRef->getPath('webp'), ['format' => 'webp', 'quality' => 100]);
+
         //Store to s3
         AwsUtility::uploadS3ByPath($file, $cropPath, $crop, $fileRef);
 
         //Return the new image
-        return \Yii::$app->response->sendFile($cropPath, "$file->name.$file->type", [
-            'inline' => true
-        ]);
+        return \Yii::$app->response->sendFile($cropPath, "$file->name.$file->type",
+            [
+                'inline' => true
+            ]);
     }
 
     /**
@@ -608,9 +563,12 @@ class FileController extends Controller
      * @return bool|Response
      * @throws \Exception
      */
-    public function actionDelete($id, $item_id, $model, $attribute)
+    public function actionDelete($id = null, $item_id = null, $model = null, $attribute = null)
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
+        if (!Yii::$app->request->isAjax && (empty($id) || empty($item_id) || empty($model) || empty($attribute))) {
+            throw new \yii\web\BadRequestHttpException('Incorrect params', 400);
+        }
 
         //Default back url to referrer, jic!
         $goBackUrl = !empty(Yii::$app->request->referrer) ? Yii::$app->request->referrer : null;
@@ -622,7 +580,9 @@ class FileController extends Controller
                 return $this->goBack($goBackUrl);
             }
         } else {
-            if (Yii::$app->request->isAjax) {
+            if (\Yii::$app->request->isAjax && empty($id)) {
+                return true;
+            } else if (Yii::$app->request->isAjax) {
                 return false;
             } else {
                 return $this->goBack($goBackUrl);
@@ -682,6 +642,8 @@ class FileController extends Controller
      */
     public function actionUploadFiles()
     {
+        $this->checkNewAttachmentAbuseReply();
+
         reset($_FILES);
         $temp = current($_FILES);
         if (is_uploaded_file($temp['tmp_name'])) {
@@ -693,13 +655,11 @@ class FileController extends Controller
 
             // Verify extension
             if (
-            !in_array(
-                strtolower(
-                    pathinfo($temp['name'],
-                        PATHINFO_EXTENSION)
-                ),
-                array("gif", "jpg", "png")
-            )
+                !in_array(
+                    strtolower(
+                        pathinfo($temp['name'], PATHINFO_EXTENSION)
+                    ), array("gif", "jpg", "png")
+                )
             ) {
                 header("HTTP/1.1 400 Invalid extension.");
                 return 'Invalid extension.';
@@ -710,6 +670,7 @@ class FileController extends Controller
 
             $file = $this->getModule()->attachFile($filetowrite, new EmptyContentModel());
             if (!is_null($file)) {
+                $this->handleNewAttachmnent();
                 return json_encode(
                     array(
                         'location' => $file->getWebUrl('original', true, true)
@@ -898,19 +859,27 @@ class FileController extends Controller
      */
     public function actionSyncS3()
     {
+        $this->layout = '@vendor/open20/amos-layout/src/views/layouts/main';
         $i = 0;
         try {
-            $files = FileRefs::find()
+            $query = FileRefs::find()
                 ->andWhere(['protected' => 0])
-                ->andWhere(['s3_url' => null])
-                ->limit(100)
-                ->all();
+                ->andWhere(['s3_url' => null]);
+
+            $files = $query->limit(100)->orderBy('id DESC')->all();
+            $countQuery = clone $query;
+            $tot = $countQuery->count();
+
+
 
             foreach ($files as $file) {
-                AwsUtility::uploadS3ByHash($file->hash);
-                $i++;
+                $isOk = AwsUtility::uploadS3ByHash($file->hash);
+                if ($isOk) {
+                    $i++;
+                }
             }
-            echo $i . " files uploaded";
+            $texEnd =  $i . " files uploaded on ".$tot.' total';
+            return  $this->render('sync-s3', ['messages' => AwsUtility::$messages, 'textEnd' => $texEnd]);
         } catch (\Exception $e) {
             echo $i . " files uploaded, next the error: <br />";
             echo $e->getMessage();
@@ -935,7 +904,7 @@ class FileController extends Controller
                 ])
                 ->one();
             if (!empty($fileRef) && empty($fileRef->s3_url)) {
-                AwsUtility::uploadS3($fileRef->hash);
+                AwsUtility::uploadS3ByHash($fileRef->hash);
             }
         }
     }
@@ -956,5 +925,41 @@ class FileController extends Controller
             }
         }
         return false;
+    }
+
+    /**
+     * @return mixed
+     * @throws AmosAbuseReplyAttemptsException
+     */
+    private function handleNewAttachmnent()
+    {
+        $this->setLastAttachmentTime(time());
+    }
+
+    /**
+     * @return void
+     * @throws AmosAbuseReplyAttemptsException
+     */
+    private function checkNewAttachmentAbuseReply()
+    {
+        if ((time() - $this->getLastAttachmentTime()) < $this->getModule()->abuseReplyAttemptsSeconds) {
+            throw new AmosAbuseReplyAttemptsException(FileModule::t('amosattachments', 'Too many simultaneous attempts'));
+        }
+    }
+
+    /**
+     * @return null
+     */
+    public function getLastAttachmentTime()
+    {
+        return \Yii::$app->session->get(self::LAST_ATTACHMENT_TIME_NAME);;
+    }
+
+    /**
+     * @param null $lastAttachmentTime
+     */
+    public function setLastAttachmentTime($lastAttachmentTime)
+    {
+        \Yii::$app->session->set(self::LAST_ATTACHMENT_TIME_NAME, $lastAttachmentTime);
     }
 }

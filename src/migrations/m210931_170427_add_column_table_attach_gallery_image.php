@@ -25,8 +25,13 @@ class m210931_170427_add_column_table_attach_gallery_image extends Migration
     public function safeUp()
     {
 
-        $this->addColumn('attach_gallery_image','aspect_ratio', $this->string()->defaultValue(null)->after('description') );
-        $this->addColumn('attach_gallery_request','aspect_ratio_reply', $this->string()->defaultValue(null)->after('aspect_ratio') );
+        try{
+            $this->addColumn('attach_gallery_image','aspect_ratio', $this->string()->defaultValue(null)->after('description') );
+            $this->addColumn('attach_gallery_request','aspect_ratio_reply', $this->string()->defaultValue(null)->after('aspect_ratio') );
+        } catch (\yii\db\Exception $e){
+
+        }
+
         return true;
     }
 

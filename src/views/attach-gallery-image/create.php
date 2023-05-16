@@ -15,7 +15,7 @@ use open20\amos\attachments\FileModule;
 * @var open20\amos\attachments\models\AttachGalleryImage $model
 */
 
-$this->title = FileModule::t('amosattachments', 'Create image');
+$this->title = FileModule::t('amosattachments', 'Carica immagine');
 $this->params['breadcrumbs'][] = ['label' => '', 'url' => ['/attachments']];
 $this->params['breadcrumbs'][] = [
     'label' => Yii::t('amoscore', 'Attach Gallery Image'),

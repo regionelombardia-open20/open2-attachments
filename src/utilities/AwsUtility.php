@@ -20,6 +20,8 @@ use yii\log\Logger;
 
 class AwsUtility
 {
+    public static $messages;
+
     /**
      *
      * @param string $hash
@@ -39,19 +41,29 @@ class AwsUtility
                         || empty($fileRef->s3_url)
                     )
                 ) {
-                    $origin = $fileRef->getPath($fileRef->crop);
+                    $origin = $fileRef->getPath();
                     if (!empty($origin)) {
                         $path = self::getS3PathByLocalPath($origin);
                         $url  = self::execUploadToS3($origin, $path);
+
+//                        echo $url . " - ".$path. "\n <br>";
+                        self::$messages []=
+                            '<strong>Url: </strong>'.$url . " <br>"
+                            .'<strong>Path: </strong>'.$path. "<br>"
+                            .'<strong>Crop: </strong>'.$fileRef->crop. "<br>";
+
                         if (!empty($url)) {
                             $fileRef->s3_url = $url;
                             $fileRef->save(false);
+                            return true;
                         }
                     }
                 }
             }
-        } catch (Exception $ex) {
+            return false;
+        } catch (\Exception $ex) {
             Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
+            return false;
         }
     }
 
@@ -101,7 +113,7 @@ class AwsUtility
                     }
                 }
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
     }
@@ -128,10 +140,11 @@ class AwsUtility
             putenv("AWS_SECRET_ACCESS_KEY=$aws_s3_secret_key");
             putenv("AWS_DEFAULT_REGION=$aws_s3_default_region");
             $res                   = exec("aws s3 cp $local_path 's3://$bucket/$s3_url' --cache-control max-age={$module->cache_age}");
+//            pr("aws s3 cp $local_path 's3://$bucket/$s3_url' --cache-control max-age={$module->cache_age}");
             if (strpos($res, 'Completed') !== false) {
                 $url = $aws_s3_base_url.'/'.$s3_url;
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
 
@@ -149,8 +162,9 @@ class AwsUtility
             $pos  = strpos($local_path, 'store');
             $path = substr($local_path, $pos + 6);
             return $path;
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
+            return null;
         }
     }
 
@@ -174,7 +188,7 @@ class AwsUtility
                 putenv("AWS_DEFAULT_REGION=$aws_s3_default_region");
                 exec("aws s3 rm 's3://{$bucket}{$awsPath}'");
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             Yii::getLogger()->log($ex->getTraceAsString(), Logger::LEVEL_ERROR);
         }
     }

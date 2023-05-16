@@ -16,18 +16,18 @@ use open20\amos\core\views\ListView;
 use yii\widgets\Pjax;
 
 ModuleAttachmentsAsset::register($this);
+$urlPlaceholder = '/img/img_default.jpg';
+if(file_exists(\Yii::getAlias('@frontend').'/web/img/placeholder-img.gif')){
+    $urlPlaceholder = '/img/placeholder-img.gif';
+}
 ?>
 
-<div class="col-xs-12 gallery-masonry">
-    <?php Pjax::begin([
-        'enablePushState' => false,
-        'enableReplaceState' => false
-    ]);
-    ?>
+<div class="gallery-masonry m-t-20">
+
     
     <?= ListView::widget([
         'dataProvider' => $dataProvider,
-        'viewParams' => ['attribute' => $attribute],
+        'viewParams' => ['attribute' => $attribute,  'urlPlaceholder' => $urlPlaceholder],
         'itemView' => '_item_gallery',
         'masonry' => false,
         // Se masonry settato a TRUE decommentare e settare i parametri seguenti
@@ -45,5 +45,4 @@ ModuleAttachmentsAsset::register($this);
     ])
     ?>
     
-    <?php Pjax::end() ?>
 </div>

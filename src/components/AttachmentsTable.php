@@ -90,8 +90,6 @@ class AttachmentsTable extends Widget
             throw new InvalidConfigException(FileModule::t('amosattachments', "The behavior {FileBehavior} has not been attached to the model."));
         }
         
-        Url::remember(Url::current());
-        
         if (!empty($this->attribute)) {
             return $this->drawWidget($this->attribute);
         }

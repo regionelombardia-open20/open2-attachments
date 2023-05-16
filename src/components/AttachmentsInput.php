@@ -16,9 +16,11 @@ use open20\amos\core\icons\AmosIcons;
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\FileModuleTrait;
 
+use open20\amos\core\utilities\ModalUtility;
 use kartik\widgets\FileInput;
 
 use yii\base\InvalidConfigException;
+use yii\bootstrap\Modal;
 use yii\helpers\FileHelper;
 use yii\helpers\Url;
 use yii\jui\JuiAsset;
@@ -52,10 +54,16 @@ class AttachmentsInput extends FileInput
     public $enableUploadFromGallery = false;
 
     /**
+     * @var bool
+     */
+    public $enableUploadFormDatabankFile = true;
+
+    /**
      * @throws InvalidConfigException
      */
     public function init()
     {
+        $fileModule = \Yii::$app->getModule('attachments');
         JuiAsset::register($this->view);
 
         if (empty($this->model)) {
@@ -77,6 +85,9 @@ class AttachmentsInput extends FileInput
         
         $initialCount = count($initials);
         $driveButton = '';
+        $dropdownBrowse  = '';
+        $enableDropdown = false;
+        $classHideOriginalBrowseButton = '';
 
         $fileValidatorForAttribute = $this->model->getFileValidator($this->attribute);
 
@@ -94,20 +105,52 @@ class AttachmentsInput extends FileInput
             $this->pluginOptions['uploadAsync'] = false;
         }
 
+        if(empty($this->pluginOptions['allowedFileExtensions'])){
+            if(!empty($fileModule->whiteListExtensions)) {
+                $this->pluginOptions['allowedFileExtensions'] = $fileModule->whiteListExtensions;
+            }
+        }
+
+        if (empty($this->pluginOptions['maxFileSize'])) {
+            if (!empty($fileModule->maxFileSize)) {
+                $this->pluginOptions['maxFileSize'] = $fileModule->maxFileSize;
+            }
+        }
 
         // GIMAGE GALLERY
-        $fileModule = \Yii::$app->getModule('attachments');
         if($fileModule){
             if($fileModule->disableGallery){
                 $this->enableUploadFromGallery = false;
             }
+            if($fileModule->enableDatabankFile == false){
+                $this->enableUploadFormDatabankFile = false;
+            }
         }
+        //ENABLE DATABANK IMMAGINI
         if ($this->enableUploadFromGallery) {
             $buttonGallery =  \open20\amos\attachments\components\GalleryInput::widget(['attribute' => $this->attribute]);
+//            $enableDropdown = true;
         }
 
+        //ENABLE DATABANK FILE
+        if($this->enableUploadFormDatabankFile){
+            $buttonDatabankFile =  DatabankFileInput::widget(['attribute' => $this->attribute]);
+            $enableDropdown = true;
+        }
+
+        //ENABLE CARICAMENTO A GOOGLE DRIVE
         if($this->enableGoogleDrive) {
-                $driveButton = Html::button(AmosIcons::show('google-drive'), ['id' => 'auth', 'class' => 'btn btn-primary']);
+            $driveButton = Html::button(AmosIcons::show('google-drive'), ['id' => 'auth', 'class' => 'btn btn-primary']);
+        }
+
+        // SE databank immagini o databank file sono abilitati allora mostro il DROPDOWN
+        if($enableDropdown) {
+            $classHideOriginalBrowseButton = ' hidden main-browse-btn-'.$this->attribute;
+            $dropdownBrowse = $this->render('_dropdown_attach_input', [
+                'attribute' => $this->attribute,
+                'enableUploadFromGallery' => $this->enableUploadFromGallery,
+                'enableUploadFormDatabankFile' => $this->enableUploadFormDatabankFile,
+            ]);
         }
 
         $this->pluginOptions = array_replace(
@@ -142,7 +185,11 @@ class AttachmentsInput extends FileInput
                 'layoutTemplates' => [
                     'actions' => '<div class="file-actions"><div class="file-footer-buttons">{upload} {delete} {zoom} {other}</div><div class="clearfix"></div></div>'
                 ],
-                'minFileSize' => null
+                'minFileSize' => null,
+                'browseClass' => 'btn btn-primary'.$classHideOriginalBrowseButton,
+                'browseLabel' => FileModule::t('amosattachments','Carica'),
+                'browseIcon' => '<span class="mdi mdi-folder-open"></span>',
+
             ],
             $this->pluginOptions
         );
@@ -171,15 +218,17 @@ class AttachmentsInput extends FileInput
                                                                   </div>
                                                                   <div class=\"input-group-btn\">
                                                                     {upload}
-                                                                    {browse}" . $driveButton . "
+                                                                    {browse}" .$dropdownBrowse. $driveButton . "
                                                                   </div>
-                                                                </div>";
+                                                                </div>".$buttonDatabankFile;
 
             $this->pluginOptions['layoutTemplates']['main2'] = "<div id=\"errorDropUpload -{$this->attribute}\"></div>
                                                                 {preview}
                                                                 <div class=\"kv-upload-progress hide\"></div>
                                                                 {remove}\n{upload}\n{browse}" . $driveButton;
         } else {
+
+            $cancelTemplate = $this->pluginOptions['showRemove'] ? '' : '{cancel}';
             // OLD code to see that caption were converted in the 3 lines with file-caption classes.
 //            $this->pluginOptions['layoutTemplates']['main1'] = '{preview}
 //                <div class="kv-upload-progress kv-hidden"></div><div class="clearfix"></div>
@@ -195,11 +244,11 @@ class AttachmentsInput extends FileInput
                     <span class="file-caption-icon"></span>
                     <input class="file-caption-name" onkeydown="return false;" onpaste="return false;" tabindex="1">
                 </div>
-                <div class="input-group-btn input-group-append"> {remove}{cancel}{upload}{browse}'. $driveButton.'
+                <div class="input-group-btn input-group-append"> {remove}'.$cancelTemplate.'{upload}{browse}'. $dropdownBrowse.$driveButton.'
                  </div>
-                </div>'.$buttonGallery;
+                </div>'.$buttonGallery.$buttonDatabankFile;
             $this->pluginOptions['layoutTemplates']['main2'] = '{preview}<div class="kv-upload-progress kv-hidden"></div><div class="clearfix"></div>
-               {remove}{cancel}{upload}{browse}'. $driveButton.$buttonGallery;
+               {remove}'.$cancelTemplate.'{upload}{browse}'. $driveButton.$buttonGallery.$buttonDatabankFile;
         }
 
         $fileAttribute = $this->pluginOptions['maxFileCount'] != 1 ? '[]' : '';
@@ -219,14 +268,33 @@ class AttachmentsInput extends FileInput
         @parent::init();
 
         $inputId = $this->options['id'];
-
         $urlSetMain = Url::toRoute('/' . FileModule::getModuleName() . '/file/set-main');
         $confirmText = FileModule::t('amosattachments', "If you choose another file, the current file will be deleted");
         $maxFiles = $this->pluginOptions['maxFileCount'];
         if ($maxFiles == false) {
             $maxFiles = 0;
         }
+
         $js = <<<JS
+        //apre il dropdown
+         $(document).on('click', '#btn-dropdown-browse-{$this->attribute}', function(e){
+             e.preventDefault();
+             var parent = $('#attach-databank-file-{$this->attribute}').parent();
+             var filecaption = $(parent).find('.file-caption-name');     
+             $(filecaption).val('');
+             $('.main-browse-btn-{$this->attribute} input[type="file"]').trigger('click');
+         });
+        //inserisce nome file in anteprima file, solo se abilitato dropdown
+        $(document).on('change', '.main-browse-btn-{$this->attribute} input[type="file"]', function(e){
+             e.preventDefault();
+             let valInputFilePath = $(this).val();
+             console.log(valInputFilePath);
+             var parent = $('#attach-databank-file-{$this->attribute}').parent();
+             var filecaption = $(parent).find('.file-caption-name');       
+             var fileName = valInputFilePath.replace(/^.*[\\\/]/, '');
+             $(filecaption).val(fileName);
+         });
+
             var fileInput{$this->attribute} = $('#{$inputId}');
             var files{$this->attribute} = fileInput{$this->attribute}.fileinput('getFilesCount');
             var form{$this->attribute} = fileInput{$this->attribute}.closest('form');
@@ -257,6 +325,7 @@ class AttachmentsInput extends FileInput
                     }
                 }
             });
+            
 JS;
 
         \Yii::$app->view->registerJs($js);

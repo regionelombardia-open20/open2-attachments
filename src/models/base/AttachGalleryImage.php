@@ -21,6 +21,7 @@ use Yii;
  * @property integer $gallery_id
  * @property string $name
  * @property string $description
+ * @property string $shutterstock_image_id
  * @property string $aspect_ratio
  * @property string $created_at
  * @property string $updated_at
@@ -63,7 +64,7 @@ class  AttachGalleryImage extends \open20\amos\core\record\Record
             [['gallery_id','name'], 'required'],
             [['category_id', 'gallery_id', 'created_by', 'updated_by', 'deleted_by'], 'integer'],
             [['description', 'customTags'], 'string'],
-            [['aspect_ratio', 'tagsImage','customTags','created_at', 'updated_at', 'deleted_at'], 'safe'],
+            [['shutterstock_image_id','aspect_ratio', 'tagsImage','customTags','created_at', 'updated_at', 'deleted_at'], 'safe'],
             [['name'], 'string', 'max' => 255],
             [['gallery_id'], 'exist', 'skipOnError' => true, 'targetClass' => AttachGallery::class, 'targetAttribute' => ['gallery_id' => 'id']],
         ];

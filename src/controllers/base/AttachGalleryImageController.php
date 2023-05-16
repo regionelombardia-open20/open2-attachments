@@ -13,6 +13,7 @@ use open20\amos\attachments\FileModule;
 use open20\amos\attachments\models\AttachGallery;
 use open20\amos\attachments\models\AttachGalleryImage;
 use open20\amos\attachments\models\search\AttachGalleryImageSearch;
+use open20\amos\attachments\utility\AttachmentsUtility;
 use open20\amos\core\controllers\CrudController;
 use open20\amos\core\module\BaseAmosModule;
 use open20\amos\core\icons\AmosIcons;
@@ -113,7 +114,7 @@ class AttachGalleryImageController extends CrudController
                 if ($this->model->save()) {
                     $this->model->saveCustomTags();
                     $this->model->saveImageTags();
-
+                    $this->model->saveOnLuya();
                     Yii::$app->getSession()->addFlash('success', Yii::t('amoscore', 'Item created'));
                     if ($this->module->enableSingleGallery){
                         return $this->redirect(['/attachments/attach-gallery/single-gallery']);
@@ -206,7 +207,20 @@ class AttachGalleryImageController extends CrudController
     public function actionDelete($id)
     {
         $this->model = $this->findModel($id);
+        $module = \Yii::$app->getModule('attachments');
+
         if ($this->model) {
+            if($module->showLuyaGallery) {
+                if (!empty($this->model->attachImage)) {
+                    $storage = $this->model->attachImage->getAdminStorageFile();
+                    if($storage){
+                        $storage->deleteCms();
+                    }
+                }
+            }
+            if($this->model->attachImage){
+                $this->model->attachImage->delete();
+            }
             $this->model->delete();
             if (!$this->model->hasErrors()) {
                 Yii::$app->getSession()->addFlash('success', BaseAmosModule::t('amoscore', 'Element deleted successfully.'));
@@ -230,7 +244,7 @@ class AttachGalleryImageController extends CrudController
     private function setCreateNewBtnLabelGeneral($id)
     {
         $btnUploadImage = Html::a(
-            FileModule::t('amosattachments', 'Carica nuova'),
+            FileModule::t('amosattachments', 'Carica'),
             [
                 '/attachments/attach-gallery-image/create',
                 'id' => $id
@@ -254,6 +268,21 @@ class AttachGalleryImageController extends CrudController
         );
 
         Yii::$app->view->params['createNewBtnParams']['layout'] = $btnUploadImage . $btnRequestImage;
+    }
+
+    /**
+     * @param $attach_file_id
+     * @return \yii\web\Response
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function actionDeleteCmsFile($attach_file_id){
+        $isDeleted = AttachmentsUtility::deleteCmsFile($attach_file_id);
+        if ($isDeleted) {
+            Yii::$app->getSession()->addFlash('success', BaseAmosModule::t('amoscore', 'Element deleted successfully.'));
+        } else {
+            Yii::$app->getSession()->addFlash('danger', BaseAmosModule::t('amoscore', 'You are not authorized to delete this element.'));
+        }
+        return $this->redirect('/attachments/attach-gallery/index');
     }
 
 }

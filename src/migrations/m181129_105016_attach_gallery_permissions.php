@@ -18,7 +18,7 @@ class m181129_105016_attach_gallery_permissions extends AmosMigrationPermissions
         return [
                 [
                     'name' =>  'ATTACH_GALLERY_ADMINISTRATOR',
-                    'type' => Permission::TYPE_PERMISSION,
+                    'type' => Permission::TYPE_ROLE,
                     'description' => 'Permesso di CREATE sul model AttachGalleryCategory',
                     'ruleName' => null,
                     'parent' => ['ADMIN']

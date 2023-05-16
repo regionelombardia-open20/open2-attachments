@@ -9,13 +9,7 @@
  * @category   CategoryName
  */
 
-return [
-    'Update gallery' => 'Update Databank',
-    '#label_gallery' => 'Databank',
-    '#description_gallery' => 'Databank',
-    '#desc_gallery_image' => 'Databank immages',
-    '#label_gallery_image' => 'Databank images',    
-
+return [       
     '#accept_btn' => 'Conferma',
     'amos-attachments module not found, may be you didn\'t add it to your config?' => 'modulo amos-attachments non trovato, probabilmente devi aggiungerlo alla tua configurazione?',
     'Are you sure you want to delete this item?' => 'Confermi la cancellazione?',
@@ -29,8 +23,7 @@ return [
     '#attach_list_no_items' => 'Nessun allegato',
     '#attach_list_preview_icon_title' => 'Anteprima immagine',
     '#attach' => 'Allegati',
-    '#attach_list_title' => 'Allegati caricati',
-    '#no_attach' => 'Non sono presenti allegati in questo contenuto',
+    '#attach_list_title' => 'Allegati caricati',   
     'Attribute' => 'Attributo',
     '#cancel_btn' => 'Cancella',
     'Cannot copy file! ' => 'Non posso copiare il file! ',
@@ -121,8 +114,15 @@ return [
     'Search' => 'Cerca',
     'Cancel' => 'Annulla',
     '#choose_image_from_databank' => "Carica da databank immagini",
-    
     '#placeholder_for_tags' => 'Seleziona i tag...',
     "E' necessario inserire un'immagine." => "E' necessario inserire un'immagine.",
     '#newimg' => 'Nuova',
+    '#article_indefinite' => 'un',
+    '#article_plural' => 'i',
+    '#article_singular' => 'il',
+    '#file_singular' => 'File',
+    '#file_plural' => 'Files',
+    'extension' => 'Estensione',
+    'Create image' => "Carica immagine",
+    'Carica' => "Carica",
 ];

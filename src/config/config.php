@@ -40,7 +40,11 @@ return [
         'searchParams' => [
             'attach-gallery' => [
                 'enable' => true,
-            ]
+            ],
+            'attach-databank-file' => [
+                'enable' => true,
+            ],
+
         ],
 
     ]

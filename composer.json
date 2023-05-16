@@ -20,17 +20,17 @@
     "minimum-stability": "stable",
     "require": {
         "php": ">=5.4.0",
-        "open20/amos-core":"^1.26.0",
         "ext-sockets": "*",
-        "yiisoft/yii2": "^2.0.0",
-        "kartik-v/yii2-widget-fileinput": "1.0.6",
-        "himiklab/yii2-colorbox-widget": "*",
-        "yiisoft/yii2-jui": "^2.0",
-        "yurkinx/yii2-image": "*",
-        "uitrick/yii2-widget-upload-crop": "^1.0.0",
-        "yiisoft/yii2-imagine": "^2.1.0",
         "bower-asset/jquery-cropper": "^1.0",
-        "ralouphie/mimey": "^2.1.0"
+        "open20/amos-core":"^1.32.0",
+        "himiklab/yii2-colorbox-widget": "*",
+        "kartik-v/yii2-widget-fileinput": "*",
+        "rosell-dk/webp-convert": "^2.9.2",
+        "uitrick/yii2-widget-upload-crop": "^1.0.0",
+        "xantios/mimey": "^2.2.0",
+        "yiisoft/yii2-jui": "^2.0",
+        "yiisoft/yii2-imagine": "^2.1.0",
+        "yurkinx/yii2-image": "*"
     },
     "autoload": {
         "psr-4": {

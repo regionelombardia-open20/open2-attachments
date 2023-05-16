@@ -48,17 +48,16 @@ $form = ActiveForm::begin([
 
 ?>
 
-<div class="content-search-gallery mb-5">
+<div class="content-search-gallery- m-b-25">
     <div class="row variable-gutters">
-        <div class="col-sm-6">
+        <div class="col-sm-12">
             <div>
-                <?= FileModule::t('amosattachments', 'Title') ?>
+                <?= FileModule::t('amosattachments', 'Cerca immagine') ?>
             </div>
             <div>
-                <?= $form->field($modelSearch, 'name')->textInput(['placeholder' => 'ricerca per name'])->label(false) ?>
+                <?= $form->field($modelSearch, 'name')->textInput(['placeholder' => 'inserisci un testo'])->label(false) ?>
             </div>
         </div>
-
 
         <?php if ($tagsImage) : ?>
         <div class="col-sm-6">

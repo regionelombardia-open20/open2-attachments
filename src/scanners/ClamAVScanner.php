@@ -32,5 +32,6 @@ class ClamAVScanner extends Component implements VirusScanInterface
     public function scanDirectory(string $path, bool $returnScannedFiles = false)
     {
         // TODO: Implement scanDirectory() method.
+        return null;
     }
 }

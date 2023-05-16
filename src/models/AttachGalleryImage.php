@@ -13,6 +13,7 @@ namespace open20\amos\attachments\models;
 
 use open20\amos\admin\models\UserProfile;
 use open20\amos\attachments\behaviors\FileBehavior;
+use open20\amos\attachments\FileModule;
 use open20\amos\tag\models\EntitysTagsMm;
 use open20\amos\tag\models\Tag;
 use Yii;
@@ -21,19 +22,22 @@ use yii\helpers\ArrayHelper;
 /**
  * This is the model class for table "attach_gallery_image".
  */
-class AttachGalleryImage 
+class AttachGalleryImage
     extends
-        \open20\amos\attachments\models\base\AttachGalleryImage
+    \open20\amos\attachments\models\base\AttachGalleryImage
 {
     /**
-     * 
+     *
      */
     const ROOT_TAG_CUSTOM = 'root_tag_custom_attach';
 
     /**
-     * 
+     *
      */
-    const DEFAULT_ASPECT_RATIO  = '1.7';
+    const DEFAULT_ASPECT_RATIO = '1.7';
+
+
+    public $errorMessage;
 
     /**
      * Adding the file behavior
@@ -49,7 +53,7 @@ class AttachGalleryImage
             ]
         );
     }
-    
+
     /**
      * inserire il campo o i campi rappresentativi del modulo
      * @return type
@@ -88,7 +92,13 @@ class AttachGalleryImage
      */
     public function validateFiles()
     {
-        foreach ((Array)$_FILES['AttachGalleryImage']['name'] as $attribute => $filename) {
+        // se ho selezionato qualcosa da shatterstock allora non ho bisogn odi validare
+        $isLoaded = \Yii::$app->request->post('shutterstock_file_is_selected_attachImage');
+        if (!empty($isLoaded)) {
+            return true;
+        }
+
+        foreach ((array)$_FILES['AttachGalleryImage']['name'] as $attribute => $filename) {
             if ($attribute == 'attachImage') {
                 if (empty($filename)) {
                     if (empty($this->$attribute)) {
@@ -112,9 +122,9 @@ class AttachGalleryImage
     }
 
 
-    public static function getEditFields()
+    public function getEditFields()
     {
-        $labels = self::attributeLabels();
+        $labels = $this->attributeLabels();
 
         return [
             [
@@ -276,7 +286,7 @@ class AttachGalleryImage
                 foreach ($tagsMm as $tagMm) {
                     $this->tagsImage [] = $tagMm->tag_id;
                 }
-                $this->tagsImage  = array_unique($this->tagsImage);
+                $this->tagsImage = array_unique($this->tagsImage);
             }
         }
     }
@@ -377,4 +387,79 @@ class AttachGalleryImage
         }
         return '-';
     }
+
+    //save on luya only if the folder is configured
+    public function saveOnLuya()
+    {
+        /** @var  $module FileModule */
+        $module = \Yii::$app->getModule('attachments');
+        if ($module) {
+            $folder_id = $module->luyaGalleryFolderId;
+            $file = $this->attachImage;
+            if ($file && !empty($folder_id)) {
+                list($width, $height, $type, $attr) = getimagesize($file->path);
+                $empty = new EmptyContentModel();
+                $newFile = $module->attachFile($file->path, $empty, 'file', false, true, false, $file->name, $file->id);
+                $newFile->detachBehavior('SoftDeleteByBehavior');
+                $hash = substr(md5(rand()), 0, 8);
+                $newFile->name = $file->name . '_' . $hash;
+                $newFile->attribute = 'file';
+                $newFile->item_id = 1;
+                $newFile->save(false);
+
+                $attributes ['File'] = $newFile->attributes;
+                $crop_0 = new File();
+                $crop_0->detachBehavior('SoftDeleteByBehavior');
+                $crop_0->load($attributes);
+                $crop_0->name = '0_' . $newFile->name;
+                $crop_0->save(false);
+
+
+                $storage = new AdminStorageFile();
+                $storage->detachBehavior('SoftDeleteByBehavior');
+                $storage->detachBehavior('TimestampBehavior');
+                $storage->detachBehavior('BlameableBehavior');
+                $storage->is_hidden = 0;
+                $storage->folder_id = $folder_id;
+                $storage->name_original = $this->name;
+                $storage->name_new = $newFile->name;
+                $storage->name_new_compound = $newFile->name . '.' . $newFile->type;
+                $storage->mime_type = $newFile->mime;
+                $storage->extension = $newFile->type;
+                $storage->hash_file = hash('md5', rand());
+                $storage->hash_name = $hash;
+                $storage->upload_timestamp = $newFile->date_upload;
+                $storage->file_size = $newFile->size;
+                $storage->upload_user_id = 1;
+                $storage->save(false);
+
+                $storageImage = new AdminStorageImage();
+                $storageImage->detachBehavior('SoftDeleteByBehavior');
+                $storageImage->detachBehavior('TimestampBehavior');
+                $storageImage->detachBehavior('BlameableBehavior');
+
+                $storageImage->file_id = $storage->id;
+                $storageImage->filter_id = '0';
+                $storageImage->resolution_width = $width;
+                $storageImage->resolution_height = $height;
+                $storageImage->save(false);
+                if (isset(\Yii::$app->cache)) {
+                    \Yii::$app->cache->flush();
+                }
+            }
+        }
+
+    }
+
+//    public function afterSave($insert, $changedAttributes)
+//    {
+//        parent::afterSave($insert, $changedAttributes);
+//        /** @var  $file File */
+//        $file = $this->attachImage;
+//        if ($file) {
+//            $storage = $file->getAdminStorageFile();
+//            $storage->name = $this->name;
+//            $storage->saveCms();
+//        }
+//    }
 }

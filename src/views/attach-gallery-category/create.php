@@ -13,7 +13,7 @@
 * @var open20\amos\attachments\models\AttachGalleryCategory $model
 */
 
-$this->title = Yii::t('amoscore', 'Crea', [
+$this->title = Yii::t('amoscore', 'Carica', [
     'modelClass' => 'Attach Gallery Category',
 ]);
 $this->params['breadcrumbs'][] = ['label' => '', 'url' => ['/attachments']];

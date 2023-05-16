@@ -80,7 +80,12 @@ JS
     <?php endif; ?>
 
     <?php
-    list($array1, $array2) = array_chunk($filesList, ceil(count($filesList) / 2));
+    $array1 = [];
+    $array2 = [];
+    $len = ceil(count($filesList) / 2);
+    if($len){
+        list($array1, $array2) = array_chunk($filesList, ceil(count($filesList) / 2));
+    }
     ?>
 
 <div class="d-flex flex-column flex-nowrap">

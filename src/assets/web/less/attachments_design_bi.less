@@ -1,12 +1,12 @@
 /**
 IMPORT AMOS-LAYOUT VARIABLES and UTILITY
  */
- @import (optional) "../../vendor/open20/amos-layout/src/assets/resources/base/less/v2/variables.less";
- @import (optional) "../../vendor/open20/amos-layout/src/assets/resources/base/less/v2/utility.less";
- /**
+@import (optional) "../../vendor/open20/amos-layout/src/assets/resources/base/less/v2/variables.less";
+@import (optional) "../../vendor/open20/amos-layout/src/assets/resources/base/less/v2/utility.less";
+/**
  IMPORT STYLE-CUSTOM
   */
- @import (optional) "../../backend/web/less/style_custom.less";
+@import (optional) "../../backend/web/less/style_custom.less";
 
 
 
@@ -31,38 +31,47 @@ IMPORT AMOS-LAYOUT VARIABLES and UTILITY
         display: flex;
         flex-wrap: wrap;
     }
+
     .attachment-list-item {
         justify-content: normal;
         padding: 5px 15px;
+
         @media (min-width: 992px) {
             align-items: baseline;
+
             &:last-child {
                 margin-bottom: 0;
             }
         }
+
         .attachment-list-item-name {
             display: flex;
             position: relative;
             /* flex-wrap: wrap; */
             align-items: center;
             margin-right: auto;
+
             .icon {
                 font-size: 24px;
                 margin-right: 5px;
                 /* line-height: 1; */
             }
+
             .fileinfos {
                 display: flex;
                 align-items: baseline;
                 flex-wrap: wrap;
+
                 .filename {
                     margin-right: 12px;
                     font-weight: bold;
                     display: flex;
                     word-break: break-all;
+
                     &:hover {
-                        color: darken(@primary-color,15%);
+                        color: darken(@primary-color, 15%);
                     }
+
                     /* .filename__base {
                         text-overflow: ellipsis;
                         white-space: nowrap;
@@ -73,11 +82,13 @@ IMPORT AMOS-LAYOUT VARIABLES and UTILITY
                     }
                 }
             }
-            
+
 
         }
+
         .attachment-list-item-action {
             display: flex;
+
             a {
                 justify-content: center;
                 display: inline-flex !important;
@@ -85,16 +96,19 @@ IMPORT AMOS-LAYOUT VARIABLES and UTILITY
                 padding: 6px 12px;
                 align-items: center;
                 font-size: 22px !important;
+
                 &:hover {
                     .btn-icon {
-                        color: darken(@primary-color,15%);
+                        color: darken(@primary-color, 15%);
                     }
-                    color: darken(@primary-color,15%);
+
+                    color: darken(@primary-color, 15%);
                 }
             }
         }
     }
 }
+
 //---------------------------------------
 // ATTACHMENT INPUT WIDGET
 //---------------------------------------
@@ -102,11 +116,19 @@ IMPORT AMOS-LAYOUT VARIABLES and UTILITY
     .glyphicon {
         margin-right: 5px;
         top: 0px;
-      }
-      .btn {
-          height: 45px;
-          margin-top: 0;
-        }
-      
+    }
 
-  }
+    .btn {
+        height: 45px;
+        margin-top: 0;
+    }
+
+
+}
+
+.file-input {
+    .file-caption-name {
+        border: none;
+        width: inherit;
+    }
+}

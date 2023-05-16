@@ -18,9 +18,8 @@ use yii\helpers\Html;
  * @var $attribute string
  * @var $model \open20\amos\attachments\models\AttachGalleryImage
  */
-$fileImage = $model->attachImage;
-list($width, $height, $type, $attr) = getimagesize($fileImage->path);
-$image = Html::img($model->attachImage->getWebUrl(), [
+list($width, $height, $type, $attr) = getimagesize($model->path);
+$image = Html::img($model->getWebUrl(), [
     'class' => 'mx-auto img-responsive'
 ]);
 ?>
@@ -36,7 +35,8 @@ $image = Html::img($model->attachImage->getWebUrl(), [
             'data' => [
                 'key' => $model->id,
                 'attribute' => $attribute,
-                'src' => $model->attachImage->getWebUrl()
+                'src' => $model->getWebUrl(),
+                'filename' => $model->name.'.'.$model->type
             ]
         ]) ?>
     </div>
@@ -47,7 +47,7 @@ $image = Html::img($model->attachImage->getWebUrl(), [
                 <strong class="h4"><?= FileModule::t('amosattachments', "Dimensioni (pixel)") . ': ' ?></strong><?= $width . 'x' . $height ?>
             </div>
             <div>
-                <strong class="h4"><?= FileModule::t('amosattachments', "Peso") . ': ' ?></strong><?= $fileImage->formattedSize ?>
+                <strong class="h4"><?= FileModule::t('amosattachments', "Peso") . ': ' ?></strong><?= $model->formattedSize ?>
 
             </div>
         </div>
@@ -60,7 +60,7 @@ $image = Html::img($model->attachImage->getWebUrl(), [
             'data' => [
                 'key' => $model->id,
                 'attribute' => $attribute,
-                'src' => $model->attachImage->getWebUrl()
+                'src' => $model->getWebUrl()
             ]
         ])
         ?>

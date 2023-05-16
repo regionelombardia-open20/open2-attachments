@@ -100,8 +100,6 @@ class AttachmentsTableWithPreview extends Widget
             );
         }
         
-        Url::remember(Url::current());
-        
         if (!empty($this->attribute)) {
             return $this->drawWidget($this->attribute);
         }

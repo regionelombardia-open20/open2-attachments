@@ -55,8 +55,39 @@ $js = <<<JS
                 }
         }); 
     });
+
+    function showImageLoaded(image){
+       var image = $(image).parents('.content-item');
+       $(image).find('.placeholder-image').remove();
+       $(image).find('.open-modal-detail-btn').show();   
+    }
+    
+    //hide placeholder-image after real image is loaded
+    $(document).ready(function(){
+      $('.content-item .open-modal-detail-btn img').each(function() {
+            if( this.complete ) {
+               showImageLoaded(this);
+           } else {
+                $(this).one('load', function(){
+                    showImageLoaded(this);
+                });
+            }
+      });
+    });
+    
+    $(document).on('click', '.copy-and-paste', function(e){
+        e.preventDefault();
+        var link = $(this).attr('href');
+        copyToClipboard(link);
+    });
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text);
+    }
+
 JS;
 $this->registerJs($js);
+
 
 ?>
 <div class="attach-gallery-form col-xs-12 nop ">
@@ -89,7 +120,7 @@ $this->registerJs($js);
                             ]
                         ]);
                         ?>
-                       
+
                         <?= RequiredFieldsTipWidget::widget(); ?>
 
                         <?= CloseSaveButtonWidget::widget(['model' => $model]); ?>
@@ -106,104 +137,158 @@ $this->registerJs($js);
         <div class="col-xs-12">
             <div class="row">
                 <div class="col-lg-12 col-sm-12">
-                <?php
-                if (!$model->isNewRecord) {
-                    echo DataProviderView::widget([
-                        'dataProvider' => $dataProviderImages,
-                        'currentView' => $currentView,
-                        'gridView' => [
-                            'columns' => [
-                                'image' => [
-                                    'label' => FileModule::t('amosattachments', 'Image'),
-                                    'format' => 'html',
-                                    'value' => function ($model) {
-                                        $url = '';
-                                        if ($model->attachImage) {
-                                            $url = $model->attachImage->getUrl('square_small');
-                                        }
-                                        return Html::img($url, [
-                                            'class' => 'gridview-image',
-                                            'alt' => FileModule::t('amosattachments', 'Image')
-                                        ]);
+                    <?php
+                    if (!$model->isNewRecord) {
+                        $urlPlaceholder = '/img/img_default.jpg';
+                        if (file_exists(\Yii::getAlias('@frontend') . '/web/img/placeholder-img.gif')) {
+                            $urlPlaceholder = '/img/placeholder-img.gif';
+                        }
+                        \open20\amos\attachments\utility\AttachmentsUtility::filterFilesDoesntExit($dataProviderImages);
+//                        $dataProviderImages->pagination->pageSize = 10;
+                        echo DataProviderView::widget([
+                            'dataProvider' => $dataProviderImages,
+                            'currentView' => $currentView,
+                            'gridView' => [
+                                'rowOptions' => function ($model, $key, $index, $grid) {
+                                    $filePath = $model->getPath();
+                                    if (!file_exists($filePath)) {
+                                        return ['style' => 'visibility:collapse;'];
+                                    } else {
+                                        return ['style' => 'visibility:visible;'];
                                     }
-                                ],
-                                [
-                                    'attribute' => 'name',
-                                    'label' => FileModule::t('amosattachments', "Title")
-                                ],
-                                [
-                                    'attribute' => 'created_at',
-                                    'label' => FileModule::t('amosattachments', "Created at"),
-                                    'format' => 'date',
-                                ],
-                                [
-                                    'attribute' => 'created_by',
-                                    'label' => FileModule::t('amosattachments', "Created by"),
-                                    'value' => function ($model) {
-                                        $profile = UserProfile::find()
-                                            ->andWhere(['user_id' => $model->created_by])
-                                            ->one();
-                                        
-                                        if ($profile) {
-                                            return $profile->nomeCognome;
+                                },
+                                'columns' => [
+                                    'image' => [
+                                        'label' => FileModule::t('amosattachments', 'Image'),
+                                        'format' => 'html',
+                                        'value' => function ($model) {
+                                            $url = $model->getUrl('square_small');
+                                            return Html::img($url, [
+                                                'class' => 'gridview-image',
+                                                'alt' => FileModule::t('amosattachments', 'Image')
+                                            ]);
                                         }
-                                            
-                                        return '-';
-                                    },
-                                ],
-                                [
-                                    'class' => ActionColumn::class,
-                                    'controller' => 'attach-gallery-image',
-                                    'template' => '{zoom}{view}{update}{delete}',
-                                    'buttons' => [
-                                        'zoom' => function ($url, $model) {
-                                            return Html::a(
-                                                AmosIcons::show('zoom-in'),
-                                                '',
-                                                [
-                                                    'class' => 'open-modal-detail-btn btn btn-tools-secondary',
-                                                    'data-key' => $model->id,
-                                                    'title' => FileModule::t('amosattachments', 'Apri immagine' . ' ' . $model->name),
-                                                ]
-                                            );
+                                    ],
+                                    [
+                                        'attribute' => 'name',
+                                        'label' => FileModule::t('amosattachments', "Title"),
+                                        'value' => function ($model) {
+                                            return $model->getGenericName();
                                         }
+
+                                    ],
+                                    [
+                                        'label' => FileModule::t('amosattachments', "Created at"),
+                                        'value' => function ($model) {
+                                            return $model->getCreatedAt()->format('d/m/Y');
+                                        }
+                                    ],
+                                    [
+                                        'attribute' => 'created_by',
+                                        'label' => FileModule::t('amosattachments', "Created by"),
+                                        'value' => function ($model) {
+                                            return $model->getCreatedByProfile();
+                                        },
+                                    ],
+                                    [
+                                        'class' => ActionColumn::class,
+                                        'controller' => 'attach-gallery-image',
+                                        'template' => '{zoom}{view}{update}{delete}',
+                                        'buttons' => [
+                                            'zoom' => function ($url, $model) {
+                                                return Html::a(
+                                                    AmosIcons::show('zoom-in'),
+                                                    '',
+                                                    [
+                                                        'class' => 'open-modal-detail-btn btn btn-tools-secondary',
+                                                        'data-key' => $model->id,
+                                                        'title' => FileModule::t('amosattachments', 'Apri immagine' . ' ' . $model->name),
+                                                    ]
+                                                );
+                                            },
+                                            'view' => function ($url, $model) {
+                                                return Html::a(
+                                                    AmosIcons::show('file'),
+                                                    $model->getFullLinkViewUrl(),
+                                                    [
+                                                        'class' => 'btn btn-tools-secondary',
+                                                        'data-key' => $model->id,
+                                                        'title' => FileModule::t('amosattachments', 'Apri immagine' . ' ' . $model->name),
+                                                    ]
+                                                );
+                                            },
+                                            'update' => function ($url, $model) {
+                                                if ($model->isBackendFile()) {
+                                                    if (\Yii::$app->user->can('ATTACHGALLERYIMAGE_UPDATE', ['model' => $model->getRealModel()])) {
+                                                        return Html::a(
+                                                            AmosIcons::show('edit'),
+                                                            ['/attachments/attach-gallery-image/update', 'id' => $model->item_id],
+                                                            [
+                                                                'class' => 'btn btn-tools-secondary',
+                                                                'data-key' => $model->id,
+                                                                'title' => FileModule::t('amosattachments', 'Modifica'),
+                                                            ]
+                                                        );
+                                                    }
+                                                }
+                                                return '';
+                                            },
+                                            'delete' => function ($url, $model) {
+                                                if ($model->isBackendFile()) {
+                                                    if (\Yii::$app->user->can('ATTACHGALLERYIMAGE_DELETE', ['model' => $model->getRealModel()])) {
+                                                        return Html::a(
+                                                            AmosIcons::show('delete'),
+                                                            ['/attachments/attach-gallery-image/delete', 'id' => $model->item_id],
+                                                            [
+                                                                'class' => 'btn btn-danger-inverse',
+                                                                'data-key' => $model->id,
+                                                                'title' => FileModule::t('amosattachments', 'Elimina'),
+                                                                'data-confirm' => FileModule::t('amosattachments', 'Sei sicuro di eliminare questo elemento?')
+                                                            ]
+                                                        );
+                                                    }
+                                                }
+                                                return '';
+                                            },
+
+                                        ]
                                     ]
                                 ]
-                            ]
-                        ],
-                        'listView' => [
-                            'itemView' => '../attach-gallery-image/_item',
-                            'masonry' => false,
+                            ],
+                            'listView' => [
+                                'viewParams' => ['urlPlaceholder' => $urlPlaceholder],
+                                'itemView' => '../attach-gallery-image/_item',
+                                'masonry' => false,
 
-                            // Se masonry settato a TRUE decommentare
-                            // e settare i parametri seguenti
-                            // nel CSS settare i seguenti parametri necessari 
-                            // al funzionamento tipo
-                            // 
-                            // .grid-sizer, .grid-item {width: 50&;}
-                            // 
-                            // Per i dettagli recarsi sul sito
-                            // http://masonry.desandro.com
-                            // 
-                            // 'masonrySelector' => '.grid',
-                            // 'masonryOptions' => [
-                            //     'itemSelector' => '.grid-item', 
-                            //     'columnWidth' => '.grid-sizer',
-                            //     'percentPosition' => 'true',
-                            //     'gutter' => 0
-                            //   ],
-                            'showItemToolbar' => false,
-                        ],
-                    ]);
-                } else {
-                    echo '<p>'
-                        . FileModule::t(
-                            'amosattachments',
-                            "E' necessario salvare per poter inserire delle immagini alla galleria"
-                        )
-                        . '</p>';
-                }
-                ?>
+                                // Se masonry settato a TRUE decommentare
+                                // e settare i parametri seguenti
+                                // nel CSS settare i seguenti parametri necessari
+                                // al funzionamento tipo
+                                //
+                                // .grid-sizer, .grid-item {width: 50&;}
+                                //
+                                // Per i dettagli recarsi sul sito
+                                // http://masonry.desandro.com
+                                //
+                                // 'masonrySelector' => '.grid',
+                                // 'masonryOptions' => [
+                                //     'itemSelector' => '.grid-item',
+                                //     'columnWidth' => '.grid-sizer',
+                                //     'percentPosition' => 'true',
+                                //     'gutter' => 0
+                                //   ],
+                                'showItemToolbar' => false,
+                            ],
+                        ]);
+                    } else {
+                        echo '<p>'
+                            . FileModule::t(
+                                'amosattachments',
+                                "E' necessario salvare per poter inserire delle immagini alla galleria"
+                            )
+                            . '</p>';
+                    }
+                    ?>
                 </div>
             </div>
         </div>

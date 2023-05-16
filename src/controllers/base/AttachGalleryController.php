@@ -114,6 +114,9 @@ class AttachGalleryController extends CrudController
 
         $this->view->params = [
             'titleSection' => $titleSection,
+            'labelLinkAll' => FileModule::t('amosattachment', 'Cerca immagini su Shutterstock'),
+            'urlLinkAll' => '/attachments/shutterstock/index',
+            'titleLinkAll' => FileModule::t('amosattachment', 'Cerca le immagini su Shutterstock')
         ];
 
         if (!parent::beforeAction($action)) {
@@ -130,6 +133,10 @@ class AttachGalleryController extends CrudController
      */
     public function actionIndex($layout = null)
     {
+        if ($this->module->enableSingleGallery) {
+            return $this->redirect(['/attachments/attach-gallery/single-gallery']);
+        }
+
         Url::remember();
         $this->setListViewsParams($setCurrentDashboard = true);
         $this->setDataProvider($this->modelSearch->search(Yii::$app->request->getQueryParams()));

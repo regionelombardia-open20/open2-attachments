@@ -244,7 +244,7 @@ class AttachGalleryRequestController extends CrudController
      */
     public function setCreateNewBtnLabelGeneral($id = 1)
     {
-        $btnUploadImage = Html::a(FileModule::t('amosattachments', "Carica nuova"), ['/attachments/attach-gallery-image/create', 'id' => $id], [
+        $btnUploadImage = Html::a(FileModule::t('amosattachments', "Carica"), ['/attachments/attach-gallery-image/create', 'id' => $id], [
             'class' => 'btn btn-primary',
             'title' => FileModule::t('amosattachments', "Carica nuova immmagine")
         ]);

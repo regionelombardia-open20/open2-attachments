@@ -146,29 +146,11 @@ class FileRefs extends Record
     }
 
     /**
-     * @param $size
-     * @return string
-     */
-    public function getWebUrl($size)
-    {
-        return \Yii::$app->getUrlManager()->createAbsoluteUrl(
-            Url::to([
-                        '/'
-                        . FileModule::getModuleName()
-                        . '/file/download',
-                        'id' => $this->id,
-                        'hash' => $this->hash,
-                        'size' => $size
-                    ])
-        );
-    }
-
-    /**
      *
      * @param string $size
      * @return string
      */
-    public function getPath()
+    public function getPath($type = null)
     {
         $attachFile = $this->attachFile;
 
@@ -177,8 +159,7 @@ class FileRefs extends Record
         }
 
         $refDirPath = AttachemntsHelper::getPathByHash($this->hash, !$this->protected);
-        $additionalStorageName = $this->crop == 'original' ? '' : md5($this->crop);
-        $refPath = $refDirPath . DIRECTORY_SEPARATOR . $this->hash . $additionalStorageName . '.' . $attachFile->type;
+        $refPath = $refDirPath . DIRECTORY_SEPARATOR . $this->hash . '.' . ($type ?: $attachFile->type);
 
         $source = $this->attachFile->getPath();
 

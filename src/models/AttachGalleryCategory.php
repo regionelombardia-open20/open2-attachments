@@ -59,9 +59,9 @@ class AttachGalleryCategory extends \open20\amos\attachments\models\base\AttachG
     }
 
 
-    public static function getEditFields()
+    public function getEditFields()
     {
-        $labels = self::attributeLabels();
+        $labels = $this->attributeLabels();
 
         return [
             [

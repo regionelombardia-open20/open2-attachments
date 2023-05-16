@@ -5,7 +5,7 @@
  * OPEN 2.0
  *
  *
- * @package    open20\amos\attachments\models 
+ * @package    open20\amos\attachments\models
  */
 
 namespace open20\amos\attachments\models;
@@ -38,7 +38,7 @@ class AttachGallery
     }
 
     /**
-     * 
+     *
      * @return type
      */
     public function attributeHints()
@@ -69,7 +69,7 @@ class AttachGallery
     }
 
     /**
-     * 
+     *
      */
     public function rules()
     {
@@ -80,7 +80,7 @@ class AttachGallery
     }
 
     /**
-     * 
+     *
      */
     public function attributeLabels()
     {
@@ -91,11 +91,11 @@ class AttachGallery
     }
 
     /**
-     * 
+     *
      */
-    public static function getEditFields()
+    public function getEditFields()
     {
-        $labels = self::attributeLabels();
+        $labels = $this->attributeLabels();
 
         return [
             [
@@ -158,11 +158,13 @@ class AttachGallery
     }
 
     /**
-     * 
+     *
      */
     public function getFullViewUrl()
     {
         return '/attachments/attach-gallery-image?id=' . $this->id;
     }
+
+
 
 }

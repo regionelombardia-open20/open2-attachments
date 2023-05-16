@@ -21,8 +21,7 @@ return [
     '#attach_list_no_items' => 'No attachments',
     '#attach_list_preview_icon_title' => 'Preview image',
     '#attach' => 'Attachments',
-    '#attach_list_title' => 'Uploaded attachments',
-    '#no_attach' => 'There are no attachments in this content',
+    '#attach_list_title' => 'Uploaded attachments',   
     'Attribute' => 'Attribute',
     '#cancel_btn' => 'Cancella',
     'Cannot copy file! ' => 'Cannot copy file! ',
@@ -114,4 +113,9 @@ return [
 
     '#placeholder_for_tags' => 'Select tags...',
     '#newimg' => 'New',
+    '#article_indefinite' => 'un',
+    '#article_plural' => 'i',
+    '#article_singular' => 'il',
+    '#file_singular' => 'File',
+    '#file_plural' => 'Files',
 ];

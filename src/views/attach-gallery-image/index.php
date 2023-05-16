@@ -21,6 +21,9 @@ use yii\widgets\Pjax;
 $this->title = Yii::t('amoscore', 'Attach Gallery Image');
 $this->params['breadcrumbs'][] = ['label' => '', 'url' => ['/attachments']];
 $this->params['breadcrumbs'][] = $this->title;
+
+\open20\amos\attachments\utility\AttachmentsUtility::filterFilesDoesntExit($dataProvider);
+
 ?>
 <div class="attach-gallery-image-index">
     <?= $this->render('_search', [
@@ -34,24 +37,24 @@ $this->params['breadcrumbs'][] = $this->title;
         'currentView' => $currentView,
         'gridView' => [
             'columns' => [
-                'category_id',
-                'attachGalleryCategory' => [
-                    'attribute' => 'category',
-                    'format' => 'html',
-                    'label' => '',
-                    'value' => function ($model) {
-                        return strip_tags($model->category->name);
-                    }
-                ],
-                'gallery_id',
-                'attachGallery' => [
-                    'attribute' => 'gallery',
-                    'format' => 'html',
-                    'label' => '',
-                    'value' => function ($model) {
-                        return strip_tags($model->gallery->name);
-                    }
-                ],
+//                'category_id',
+//                'attachGalleryCategory' => [
+//                    'attribute' => 'category',
+//                    'format' => 'html',
+//                    'label' => '',
+//                    'value' => function ($model) {
+//                        return strip_tags($model->category->name);
+//                    }
+//                ],
+//                'gallery_id',
+//                'attachGallery' => [
+//                    'attribute' => 'gallery',
+//                    'format' => 'html',
+//                    'label' => '',
+//                    'value' => function ($model) {
+//                        return strip_tags($model->gallery->name);
+//                    }
+//                ],
                 'name',
                 'description:striptags',
                 [

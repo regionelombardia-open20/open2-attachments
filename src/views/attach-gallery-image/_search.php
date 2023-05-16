@@ -26,6 +26,15 @@ use yii\widgets\ActiveForm;
  * @var open20\amos\attachments\models\search\AttachGalleryImageSearch $model
  * @var yii\widgets\ActiveForm $form
  */
+
+$js = <<<JS
+    $('.btn-tools-container div[data-toggle-element="form-search"]').click(function(){
+        $('#search-form-gallery').toggle();
+    });
+JS;
+$this->registerJs($js);
+
+
 $module = \Yii::$app->getModule('attachments');
 $disableFreeCropGallery = $module->disableFreeCropGallery;
 
@@ -59,9 +68,9 @@ $form = ActiveForm::begin([
 ]);
 ?>
 
-<div class="attach-gallery-image-search element-to-toggle" data-toggle-element="form-search">
+<div id="search-form-gallery" class="attach-gallery-image-search search-form-class-attachments" style="display:none">
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-12">
             <?= $form->field($model, 'name')->textInput(['placeholder' => 'ricerca per nome']) ?>
         </div>
 
@@ -115,7 +124,7 @@ $form = ActiveForm::begin([
     
     <div class="row">
         <div class="col-md-6">
-            <?= $form->field($model, 'created_at')->widget(DateControl::class, [
+            <?= $form->field($model, 'uploadData')->widget(DateControl::class, [
                 'type' => DateControl::FORMAT_DATE
             ])
             ->label(FileModule::t('amosattachments', 'Creata a partire dal'))

@@ -187,9 +187,9 @@ class AttachGalleryRequest
      * 
      * @return type
      */
-    public static function getEditFields()
+    public function getEditFields()
     {
-        $labels = self::attributeLabels();
+        $labels = $this->attributeLabels();
 
         return [
             [

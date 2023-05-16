@@ -44,6 +44,7 @@ class GalleryInput extends Widget
     /** @var $modelGallery AttachGallery */
     private $modelGallery;
 
+
     /**
      * @throws InvalidConfigException
      */
@@ -81,24 +82,16 @@ class GalleryInput extends Widget
             </div>
         </div>';
 
-        return $loaderHtml .
-            Html::tag('div',
-                Html::a(
-                    AmosIcons::show('collection-image') . FileModule::t('amosattachments', 'Carica da databank immagini'), '#', [
-                    'class' => 'open-modal-gallery',
-                    'data-attribute' => $attribute,
-                    'data-gallery' => $galleryId,
-                ]),
-                ['class' => 'modal-gallery-container']
-            )
-            . ModalUtility::amosModal([
+        return
+            ModalUtility::amosModal([
                 'id' => 'attach-gallery-' . $attribute,
                 'modalBodyContent' => '',
                 'modalClassSize' => 'modal-lg',
+                'headerText' => FileModule::t('amosattachments', 'Seleziona immagine'),
                 'containerOptions' => [
                     'class' => 'modal-utility attachment-gallery-modal'
                 ]
-            ]);
+            ]).$loaderHtml;
     }
 
     /**

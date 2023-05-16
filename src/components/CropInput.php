@@ -71,6 +71,9 @@ class CropInput extends InputWidget
     /** @var boolean */
     var $enableUploadFromGallery = true;
 
+    /** @var boolean */
+    var $enableUploadFromShutterstock = false;
+
     /**
      *
      * @var boolean
@@ -120,6 +123,9 @@ class CropInput extends InputWidget
         if($fileModule){
             if($fileModule->disableGallery){
                 $this->enableUploadFromGallery = false;
+            }
+            if(isset($fileModule->shutterstockConfigs['enable']) && $fileModule->shutterstockConfigs['enable'] !== true){
+                $this->enableUploadFromShutterstock = false;
             }
         }
 

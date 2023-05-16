@@ -11,6 +11,7 @@
 
 namespace open20\amos\attachments\models\search;
 
+use open20\amos\attachments\models\AttachGenericImage;
 use open20\amos\tag\models\Tag;
 use open20\amos\attachments\models\AttachGalleryImage;
 
@@ -25,24 +26,29 @@ use yii\helpers\ArrayHelper;
 class AttachGalleryImageSearch extends AttachGalleryImage
 {
     /**
-     * 
+     *
      * @var type
      */
     public $customTagsSearch;
-    
+
     /**
-     * 
+     *
      * @var type
      */
     public $tagsImageSearch;
-    
+
     /**
-     * 
+     *
      */
     public $aspectRatioSearch;
-    
+
     /**
-     * 
+     * @var
+     */
+    public $uploadData;
+
+    /**
+     *
      */
     public function __construct(array $config = [])
     {
@@ -50,20 +56,20 @@ class AttachGalleryImageSearch extends AttachGalleryImage
     }
 
     /**
-     * 
+     *
      */
     public function rules()
     {
         return [
             [['id', 'category_id', 'gallery_id', 'created_by', 'updated_by', 'deleted_by'], 'integer'],
             [['name', 'description', 'created_at', 'updated_at', 'deleted_at'], 'safe'],
-            [['aspectRatioSearch', 'tagsImageSearch', 'customTagsSearch', 'AttachGallery'], 'safe'],
+            [['uploadData', 'aspectRatioSearch', 'tagsImageSearch', 'customTagsSearch', 'AttachGallery'], 'safe'],
             ['AttachGalleryCategory', 'safe'],
         ];
     }
 
     /**
-     * 
+     *
      */
     public function scenarios()
     {
@@ -75,7 +81,7 @@ class AttachGalleryImageSearch extends AttachGalleryImage
      * @param null $gallery_id
      * @return ActiveDataProvider
      */
-    public function search($params, $gallery_id = null)
+    public function search($params, $gallery_id = null, $onlyQuery = false)
     {
         $query = AttachGalleryImage::find();
         $query->innerJoin('user_profile', 'user_profile.user_id = attach_gallery_image.created_by');
@@ -127,6 +133,9 @@ class AttachGalleryImageSearch extends AttachGalleryImage
         $query->andFilterWhere(['gallery_id' => $gallery_id]);
 
         if (!($this->load($params) && $this->validate())) {
+            if ($onlyQuery) {
+                return $query;
+            }
             return $dataProvider;
         }
 
@@ -141,13 +150,13 @@ class AttachGalleryImageSearch extends AttachGalleryImage
             $tagIds = $this->tagsImageSearch;
             if (!empty($this->customTagsSearch)) {
                 $tagNames = explode(',', $this->customTagsSearch);
-                foreach ($tagNames as $name){
-                   $tags = Tag::find()->select('id')->andWhere(['nome' => $name])->asArray()->all();
-                   if ($tags) {
-                       foreach ($tags as $tag) {
-                           $tagIds[] = $tag['id'];
-                       }
-                   }
+                foreach ($tagNames as $name) {
+                    $tags = Tag::find()->select('id')->andWhere(['nome' => $name])->asArray()->all();
+                    if ($tags) {
+                        foreach ($tags as $tag) {
+                            $tagIds[] = $tag['id'];
+                        }
+                    }
                 }
             }
 
@@ -160,9 +169,9 @@ class AttachGalleryImageSearch extends AttachGalleryImage
 
         if (!empty($this->aspectRatioSearch)) {
             if ($this->aspectRatioSearch == 'other') {
-                $query->andFilterWhere([ 'not in', 'attach_gallery_image.aspect_ratio' , ['1', '1.7']]);
+                $query->andFilterWhere(['not in', 'attach_gallery_image.aspect_ratio', ['1', '1.7']]);
             } else {
-                $query->andFilterWhere([ 'attach_gallery_image.aspect_ratio' => $this->aspectRatioSearch]);
+                $query->andFilterWhere(['attach_gallery_image.aspect_ratio' => $this->aspectRatioSearch]);
             }
         }
 
@@ -181,6 +190,124 @@ class AttachGalleryImageSearch extends AttachGalleryImage
             ->andFilterWhere(['like', 'attach_gallery_image.name', $this->name])
             ->andFilterWhere(['like', 'attach_gallery_image.description', $this->description]);
 
+        if ($onlyQuery) {
+            return $query;
+        }
         return $dataProvider;
     }
+
+    /**
+     * @param $params
+     * @return void|ActiveDataProvider
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function searchGenericFiles($params = [], $gallery_id = null)
+    {
+        $module = \Yii::$app->getModule('attachments');
+        $query = AttachGenericImage::find();
+        $query->andWhere(['OR',
+                ['model' => AttachGenericImage::TYPE_BACKEND_FILE],
+                ['model' => AttachGenericImage::TYPE_LUYA_FILE]
+            ]
+        )
+        ->andWhere(['original_attach_file_id' => null]);
+
+        $query->andWhere(['OR',
+            ['AND',
+                ['NOT LIKE', 'name', '0_%', false],
+                ['NOT LIKE', 'name', '4_%', false],
+                ['NOT LIKE', 'name', '8_%', false],
+                ['type' => ['jpg', 'png', 'gif', 'bitmap', 'tiff']],
+                ['model' => AttachGenericImage::TYPE_LUYA_FILE],
+            ],
+            ['model' => AttachGenericImage::TYPE_BACKEND_FILE]
+        ]);
+
+        if ($module && !$module->showLuyaGallery) {
+            $query->andWhere(['!=', 'model', AttachGenericImage::TYPE_LUYA_FILE]);
+        }
+
+//        echo ($query->createCommand()->rawSql);die;
+
+//        $subquery = AttachGenericFile::find()
+//            ->select('attach_file.id')
+//            ->innerJoin('admin_storage_file',new Expression( "name_new_compound = CONCAT(attach_file.name,'.',attach_file.type)"))
+//            ->andWhere(['!=','admin_storage_file.is_deleted', 1]);
+//
+//        $query->andWhere(['OR',
+//            ['AND',
+//                ['attach_file.id' => $subquery],
+//                ['model' => AttachGenericFile::TYPE_LUYA_FILE],
+//            ],
+//            ['model' => AttachGenericFile::TYPE_BACKEND_FILE]
+//        ]);
+
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+
+        $dataProvider->setSort([
+            'attributes' => [
+                'id' => [
+                    'asc' => ['attach_file.id' => SORT_ASC],
+                    'desc' => ['attach_file.id' => SORT_DESC],
+                ],
+                'name' => [
+                    'asc' => ['attach_file.name' => SORT_ASC],
+                    'desc' => ['attach_file.name' => SORT_DESC],
+                ],
+                'date_upload' => [
+                    'asc' => ['attach_file.date_upload' => SORT_ASC],
+                    'desc' => ['attach_file.date_upload' => SORT_DESC],
+                ],
+            ],
+            'defaultOrder' => [
+                'date_upload' => SORT_DESC,
+            ]
+        ]);
+
+
+        if (!($this->load($params) && $this->validate())) {
+            return $dataProvider;
+        }
+
+        if (!empty($params)) {
+            $subQuery = $this->search($params, $gallery_id, true);
+            $galleryImageIds = $subQuery->select('attach_gallery_image.id')->asArray()->column();
+            if (!empty($this->aspectRatioSearch) || !empty($this->tagsImageSearch) || !empty($this->customTagsSearch) || !empty($this->created_by)) {
+                $query->andWhere([
+                    'attach_file.item_id' => $galleryImageIds,
+                    'model' => AttachGenericImage::TYPE_BACKEND_FILE,
+                ]);
+            } else {
+                $query->andWhere(['OR',
+                    ['AND',
+                        ['attach_file.item_id' => $galleryImageIds],
+                        ['model' => AttachGenericImage::TYPE_BACKEND_FILE],
+                    ],
+                    ['model' => AttachGenericImage::TYPE_LUYA_FILE]
+                ]);
+            }
+        }
+        if (!empty($this->name)) {
+            $query->andWhere(['OR',
+                ['AND',
+                    ['like', 'name', $this->name],
+                    ['model' => AttachGenericImage::TYPE_LUYA_FILE],
+                ],
+                ['model' => AttachGenericImage::TYPE_BACKEND_FILE]
+            ]);
+        }
+
+
+        $query->andFilterWhere(['created_by' => $this->created_by]);
+        if (!empty($this->uploadData)) {
+            $timestamp = strtotime($this->uploadData);
+            $query->andFilterWhere(['>=', 'date_upload', $timestamp]);
+        }
+        return $dataProvider;
+    }
+
+
 }
