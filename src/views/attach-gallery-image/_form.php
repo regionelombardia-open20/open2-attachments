@@ -101,7 +101,6 @@ $form = ActiveForm::begin([
                 ])
                     ->label(
                         FileModule::t('amosattachments', '#image_field')
-                            . '<span class="text-danger"> *</span>'
                     )
                 ?>
             </div>
@@ -173,7 +172,7 @@ $form = ActiveForm::begin([
                             'minLength' => 2,
                         ],
                     ]
-                ])->label(FileModule::t('amosevents', 'Tag liberi')) ?>
+                ])->label(FileModule::t('amosevents', 'Tag'))->hint("Inserisci delle etichette di codifica per rendere più semplice la ricerca all’interno della piattaforma.") ?>
             </div>
         </div>
         <div class="clearfix"></div>

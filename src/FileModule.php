@@ -197,7 +197,7 @@ class FileModule extends AmosModule implements BreadcrumbInterface {
     /**
      * @var string[]
      */
-    public $whiteListExtensions = ['csv', 'doc', 'docx', 'pdf', 'rtf', 'txt', 'xls', 'xlsx', 'odt', 'ppt', 'pptx', 'zip', 'p7m', 'png', 'gif', 'bmp','jpg', 'jpeg','eps'];
+    public $whiteListExtensions = ['csv', 'doc', 'docx', 'pdf', 'rtf', 'txt', 'xls', 'xlsx', 'odt', 'ppt', 'pptx', 'zip', 'p7m', 'svg', 'png', 'gif', 'bmp','jpg', 'jpeg','eps'];
 
     /**
      * @var int Kb
@@ -461,7 +461,9 @@ class FileModule extends AmosModule implements BreadcrumbInterface {
             $file->mime = FileHelper::getMimeType($cleanFilePath);
             $file->attribute = $attribute;
             if (isset(\Yii::$app->user)){
-                $file->created_by = \Yii::$app->user->id;
+                if (!\Yii::$app instanceof \yii\console\Application) {
+                    $file->created_by = \Yii::$app->user->id;
+                }
             }
             if (!empty($tableNameOwner)) {
                 $file->table_name_form = $tableNameOwner;
@@ -471,7 +473,9 @@ class FileModule extends AmosModule implements BreadcrumbInterface {
             }
 
             if(!empty($originalAttachFileId)){
-                $file->original_attach_file_id = $originalAttachFileId;
+                if (!\Yii::$app instanceof \yii\console\Application) {
+                    $file->original_attach_file_id = $originalAttachFileId;
+                }
             }
 
             /** @var ActiveQuery $query */
@@ -483,7 +487,7 @@ class FileModule extends AmosModule implements BreadcrumbInterface {
             $maxSort = $query->max('sort');
             $file->sort = $maxSort + 1;
 
-            if ($file->save()) {
+            if ($file->save(!\Yii::$app instanceof \yii\console\Application)) {
                 if ($dropOriginFile) {
                     unlink($cleanFilePath);
                 }
@@ -701,10 +705,10 @@ class FileModule extends AmosModule implements BreadcrumbInterface {
      * } */
     public function getControllerNames() {
         $names = [
-            'attach-gallery' => self::t('attachments', "Galleria"),
-            'attach-gallery-image' => self::t('attachments', "Galleria"),
-            'attach-databank-file' => self::t('attachments', "Asset Allegati"),
-            'shutterstock' => self::t('attachments', "Shutterstock"),
+            'attach-gallery' => self::t('amosattachments', "Galleria"),
+            'attach-gallery-image' => self::t('amosattachments', "Galleria"),
+            'attach-databank-file' => self::t('amosattachments', "Asset Allegati"),
+            'shutterstock' => self::t('amosattachments', "Shutterstock"),
 
         ];
 

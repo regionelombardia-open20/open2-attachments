@@ -80,7 +80,7 @@ if (!empty($modelSearch->errorMessage)) { ?>
 <?php if ($enableSandbox) { ?>
     <div class="alert alert-info" role="alert">
         <p>
-            <strong><?= FileModule::t('amosattachments', "Sandbox abilitata") . ': ' ?></strong><?= FileModule::t('amosattachments', "potrai scaricare un numero illimitato di immagini, queste avranno la filigrana con il marchio di Shutterstock.") ?>
+            <strong><?= FileModule::t('amosattachments', "Sandbox abilitata per la Demo") . ': ' ?></strong><?= FileModule::t('amosattachments', "potrai scaricare un numero illimitato di immagini con la filigrana di Shutterstock.") ?>
         </p>
     </div>
 <?php } else { ?>

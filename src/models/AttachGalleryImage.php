@@ -18,6 +18,7 @@ use open20\amos\tag\models\EntitysTagsMm;
 use open20\amos\tag\models\Tag;
 use Yii;
 use yii\helpers\ArrayHelper;
+use yii\validators\ImageValidator;
 
 /**
  * This is the model class for table "attach_gallery_image".
@@ -83,7 +84,8 @@ class AttachGalleryImage
     public function rules()
     {
         return ArrayHelper::merge(parent::rules(), [
-            [['attachImage'], 'file']
+            [['attachImage'], 'file'],
+            [['attachImage'], 'required']
         ]);
     }
 

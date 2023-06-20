@@ -16,10 +16,12 @@ use open20\amos\attachments\models\AttachGalleryCategory;
 use open20\amos\attachments\models\AttachGalleryImage;
 use open20\amos\attachments\models\File;
 use open20\amos\attachments\models\search\AttachGalleryImageSearch;
+use open20\amos\attachments\utility\AttachmentsUtility;
 use open20\amos\core\helpers\Html;
 use open20\amos\core\icons\AmosIcons;
 use open20\amos\core\module\BaseAmosModule;
 use open20\amos\dashboard\controllers\TabDashboardControllerTrait;
+use open20\amos\events\AmosEvents;
 use open20\amos\layout\Module;
 
 use Yii;
@@ -51,6 +53,7 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
                         'actions' => [
                             'load-modal',
                             'single-gallery',
+                            'delete-attachments-with-no-file'
                         ],
                         'roles' => ['@']
                     ],
@@ -80,6 +83,7 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
         $csrfToken = \Yii::$app->request->get($csrfParam);
 
         if ($gallery) {
+            $modelSearch =  new AttachGalleryImageSearch();
             $images     = $gallery->attachGalleryImages;
             $categories = AttachGalleryCategory::find()->orderBy('default_order ASC')->all();
             return $this->renderAjax('@vendor/open20/amos-attachments/src/components/views/gallery-view',
@@ -89,6 +93,7 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
                     'gallery' => $gallery,
                     'categories' => $categories,
                     'csrf' => $csrfToken,
+                    'modelSearch' => $modelSearch
             ]);
         }
         return '';
@@ -145,6 +150,24 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
     }
 
     /**
+     * @return \yii\web\Response
+     * @throws \yii\base\InvalidConfigException
+     * @throws \yii\web\NotFoundHttpException
+     */
+    public function actionDeleteAttachmentsWithNoFile(){
+        $this->model = $this->findModel(1);
+        $this->setCreateNewBtnLabelSingle();
+        $modelSearch = new AttachGalleryImageSearch();
+        $this->setModelSearch($modelSearch);
+        $this->setListViewsParams(true);
+        $dataProviderImages = $modelSearch->searchGenericFiles(\Yii::$app->request->get(), $this->model->id);
+        $dataProviderImages->pagination = false;
+        AttachmentsUtility::deleteAttachmentsWithNoFile($dataProviderImages);
+        return $this->redirect('single-gallery');
+
+    }
+
+    /**
      * Set a view param used in \open20\amos\core\forms\CreateNewButtonWidget
      */
     public function setCreateNewBtnLabelSingle()
@@ -162,6 +185,15 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
 
         Yii::$app->view->params['createNewBtnParams']['layout'] = $btnUploadImage;
         $this->buttonRequestImage();
+
+
+        if(\Yii::$app->user->can('ADMIN')){
+            Yii::$app->view->params['additionalButtons']['htmlButtons'] = [
+                Html::a(\open20\amos\attachments\FileModule::t('amosattachments',"Ripulisci allegati"), ['/attachments/attach-gallery/delete-attachments-with-no-file'], [
+                    'class' => 'btn btn-xs btn-secondary mb-4',
+                    'title' => \open20\amos\attachments\FileModule::t('amosattachments',"Ripulisci allegati senza file")
+                ])];
+        }
 
     }
 

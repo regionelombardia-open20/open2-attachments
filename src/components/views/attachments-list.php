@@ -47,17 +47,29 @@ $this->registerJs(<<<JS
         var item_id = encodeURI($(this).data('item_id'));
         var model = encodeURI($(this).data('model'));
         var attribute = encodeURI($(this).data('attribute'));
-        krajeeDialog.confirm("{$confirm}", function (result) {
-            if (result) { // ok button was pressed
-                $.ajax({
-                    url: '{$deleteUrl}?id='+id+'&item_id='+item_id+'&model='+model+'&attribute='+attribute,
-                    type: 'post',
-                    success: function () {
-                        $('#attachment-list-item-'+id).remove();
-                    }
-                });
-            }
-        });
+        if (typeof krajeeDialog != "undefined") {
+            krajeeDialog.confirm("{$confirm}", function (result) {
+                if (result) { // ok button was pressed
+                    $.ajax({
+                        url: '{$deleteUrl}?id='+id+'&item_id='+item_id+'&model='+model+'&attribute='+attribute,
+                        type: 'post',
+                        success: function () {
+                            $('#attachment-list-item-'+id).remove();
+                        }
+                    });
+                }
+            });
+        }else{
+            if(confirm("{$confirm}")){
+                    $.ajax({
+                        url: '{$deleteUrl}?id='+id+'&item_id='+item_id+'&model='+model+'&attribute='+attribute,
+                        type: 'post',
+                        success: function () {
+                            $('#attachment-list-item-'+id).remove();
+                        }
+                    });
+            };
+        }
 
     });
 JS

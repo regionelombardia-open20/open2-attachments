@@ -314,22 +314,22 @@ $alertString = FileModule::t('amosattachment', "Estensione file non permessa, in
 
 <?php
 
+//
+//$css = <<<CSS
+//.cropper-alert + .cropper-body {
+//    display: none;
+//}
+// .cropper-alert{
+//        font-size: 0px;
+//    }
+//    .cropper-alert::after{
+//        content: "$alertString";
+//        font-size:15px;
+//        margin-left: 60px;
+//}
+//CSS;
 
-$css = <<<CSS
-.cropper-alert + .cropper-body {
-    display: none;
-}
- .cropper-alert{
-        font-size: 0px;
-    }
-    .cropper-alert::after{
-        content: "$alertString";
-        font-size:15px;
-        margin-left: 60px;
-}
-CSS;
-
-$this->registerCss($css);
+//$this->registerCss($css);
 
 $js = <<<JS
 $(window).on('shown.bs.modal', function() { 

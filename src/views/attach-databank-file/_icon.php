@@ -30,6 +30,13 @@ $modelTitleSpecialChars = htmlspecialchars($model->name);
 ?>
 
 <div class="attachment-databank-item">
+    <div class="preview-img-icon">
+        <?php if (in_array(strtolower($model->type), ['jpg', 'jpeg', 'png', 'gif'])) : ?>
+
+            <img src="<?= \Yii::$app->params['platform']['frontendUrl'] . $model->getWebUrl() ?>" >
+
+        <?php endif ?>
+    </div>
     <?php
     if ($model->isBackendFile()) {
         $realModel = $model->getRealModel();
@@ -39,10 +46,10 @@ $modelTitleSpecialChars = htmlspecialchars($model->name);
             'actionDelete' => "/attachments/attach-databank-file/delete?id=" . $realModel->id,
             'positionAdditionalButton' => 'top',
             'additionalButtons' => [
-                empty($hideView) ? Html::a(FileModule::t('amosattachments','Anteprima'), ['#', 'id' => $model->id],[
+                empty($hideView) ? Html::a(FileModule::t('amosattachments', 'Anteprima'), ['#', 'id' => $model->id], [
                     'class' => 'open-modal-detail-btn',
                     'data-key' => $model->id,
-                ]): '',
+                ]) : '',
             ],
             'mainDivClasses' => 'manage-attachment'
         ]);
@@ -54,13 +61,13 @@ $modelTitleSpecialChars = htmlspecialchars($model->name);
                 'disableModify' => true,
                 'disableDelete' => true,
                 'additionalButtons' => [
-                    empty($hideView) ? Html::a(FileModule::t('amosattachments','Anteprima'), ['#', 'id' => $model->id],[
+                    empty($hideView) ? Html::a(FileModule::t('amosattachments', 'Anteprima'), ['#', 'id' => $model->id], [
                         'class' => 'open-modal-detail-btn',
                         'data-key' => $model->id,
                     ]) : '',
                     Html::a(FileModule::t('amosattachments', 'Modifica'), ['/attachments/attach-databank-file/convert-file', 'id' => $model->id]),
-                    Html::a(FileModule::t('amosattachments', 'Elimina'), ['/attachments/attach-databank-file/delete-cms-file', 'attach_file_id' => $model->id],[
-                        'data-confirm' => FileModule::t('amosattachments',"Sei sicuro di eliminare questo elemento?")
+                    Html::a(FileModule::t('amosattachments', 'Elimina'), ['/attachments/attach-databank-file/delete-cms-file', 'attach_file_id' => $model->id], [
+                        'data-confirm' => FileModule::t('amosattachments', "Sei sicuro di eliminare questo elemento?")
                     ])
                 ],
                 'mainDivClasses' => 'manage-attachment'
@@ -68,24 +75,25 @@ $modelTitleSpecialChars = htmlspecialchars($model->name);
         <?php } ?>
     <?php } ?>
     <div class="info-item">
-    <?php
-    if (\Yii::$app->getModule('favorites')) {
-        echo \open20\amos\favorites\widgets\SelectFavoriteUrlsWidget::widget([
-            'positionRelative' => true,
-            'url' => $model->getWebUrl(),
-            'module' => 'attachments',
-            'controller' => 'view',
-            'title' => $model->name,
-            'classname' => \open20\amos\attachments\models\AttachDatabankFile::className()
-        ]);
-    } ?>
+        <?php
+        if (\Yii::$app->getModule('favorites')) {
+            echo \open20\amos\favorites\widgets\SelectFavoriteUrlsWidget::widget([
+                'positionRelative' => true,
+                'url' => $model->getWebUrl(),
+                'module' => 'attachments',
+                'controller' => 'view',
+                'title' => $model->name,
+                'classname' => \open20\amos\attachments\models\AttachDatabankFile::className()
+            ]);
+        } ?>
     </div>
 
 
     <div class="info-attachment">
+
         <?= $model->getAttachmentIcon(); ?>
 
-        <div class="text-truncate">
+        <div>
             <?php echo \yii\helpers\Html::a($model->name, '#', [
                 'class' => 'open-modal-detail-btn',
                 'data-key' => $model->id,

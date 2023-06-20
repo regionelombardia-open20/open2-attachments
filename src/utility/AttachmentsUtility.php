@@ -170,6 +170,19 @@ class AttachmentsUtility
 
     }
 
+    /**
+     * @param $dataProvider
+     * @return void
+     */
+    public static function deleteAttachmentsWithNoFile($dataProvider){
+        $models = $dataProvider->models;
+        foreach ($models as $k => $item) {
+            $filePath = $item->getPath();
+            if (!file_exists($filePath)) {
+                $item->delete();
+            }
+        }
+    }
 
     /**
      * @param $dataProvider

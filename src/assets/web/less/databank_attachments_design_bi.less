@@ -105,13 +105,33 @@ IMPORT AMOS-LAYOUT VARIABLES and UTILITY
     font-size: 16px;
     position: relative;
     min-height: 160px;
-    display: flex;
+    // display: flex;
+
+    .preview-img-icon {
+        position: relative;
+        width: 100%;
+        margin-top: 15px;
+        height: 70px;
+        overflow: hidden;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: -20px;
+
+        img {
+            object-fit: cover;
+            min-width: 100%;
+            min-height: 100%;
+        }
+    }
 
     .info-attachment {
         display: flex;
         flex-direction: column;
         justify-content: flex-end;
         width: 100%;
+        position: relative;
 
         .icon {
             font-size: 38px;
@@ -121,6 +141,11 @@ IMPORT AMOS-LAYOUT VARIABLES and UTILITY
             &.open-modal-detail-btn {
                 color: #000;
                 text-decoration: none;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                display: inline-block;
+                width: 100%;
 
                 // overflow: hidden; 
                 &:hover {
@@ -308,12 +333,15 @@ IMPORT AMOS-LAYOUT VARIABLES and UTILITY
 }
 
 
-
-.modal-lg {
-    width: 96% !important;
-    max-width: 96% !important;
-    margin: 2% !important;
+#detail-file-model,
+#detail-image-modal {
+    .modal-lg {
+        width: 96% !important;
+        max-width: 96% !important;
+        margin: 2% !important;
+    }
 }
+
 
 // MODAL MASONRY
 #detail-image-modal,
@@ -563,7 +591,8 @@ IMPORT AMOS-LAYOUT VARIABLES and UTILITY
 
 }
 
-.btn-dropdown-inputfile{
+.btn-dropdown-inputfile {
+
     span,
     span.caret {
         margin: 0 4px;
@@ -571,6 +600,7 @@ IMPORT AMOS-LAYOUT VARIABLES and UTILITY
 }
 
 .btn-file {
+
     span,
     span.caret {
         margin: 0 4px;
@@ -724,6 +754,7 @@ IMPORT AMOS-LAYOUT VARIABLES and UTILITY
         border-radius: 6px;
         width: fit-content !important;
         overflow: hidden;
+
         .deleteImageCrop {
             z-index: 2;
             top: 14px;
