@@ -15,6 +15,7 @@ use open20\amos\attachments\FileModule;
 use open20\amos\attachments\FileModuleTrait;
 use open20\amos\attachments\helpers\AttachemntsHelper;
 use open20\amos\attachments\i18n\grammar\FileGrammar;
+use open20\amos\attachments\models\AttachFileCategorie;
 use open20\amos\attachments\utility\AttachmentsUtility;
 use open20\amos\core\record\Record;
 use Yii;
@@ -41,12 +42,15 @@ use yii\helpers\Url;
  * @property integer $original_attach_file_id
  * @property integer $date_upload
  * @property integer $sort
- * @property integer $created_by
- * @property integer $num_downloads
  * @property integer $encrypted
- * @property FileRefs[] $attachFileRefs
+ * @property integer $num_downloads
+ * @property string $table_name_form
+ * @property integer $attach_file_categorie_id
+ * @property integer $created_by
  *
+ * @property FileRefs[] $attachFileRefs
  * @property \open20\amos\attachments\models\File[] $attachmentWithBrothers
+ * @property AttachFileCategorie $categoria
  *
  * @package open20\amos\attachments\models
  */
@@ -106,8 +110,18 @@ class File extends Record
     {
         return [
             [['model', 'attribute', 'hash', 'size', 'mime'], 'required'],
-            [['original_attach_file_id', 'item_id', 'size', 'is_main', 'date_upload', 'sort', 'num_downloads', 'created_by'], 'integer'],
-            [['name', 'model', 'hash', 'type', 'mime', 'table_name_form'], 'string', 'max' => 255]
+            [
+                [
+                    'original_attach_file_id', 'item_id', 'size', 'is_main',
+                    'date_upload', 'sort', 'num_downloads',
+                    'attach_file_categorie_id', 'created_by'
+                ], 'integer'
+            ],
+            [['name', 'model', 'hash', 'type', 'mime', 'table_name_form'],
+                'string', 'max' => 255],
+            [['attach_file_categorie_id'], 'exist', 'skipOnError' => true,
+                'targetClass' => AttachFileCategorie::className(),
+                'targetAttribute' => ['attach_file_categorie_id' => 'id']],
         ];
     }
 
@@ -165,10 +179,18 @@ class File extends Record
             'type' => FileModule::t('amosattachments', 'Type'),
             'mime' => FileModule::t('amosattachments', 'Mime'),
             'is_main' => FileModule::t('amosattachments', 'Is main'),
+            'original_attach_file_id' => FileModule::t('amosattachments',
+                'Original Attach File Id'),
             'date_upload' => FileModule::t('amosattachments', 'Date upload'),
             'sort' => FileModule::t('amosattachments', 'Sort'),
-            'num_downloads' => FileModule::t('amosattachments', '#num_downloads'),
             'encrypted' => FileModule::t('amosattachments', '#encrypted'),
+            'num_downloads' => FileModule::t('amosattachments', '#num_downloads'),
+            'table_name_form' => FileModule::t('amosattachments',
+                'Table Name Form'),
+            'attach_file_categorie_id' => FileModule::t('amosattachments',
+                'Categoria'),
+            'created_by' => FileModule::t('amosattachments', 'Created By'),          
+            'alt_description' => FileModule::t('amosattachments', '#alt_description'),
         ];
     }
 
@@ -432,5 +454,52 @@ class File extends Record
         }
         return $storage;
 
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getCategoria()
+    {
+        return $this->hasOne(AttachFileCategorie::class,
+            ['id' => 'attach_file_categorie_id']);
+    }
+    
+    /**
+     * Retrieves the name of the category associated with the attachment
+     * @return string Name of the category associated with the attachment
+     */
+    public function getNomeCategoria()
+    {
+        $modelCat = $this->categoria;
+        if (empty($modelCat)) {
+            return FileModule::t('amosattachments', 'Nessuna categoria');
+        }
+        return $modelCat->titolo;
+    }
+    
+    /**
+     * Check if the attachment has valid category
+     * @param boolean $emptyIsValid If true, the absence of a category
+     * associated with the attachment will be considered as if the latter had
+     * associated a valid category; if false, the lack of a category associated
+     * with the attachment will be considered as an association with an invalid
+     * category
+     * @return bool Return true if the attachment has valid category or false
+     * otherwise
+     */
+    public function hasValidCategoria($emptyIsValid = false)
+    {
+        if (empty($this->model)) {
+            return false;
+        }
+        $modelCat = $this->categoria;
+        if (empty($modelCat)) {
+            if (!empty($emptyIsValid)) {
+                return true;
+            }
+            return false;
+        }
+        return $this->categoria->isValidForModel($this->model);
     }
 }

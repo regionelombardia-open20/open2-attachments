@@ -46,6 +46,12 @@ class AttachmentsInput extends FileInput
      * @var type
      */
     public $enableGoogleDrive = false;
+    
+    /**
+     * 
+     * @var type
+     */
+    public $enableDragAndDrop = false;
 
     /**
      * 
@@ -57,6 +63,8 @@ class AttachmentsInput extends FileInput
      * @var bool
      */
     public $enableUploadFormDatabankFile = true;
+
+    public $allowAllExtensions = false;
 
     /**
      * @throws InvalidConfigException
@@ -104,10 +112,26 @@ class AttachmentsInput extends FileInput
             //Async mode
             $this->pluginOptions['uploadAsync'] = false;
         }
+        if ($this->enableDragAndDrop) {
+            //Url to upload files
+            $this->pluginOptions['dragSettings'] = [
+                'dragEnter' => null,
+                'dragLeave' => null,
+                'drop' => new \yii\web\JsExpression('function(e) {
+                    console.log(e);
+                    // Qui puoi gestire il file droppato
+                }'),
+            ];
+        }
 
-        if(empty($this->pluginOptions['allowedFileExtensions'])){
-            if(!empty($fileModule->whiteListExtensions)) {
-                $this->pluginOptions['allowedFileExtensions'] = $fileModule->whiteListExtensions;
+        // 'allowedFileExtensions' deve essere array
+        $this->pluginOptions['allowedFileExtensions'] = isset($this->pluginOptions['allowedFileExtensions']) ?
+            $this->pluginOptions['allowedFileExtensions'] : '';
+        if(!$this->allowAllExtensions) {
+            if (empty($this->pluginOptions['allowedFileExtensions'])) {
+                if (!empty($fileModule->whiteListExtensions)) {
+                    $this->pluginOptions['allowedFileExtensions'] = $fileModule->whiteListExtensions;
+                }
             }
         }
 
@@ -134,7 +158,7 @@ class AttachmentsInput extends FileInput
 
         //ENABLE DATABANK FILE
         if($this->enableUploadFormDatabankFile){
-            $buttonDatabankFile =  DatabankFileInput::widget(['attribute' => $this->attribute]);
+            $buttonDatabankFile =  DatabankFileInput::widget(['attribute' => $this->attribute, 'options' => ['extensions' => $this->pluginOptions['allowedFileExtensions']]]);
             $enableDropdown = true;
         }
 
@@ -155,6 +179,7 @@ class AttachmentsInput extends FileInput
 
         $this->pluginOptions = array_replace(
             [
+                'language' => \kartik\base\Config::getLang(\Yii::$app->language),
                 'initialPreview' => $initials,
                 'initialPreviewConfig' => $this->model->isNewRecord ? [] : $this->model->getInitialPreviewConfigByAttributeName($this->attribute),
                 //'otherActionButtons' => '<button class="download-file btn-xs btn-default" title="download" {dataKey}><i class="glyphicon glyphicon-download"></i></button>',
@@ -165,8 +190,8 @@ class AttachmentsInput extends FileInput
                 'showPreview' => true,
                 'showCaption' => true,
                 'showRemove' => true,
-                'dropZoneEnabled' => false,
-                'showDrag' => false,
+                'dropZoneEnabled' => $this->enableDragAndDrop,
+                'showDrag' => $this->enableDragAndDrop,
                 'indicatorNew' => false,
                 'previewSettings' => [
                     'image' => [

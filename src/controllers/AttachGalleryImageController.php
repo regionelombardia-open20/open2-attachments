@@ -46,6 +46,7 @@ class AttachGalleryImageController
                         'allow' => true,
                         'actions' => [
                             'upload-from-gallery-ajax',
+                            'multi-upload-from-gallery-ajax',
                             'delete-from-session-ajax',
                             'load-modal',
                             'get-autocomplete-tag',
@@ -77,14 +78,46 @@ class AttachGalleryImageController
     public function actionUploadFromGalleryAjax($id, $attribute, $csrf)
     {
         \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-        $image = AttachGenericImage::findOne($id);
+        $image = AttachGenericImage::findOne($id);  
         if ($image) {
             $data = \Yii::$app->session->get($csrf);
             $data [$attribute] = ['id' => $id, 'attribute' => $attribute, 'type' => AttachGalleryImage::className()];
             \Yii::$app->session->set($csrf, $data);
-            return ['success' => true];
+            return ['success' => true,'alt_description'=>$image->alt_description];
         }
         return ['success' => false];
+    }
+    
+    public function actionMultiUploadFromGalleryAjax($attribute, $csrf)
+    {
+        \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        $response = ['success' => false];
+        $data = [];
+        
+        $ids = \Yii::$app->request->post('ids');
+        
+        $images = AttachGenericImage::find()->where(['id'=>$ids])->all();  
+
+        foreach($images as $image) {
+           
+            $filePath = $image->getPath();
+            if (file_exists($filePath)) {
+        
+                $data[] = [
+                    'id' => $image->id, 
+                    'type' => AttachGalleryImage::className(),
+                    'src' => $image->getWebUrl(),
+                    'name' => $image->name,
+                    'alt_description' => $image->alt_description,
+                ];
+          
+            }
+        }
+        
+        if(count($data) > 0)
+            $response = ['success' => true,'data'=>$data];       
+        
+        return $response;
     }
 
     /**
@@ -152,12 +185,15 @@ class AttachGalleryImageController
      */
     public function actionLoadDetail($id_image, $attribute)
     {
+        $multiSelection = (boolean)\Yii::$app->request->get('multiSelection',false);
+      
         $template = '@vendor/open20/amos-attachments/src/components/views/_detail_image_modal';
         $model = AttachGenericImage::findOne($id_image);
         if ($model) {
             return $this->renderAjax($template, [
                 'model' => $model,
                 'attribute' => $attribute,
+                'multiSelection' => $multiSelection,
             ]);
         }
         
@@ -171,12 +207,16 @@ class AttachGalleryImageController
     {
         $template = '@vendor/open20/amos-attachments/src/components/views/images_gallery';
         $model = new AttachGalleryImageSearch();
+        
         $attribute = \Yii::$app->request->get('attribute');
+        $multiSelection = (boolean)\Yii::$app->request->get('multiSelection',false);
+
         $dataProvider = $model->searchGenericFiles(\Yii::$app->request->get(),1);
 
         return $this->renderAjax($template, [
             'dataProvider' => $dataProvider,
-            'attribute' => $attribute
+            'attribute' => $attribute,
+            'multiSelection' => $multiSelection,
         ]);
     }
 

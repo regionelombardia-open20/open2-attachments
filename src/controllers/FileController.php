@@ -13,6 +13,8 @@ namespace open20\amos\attachments\controllers;
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\FileModuleTrait;
 use open20\amos\attachments\helpers\AttachemntsHelper;
+use open20\amos\attachments\models\AttachFileCategorie;
+use open20\amos\attachments\models\AttachFileCategorieAssetsMm;
 use open20\amos\attachments\models\EmptyContentModel;
 use open20\amos\attachments\models\File;
 use open20\amos\attachments\models\FileRefs;
@@ -27,6 +29,8 @@ use open20\amos\core\utilities\CurrentUser;
 use Imagine\Image\ImageInterface;
 use Yii;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\db\ActiveRecord;
@@ -34,6 +38,7 @@ use yii\filters\AccessControl;
 use yii\helpers\ArrayHelper;
 use yii\helpers\FileHelper;
 use yii\helpers\StringHelper;
+use yii\helpers\Url;
 use Imagine\Image\Box;
 use Imagine\Image\Point;
 use yii\image\drivers\Image_GD;
@@ -90,6 +95,7 @@ class FileController extends Controller
                             'delete',
                             'view',
                             'order-attachment',
+                            'update',
                         ],
                         'allow' => true,
                         'matchCallback' => function ($rule, $action) {
@@ -99,7 +105,8 @@ class FileController extends Controller
                     [
                         'actions' => [
                             'upload-files',
-                            'upload-for-record'
+                            'upload-for-record',
+                            'index',
                         ],
                         'allow' => true,
                         'roles' => ['@'],
@@ -961,5 +968,104 @@ class FileController extends Controller
     public function setLastAttachmentTime($lastAttachmentTime)
     {
         \Yii::$app->session->set(self::LAST_ATTACHMENT_TIME_NAME, $lastAttachmentTime);
+    }
+
+    public function actionIndex()
+    {
+        if (!empty(Yii::$app->params['befe'])) {
+            Yii::$app->response->redirect(Url::to(['/site/to-menu-url?url=%2Fattachments%2Fattach-databank-file']), 301);
+        }
+        else {
+            Yii::$app->response->redirect(Url::to(['/attachments/attach-databank-file']), 301);
+        }
+    	Yii::$app->end();
+    }
+
+    /**
+     * Updates an existing File model.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionUpdate($id)
+    {
+        $this->layout = '@vendor/open20/amos-layout/src/views/layouts/main';
+
+        $module = $this->getModule();
+        if ((empty($module->categorizationEnabled))
+            || (empty($module->categorizationModelsEnabled))) {
+            throw new InvalidConfigException(FileModule::t('amosattachments',
+                'La categorizzazione non è abilitata o configurata'));
+        }
+
+        if (empty($id)) {
+//            NotFoundHttpException
+            throw new InvalidArgumentException(FileModule::t('amosattachments',
+                'ID non presente'));
+        }
+
+        $model = File::findOne($id);
+        if (empty($model)) {
+//            NotFoundHttpException
+            throw new InvalidArgumentException(FileModule::t('amosattachments',
+                'Errore nel recupero dei dati'));
+        }
+
+        $goBackUrl = !empty(Yii::$app->request->referrer)
+            ? Yii::$app->request->referrer : null;
+
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            if ($model->save()) {
+//                Yii::$app->getSession()->addFlash('success',
+//                    BaseAmosModule::t('amoscore', 'Item updated'));
+//                return $this->redirect(['update', 'id' => $model->id]);
+                $goBackUrl = Yii::$app->request->post('goBackUrl');
+//                return $this->goBack($goBackUrl);
+                return $this->redirect($goBackUrl);
+            } else {
+                Yii::$app->getSession()->addFlash('danger',
+                    BaseAmosModule::t('amoscore', 'Item not updated, check data'));
+            }
+        }
+        
+        $tabCat = AttachFileCategorie::tableName();
+        $tabCatAss = AttachFileCategorieAssetsMm::tableName();
+        $categorie = ArrayHelper::map(AttachFileCategorie::find()
+            ->joinWith('assets')
+            ->andWhere([$tabCatAss . '.classe_asset' => $model->model])
+            ->select([$tabCat . '.id', $tabCat . '.titolo'])
+            ->asArray()->all(),
+        'id', 'titolo');
+        
+        $catIsValid = true;
+        $nomeCat = '';
+        $modelCat = $model->categoria;
+        if (!empty($modelCat)) {
+            $catIsValid = $modelCat->isValidForModel($model->model);
+            $nomeCat = $modelCat->titolo;
+        }
+
+//        $this->view->params = [
+//            'isGuest' => \Yii::$app->user->isGuest,
+//            'modelLabel' => 'news',
+//            'titleSection' => 'Mirko',
+//            'subTitleSection' => $subTitleSection,
+//            'urlLinkAll' => $urlLinkAll,
+//            'labelLinkAll' => $labelLinkAll,
+//            'titleLinkAll' => $titleLinkAll,
+//            'labelCreate' => $labelCreate,
+//            'titleCreate' => $titleCreate,
+//            'labelManage' => $labelManage,
+//            'titleManage' => $titleManage,
+//            'urlCreate' => $urlCreate,
+//            'urlManage' => $urlManage,
+//        ];
+
+        return $this->render('update', [
+            'model' => $model,
+            'goBackUrl' => $goBackUrl,
+            'categorie' => $categorie,
+            'catIsValid' => $catIsValid,
+            'nomeCat' => $nomeCat,
+        ]);
     }
 }

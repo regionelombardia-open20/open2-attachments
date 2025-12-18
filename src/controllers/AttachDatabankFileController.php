@@ -19,9 +19,11 @@ use open20\amos\attachments\models\File;
 use open20\amos\attachments\models\search\AttachDatabankFileSearch;
 use open20\amos\core\helpers\Html;
 use open20\amos\tag\models\Tag;
+use Yii;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Json;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
@@ -70,9 +72,7 @@ class AttachDatabankFileController extends \open20\amos\attachments\controllers\
 
 
     /**
-     *
-     * @param $action
-     * @return boolean
+     * @inheritdoc
      */
     public function beforeAction($action)
     {
@@ -120,7 +120,31 @@ class AttachDatabankFileController extends \open20\amos\attachments\controllers\
     }
 
     /**
-     * @param $str
+     * @inheritdoc
+     */
+    public static function getManageLinks(): array
+    {
+        $modulo = FileModule::instance();
+        if ((empty($modulo->categorizationEnabled))
+            || (empty($modulo->categorizationModelsEnabled))) {
+            return parent::getManageLinks();
+        }
+
+        $links =[];
+//        if (Yii::$app->user->can('ADMIN')) {
+        if (Yii::$app->user->can('ATTACHFILECATEGORIE_UPDATE')) {
+            $links[] = [
+                'label' => FileModule::t('amosattachments', 'Categorie'),
+                'title' => FileModule::t('amosattachments', 'Gestisci le'
+                    . ' categorie'),
+                'url' => '/attachments/attach-file-categorie'
+            ];
+        }
+        return $links;
+    }
+
+    /**
+     * @param string $term
      * @return array|\yii\db\ActiveRecord[]
      */
     public function actionGetAutocompleteTag($term)
@@ -185,16 +209,17 @@ class AttachDatabankFileController extends \open20\amos\attachments\controllers\
      * @return string
      * @throws \yii\base\InvalidConfigException
      */
-    public function actionLoadModal($attribute, $pageSize)
+    public function actionLoadModal($attribute, $pageSize, $extensions=null)
     {
         $csrfParam = \Yii::$app->request->csrfParam;
         $csrfToken = \Yii::$app->request->get($csrfParam);
-            return $this->renderAjax('@vendor/open20/amos-attachments/src/components/views/databank_file/databank-file-view',
-                [
-                    'attribute' => $attribute,
-                    'pageSize' => $pageSize,
-                    'csrf' => $csrfToken,
-                ]);
+        return $this->renderAjax('@vendor/open20/amos-attachments/src/components/views/databank_file/databank-file-view',
+            [
+                'attribute' => $attribute,
+                'pageSize' => $pageSize,
+                'extensions' => Json::decode($extensions),
+                'csrf' => $csrfToken,
+            ]);
     }
 
     /**

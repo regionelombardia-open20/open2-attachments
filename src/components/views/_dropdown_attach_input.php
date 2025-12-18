@@ -17,11 +17,11 @@ use open20\amos\attachments\FileModule;
 <ul class="dropdown-menu pull-right" aria-labelledby="dLabel">
     <li><a href="#" id="btn-dropdown-browse-<?= $attribute?>"><?= FileModule::t('amosattachments', 'Carica da dispositivo') ?></a></li>
     <?php if ($enableUploadFormDatabankFile) { ?>
-        <li><a data-attribute="<?= $attribute?>" class="open-modal-databank-file"
+        <li><a data-attribute="<?= $attribute?>" class="open-modal-databank-file <?= $attribute?>"
                href="#"><?= FileModule::t('amosattachments', 'Seleziona da allegati') ?></a></li>
     <?php } ?>
     <?php if ($enableUploadFromGallery) { ?>
-        <li><a data-attribute="<?= $attribute?>" class="open-modal-gallery"
+        <li><a data-attribute="<?= $attribute?>" class="open-modal-gallery open-modal-gallery-<?= $attribute?>"
                href="#"><?= FileModule::t('amosattachments', 'Seleziona da databank immagini') ?></a></li>
     <?php } ?>
 </ul>

@@ -107,7 +107,7 @@ class AttachGalleryRequestController extends CrudController
      */
     public function actionCreate($id = null)
     {
-        $this->setUpLayout('form');
+        $this->setUpLayout('main');
         $this->model = new AttachGalleryRequest();
         $gallery = AttachGallery::findOne($id);
         if ($gallery) {
@@ -115,6 +115,7 @@ class AttachGalleryRequestController extends CrudController
         }
 
         if ($this->model->load(Yii::$app->request->post()) && $this->model->validate()) {
+            $this->model->status = AttachGalleryRequest::IMAGE_REQUEST_WORKFLOW_STATUS_OPENED;
             if ($this->model->save()) {
                 $this->model->saveCustomTags();
                 $this->model->saveImageTags();

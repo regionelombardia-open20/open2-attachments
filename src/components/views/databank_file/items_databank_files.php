@@ -16,7 +16,6 @@ use open20\amos\core\views\ListView;
 use yii\widgets\Pjax;
 
 ModuleAttachmentsAsset::register($this);
-\open20\amos\attachments\utility\AttachmentsUtility::filterFilesDoesntExit($dataProvider);
 ?>
 
 <div class="gallery-masonry-attachments m-t-20 m-b-20">

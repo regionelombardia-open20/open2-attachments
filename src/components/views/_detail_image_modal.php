@@ -28,17 +28,19 @@ $image = Html::img($model->getWebUrl(), [
         <button class="btn btn-xs btn-outline-secondary exit-fullscreen-btn" data-attribute=<?= $attribute ?>>
             <?= FileModule::t('amosattachments', 'Torna alla gallery') ?>
         </button>
-        <?= Html::a(FileModule::t('amosattachments', 'Seleziona immagine'), '', [
-            'id' => 'image-gallery-link-' . $attribute,
-            'class' => 'btn btn-xs btn-primary',
-            'title' => FileModule::t('amosattachments', 'Seleziona immagine'),
-            'data' => [
-                'key' => $model->id,
-                'attribute' => $attribute,
-                'src' => $model->getWebUrl(),
-                'filename' => $model->name.'.'.$model->type
-            ]
-        ]) ?>
+        <?php if (!$multiSelection): ?>
+            <?= Html::a(FileModule::t('amosattachments', 'Seleziona immagine'), '', [
+                'id' => 'image-gallery-link-' . $attribute,
+                'class' => 'btn btn-xs btn-primary',
+                'title' => FileModule::t('amosattachments', 'Seleziona immagine'),
+                'data' => [
+                    'key' => $model->id,
+                    'attribute' => $attribute,
+                    'src' => $model->getWebUrl(),
+                    'filename' => $model->name.'.'.$model->type
+                ]
+            ]) ?>
+        <?php endif; ?>
     </div>
     
     <div class="col-sm-5 order-sm-0 pt-2">

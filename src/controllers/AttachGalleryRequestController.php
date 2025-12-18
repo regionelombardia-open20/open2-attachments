@@ -10,6 +10,9 @@
  
 namespace open20\amos\attachments\controllers;
 
+use open20\amos\admin\AmosAdmin;
+use open20\amos\attachments\FileModule;
+use open20\amos\core\helpers\Html;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
@@ -60,6 +63,42 @@ class AttachGalleryRequestController extends \open20\amos\attachments\controller
     }
 
     /**
+     *
+     * @param type $action
+     * @return boolean
+     */
+    public function beforeAction($action)
+    {
+        if (\Yii::$app->user->isGuest) {
+            $titleSection = FileModule::t('amosattachments', 'Richieste immagini');
+            $ctaLoginRegister = Html::a(
+                FileModule::t('amosattachments', 'accedi o registrati alla piattaforma'),
+                isset(\Yii::$app->params['linkConfigurations']['loginLinkCommon'])
+                    ? \Yii::$app->params['linkConfigurations']['loginLinkCommon']
+                    : \Yii::$app->params['platform']['backendUrl']
+                    . '/'
+                    . AmosAdmin::getModuleName()
+                    . '/security/login',
+                [
+                    'title' => FileModule::t('amosattachments',
+                        'Clicca per accedere o registrarti alla piattaforma {platformName}',
+                        ['platformName' => \Yii::$app->name])
+                ]
+            );
+        } else {
+            $titleSection = FileModule::t('amosattachments', 'Richieste immagini');
+        }
+
+        $this->view->params['titleSection'] = $titleSection;
+        $this->view->params['hideCreate'] = true;
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        // other custom code here
+        return true;
+    }
+    /**
      * @return string
      * @throws \yii\base\InvalidConfigException
      */
@@ -69,6 +108,8 @@ class AttachGalleryRequestController extends \open20\amos\attachments\controller
         $this->setCreateNewBtnLabelGeneral();
 
         $this->setUpLayout('list');
+        $this->view->params['titleSection'] = FileModule::t('amosattachments',"Richieste aperte");
+
         Url::remember();
         $this->setDataProvider($this->modelSearch->searchOpened(\Yii::$app->request->getQueryParams()));
 
@@ -89,8 +130,10 @@ class AttachGalleryRequestController extends \open20\amos\attachments\controller
     public function actionClosed(){
         $this->setListViewsParams();
         $this->setCreateNewBtnLabelGeneral();
+        $this->view->params['titleSection'] = FileModule::t('amosattachments',"Richieste chiuse");
 
         $this->setUpLayout('list');
+
         Url::remember();
         $this->setDataProvider($this->modelSearch->searchClosed(\Yii::$app->request->getQueryParams()));
 
@@ -112,6 +155,7 @@ class AttachGalleryRequestController extends \open20\amos\attachments\controller
     {
         $this->setListViewsParams();
         $this->setCreateNewBtnLabelGeneral();
+        $this->view->params['titleSection'] = FileModule::t('amosattachments',"Le mie richieste");
 
         Url::remember();
         $this->setDataProvider($this->modelSearch->searchMyRequests(\Yii::$app->request->getQueryParams()));

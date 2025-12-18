@@ -226,6 +226,9 @@ class AttachGalleryImageSearch extends AttachGalleryImage
         if ($module && !$module->showLuyaGallery) {
             $query->andWhere(['!=', 'model', AttachGenericImage::TYPE_LUYA_FILE]);
         }
+        
+        $fileNotExits = \Yii::$app->db->createCommand("select attach_file_id from attach_file_not_exists where deleted_at is null and check_ok = 0")->rawSql;
+        $query->andWhere(new \yii\db\Expression("attach_file.id not in ($fileNotExits)"));
 
 //        echo ($query->createCommand()->rawSql);die;
 

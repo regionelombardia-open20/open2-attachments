@@ -51,6 +51,11 @@ $enableSingleGallery = $module->enableSingleGallery;
 $disableFreeCropGallery = $module->disableFreeCropGallery;
 $luyaGalleryFolderId = $module->luyaGalleryFolderId;
 
+$messageShutterstock = '.';
+if(isset($module->shutterstockConfigs['enable']) && $module->shutterstockConfigs['enable'] == true) {
+    $messageShutterstock = " oppure cercane una su <a href='/attachments/shutterstock/index'>Shutterstock</a>.";
+}
+
 $tagsImage = AttachGalleryImage::getTagIntereseInformativo();
 
 if (empty($model->aspect_ratio)) {
@@ -82,7 +87,7 @@ $form = ActiveForm::begin([
 ?>
 
 <div class="attach-gallery-image">
-    <p><?= FileModule::t('amosattachments', "Carica un immagine dal tuo dispositivo oppure cercane una su <a href='/attachments/shutterstock/index'>Shutterstock</a>")?></p>
+    <p><?= FileModule::t('amosattachments', "Carica un'immagine dal tuo dispositivo{extra}",['extra' => $messageShutterstock])?></p>
     <div class="row m-t-20">
         <div class="col-md-6">
             <?php
@@ -96,6 +101,7 @@ $form = ActiveForm::begin([
                     'hidePreviewDeleteButton' => true,
                     'enableUploadFromGallery' => false,
                     'enableUploadFromShutterstock' => false,
+                    'enableAltDescription' => $model->isNewRecord,
                     'aspectRatioChoices' => $aspectRatioChoices,
                     'jcropOptions' => ['aspectRatio' => '1.7']
                 ])
@@ -109,6 +115,12 @@ $form = ActiveForm::begin([
             <div>
                 <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
             </div>
+            
+            <?php if(!$model->isNewRecord): ?>
+            <div>
+                <?= $form->field($model, 'altDescription')->textInput(['maxlength' => true])->label(FileModule::t('amosattachments', '#alt_description')) ?>
+            </div>
+            <?php endif; ?>
 
             <div>
                 <div style="<?= $display ?>">

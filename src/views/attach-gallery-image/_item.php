@@ -28,7 +28,7 @@ $contentImage = Html::img(
     $url,
     [
         'class' => 'full-width',
-        'alt' => FileModule::t('amosattachments', "Immagine " . $model->getGenericName())
+        'alt' => empty($model->alt_description) ? FileModule::t('amosattachments', "Immagine " . $model->getGenericName()) : $model->alt_description,
     ]
 );
 
@@ -39,7 +39,7 @@ if (empty($urlPlaceholder)) {
 
 <div class="masonry-item">
     <div class="content-item" tabindex="0">
-        <?= Html::a($contentImage, $model->getFullViewUrl(), [
+        <?= Html::a($contentImage, ['/attachments/attach-gallery-image/view', $model->id], [
             'class' => 'open-modal-detail-btn',
             'data-key' => $model->id,
             'title' => FileModule::t('amosattachments', 'Apri immagine' . ' ' . $model->getGenericName()),
@@ -116,7 +116,7 @@ if (empty($urlPlaceholder)) {
                         'class' => 'card-title'
                     ]
                 ),
-                $model->getFullLinkViewUrl(),
+                ['/attachments/attach-gallery-image/view','id'=> $realModel->id],
                 [
                     'class' => 'link-list-title',
                     'title' => "Vai alla scheda immagine " . $model->getGenericName(),

@@ -93,8 +93,8 @@ $modelTitleSpecialChars = htmlspecialchars($model->name);
 
         <?= $model->getAttachmentIcon(); ?>
 
-        <div>
-            <?php echo \yii\helpers\Html::a($model->name, '#', [
+        <div class="text-truncate">
+            <?php echo \yii\helpers\Html::a($model->name, ['/attachments/attach-gallery-image/view', $model->id], [
                 'class' => 'open-modal-detail-btn',
                 'data-key' => $model->id,
                 'data-toggle' => 'tooltip',

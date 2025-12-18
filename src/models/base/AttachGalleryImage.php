@@ -45,7 +45,8 @@ class  AttachGalleryImage extends \open20\amos\core\record\Record
      * 
      * @var type
      */
-    public $tagsImage;
+    public $tagsImage = [];
+    public $altDescription;
 
     /**
      * @inheritdoc
@@ -65,7 +66,7 @@ class  AttachGalleryImage extends \open20\amos\core\record\Record
             [['category_id', 'gallery_id', 'created_by', 'updated_by', 'deleted_by'], 'integer'],
             [['description', 'customTags'], 'string'],
             [['shutterstock_image_id','aspect_ratio', 'tagsImage','customTags','created_at', 'updated_at', 'deleted_at'], 'safe'],
-            [['name'], 'string', 'max' => 255],
+            [['name','altDescription'], 'string', 'max' => 255],
             [['gallery_id'], 'exist', 'skipOnError' => true, 'targetClass' => AttachGallery::class, 'targetAttribute' => ['gallery_id' => 'id']],
         ];
     }

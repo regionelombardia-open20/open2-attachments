@@ -49,7 +49,7 @@ $js = <<<JS
               id_image: image_id
           },
           success: function(data){
-              console.log(data);
+              //console.log(data);
                 $('#detail-image-modal-content').html(data);
                 $('#detail-image-modal').modal('show');
                 }
@@ -143,7 +143,6 @@ $this->registerJs($js);
                         if (file_exists(\Yii::getAlias('@frontend') . '/web/img/placeholder-img.gif')) {
                             $urlPlaceholder = '/img/placeholder-img.gif';
                         }
-                        \open20\amos\attachments\utility\AttachmentsUtility::filterFilesDoesntExit($dataProviderImages);
 //                        $dataProviderImages->pagination->pageSize = 10;
                         echo DataProviderView::widget([
                             'dataProvider' => $dataProviderImages,

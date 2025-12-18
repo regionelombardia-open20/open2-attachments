@@ -7,7 +7,6 @@
  */
 
 use open20\amos\attachments\FileModule;
-use open20\amos\attachments\components\GalleryInput;
 
 $js = <<<JS
      
@@ -36,7 +35,7 @@ $classEnableDropdown = 'display:none';
                     'enableUploadFromShutterstock' => $enableUploadFromShutterstock
                 ]) ?>
                 <?php } else { ?>
-                    <button class="dropdown-toggle btn btn-primary btn-file"
+                    <button style="font-size: initial" class="dropdown-toggle btn btn-primary btn-file"
                             id="btn-dropdown-crop-browse-<?= $crop->attribute ?>" type="button">
                         <span class="mdi mdi-image"></span><?= FileModule::t('amosattachments', 'Inserisci immagine') ?>
                     </button>
@@ -56,7 +55,7 @@ $classEnableDropdown = 'display:none';
                             <span class='am am-info'></span>
                         </button>"; ?>
 
-        <?= $crop->form->field($crop->model, $crop->attribute, ['enableError' => false])
+        <?= $crop->form->field($crop->model, $crop->attribute.'[]', ['enableError' => false])
             ->fileInput($crop->options)
             ->label(
                 FileModule::t('amosattachments', '#attach_label'),
@@ -66,7 +65,7 @@ $classEnableDropdown = 'display:none';
         ?>
 
     <?php } else { ?>
-        <?= $crop->form->field($crop->model, $crop->attribute, ['enableError' => false])
+        <?= $crop->form->field($crop->model, $crop->attribute.'[]', ['enableError' => false])
             ->fileInput($crop->options)
             ->label(
                 FileModule::t('amosattachments', '#attach_label'),

@@ -15,7 +15,9 @@ use open20\amos\attachments\FileModule;
 use open20\amos\attachments\models\File;
 use open20\amos\core\helpers\StringHelper;
 use open20\amos\core\utilities\SortModelsUtility;
+use Yii;
 use yii\data\ActiveDataProvider;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 
 /**
@@ -42,6 +44,12 @@ class AttachmentsList extends AttachmentsTableWithPreview
     public $requireModalMoveFile = true;
 
     public $label;
+
+    public $useOnlyOneColumn = false;
+    
+    public $enableUpdateAltDescription = false;
+
+    public $setAltDescriprionAsName = false;
 
     public function __construct(array $config = []) {
         $this->label = FileModule::t('amosattachments', '#attach');
@@ -70,7 +78,19 @@ class AttachmentsList extends AttachmentsTableWithPreview
         $dataProviderModels = $dataProvider->query->all();
         $counter = 1;
         $countModels = count($dataProviderModels);
+        
+        /** FileModule $module */
+        $module = $this->getModule();
 
+        $categorizationEnabled = ((!empty($module->categorizationEnabled))
+            && (!empty($module->categorizationModelsEnabled))
+            && (in_array($this->model->className(),
+                $module->categorizationModelsEnabled)));
+        
+        //I retrieve the translation of "categoria"
+        $catTxtI18n = FileModule::t('amosattachments', 'Categoria');
+
+        /** @var File $model */
         foreach ($dataProviderModels as $model) {
             /** @var File $model */
 
@@ -81,15 +101,71 @@ class AttachmentsList extends AttachmentsTableWithPreview
             if (strlen($model->name) > $filnameLength) {
                 $stingExtension = '';
             }
+            
+            /**
+             * check if attachment categorization is enabled and if so, retrieve
+             * the category name (if exists)
+             */
+            $file['categoryEnabled'] = $categorizationEnabled;
+            $file['categoryId'] = null;
+            $file['categoryNameFull'] = FileModule::t('amosattachments',
+                'Nessuna categoria');
+            $categoryHtml = '';
+            if ($categorizationEnabled) {
+                $file['categoryEnabled'] = true;
+                
+                //I retrieve the category data (if it exists)
+                $modelCat = $model->categoria;
+                if (!empty($modelCat)) {
+                    /** @var \open20\amos\attachments\models\AttachFileCategorie $modelCat */
+                    $file['categoryId'] = $modelCat->id;
+                    //I get the name of the category
+                    $file['categoryNameFull'] = $modelCat->titolo;
+                    if (!empty($file['categoryNameFull'])) {
+                        $file['categoryName'] = StringHelper::truncate(
+                            $file['categoryNameFull'],  $this->categoryNameMaxLength);
+                        
+                        //I check if the category is valid for the model
+                        $warningCatHtml = '';
+                        if (!$modelCat->isValidForModel($model->model)) {
+                            $warningCatHtml = ' ' . html::tag('span', '', [
+                                'class' => 'warning-cat text-danger mdi'
+                                    . ' mdi-alert-circle mdi-18px',
+                                'title' => FileModule::t('amosattachments',
+                                    '#warning_category_list', [
+                                        'nome_categoria' => $file['categoryNameFull'],
+                                        'nome_classe' => $model->model
+                                    ])
+                            ]);
+                        }
+                        
+                        /**
+                         * I generate the HTML relating to the category to be
+                         * displayed in the list
+                         */
+                        $categoryHtml = html::tag('div',
+                            html::tag('span', $catTxtI18n . ': '
+                                . $file['categoryName'], ['title' => $catTxtI18n
+                                . ': ' . $file['categoryNameFull']]) . 
+                            $warningCatHtml,
+                        ['class' => 'small w-100 text-muted']);
+                    }
+                }
+                
+            }
 
             // Get rendered filename and download link
             $file_name = '<span>' . StringHelper::truncate($model->name, $filnameLength) . '</span>' . $stingExtension;
             $file_name_long = $model->name . ($this->hideExtensionFile ? '' : "." . $model->type);
-
-            $file['filename'] = Html::tag('div',Html::a($file_name, $model->getUrl(), [
-                'class' => 'filename',
-                'title' => "Dowload file ". $file_name_long,
-            ]).html::tag('span',strtoupper($model->type) . " (". $model->formattedSize . ")", ['class' => 'small']),['class'=> 'fileinfos']);
+            
+            $file['filename'] = Html::tag('div', Html::a($file_name, $model->getUrl(), [
+                    'class' => 'filename',
+                    'title' => "Dowload file ". $file_name_long,
+                ])
+                . html::tag('span', strtoupper($model->type) . " (". $model->formattedSize . ")",
+                    ['class' => 'small'])
+                . $categoryHtml,
+            ['class'=> 'fileinfos']);
             $file['type'] = $model->type;
 
             // Get rendered preview button
@@ -102,6 +178,7 @@ class AttachmentsList extends AttachmentsTableWithPreview
                     Html::tag('span', '', ['class' => 'am am-search']),
                     $model->getUrl(),
                     [
+                        'data-toggle'=>'tooltip',
                         'class' => 'att' . $model->item_id . ' cboxElement',
                         'title' => FileModule::t('amosattachments', '#attach_list_preview_icon_title')
                     ]
@@ -112,15 +189,17 @@ class AttachmentsList extends AttachmentsTableWithPreview
             $file['preview'] = $renderedPreviewHtml;
 
             // Get rendered delete button if set visible
-            if ($this->viewDeleteBtn || ($this->enableSort && $this->viewSortBtns)) {
+            if (($this->viewDeleteBtn)
+                || ($this->enableSort && $this->viewSortBtns)
+                || ($this->viewUpdateBtn)) {
 
                 // The base class name
-                $baseClassName = \yii\helpers\StringHelper::basename($this->model->className());
+                $baseClassName = StringHelper::basename($this->model->className());
 
                 // Update permission name
                 $updatePremission = strtoupper($baseClassName . '_UPDATE');
 
-                $userHasUpdatePermission = \Yii::$app->user->can($updatePremission, ['model' => $this->model]);
+                $userHasUpdatePermission = Yii::$app->user->can($updatePremission, ['model' => $this->model]);
 
                 if ($this->viewDeleteBtn) {
                     $btn = '';
@@ -129,11 +208,12 @@ class AttachmentsList extends AttachmentsTableWithPreview
                             Html::tag('span', '', ['class' => 'btn btn-icon am am-close']),
                             '#',
                             [
+                                'data-toggle'=>'tooltip',
                                 'class' => 'attachments-list-delete',
                                 'title' => FileModule::t('amosattachments', '#attach_list_delete_title'),
                                 'data-id' => $model->id,
                                 'data-item_id' => $this->model->id,
-                                'data-model' => $this->getModule()->getClass($this->model),
+                                'data-model' => $module->getClass($this->model),
                                 'data-attribute' => $this->attribute
                             ]
                         );
@@ -191,6 +271,29 @@ class AttachmentsList extends AttachmentsTableWithPreview
                 } else {
                     $file['sortButtons'] = null;
                 }
+
+                if ($this->viewUpdateBtn) {
+                    $btn = '';
+                    if (($file['categoryEnabled']) && ($userHasUpdatePermission)) {
+                        $urlUpdate = '/' . FileModule::getModuleName()
+                            . '/file/update';
+                        $btn = Html::a(
+                            Html::tag('span', '', ['class' => 'btn btn-icon am am-edit']),
+                            [$urlUpdate, 'id' => $model->id],
+                            [
+//                                'class' => 'attachments-list-update',
+                                'title' => FileModule::t('amosattachments', '#attach_list_update_title'),
+//                                'data-id' => $model->id,
+//                                'data-item_id' => $this->model->id,
+//                                'data-model' => $module->getClass($this->model),
+//                                'data-attribute' => $this->attribute
+                            ]
+                        );
+                    }
+                    $file['updateButton'] = $btn;
+                } else {
+                    $file['updateButton'] = null;
+                }
             }
 
             // Get rendered download button if set visible
@@ -216,6 +319,20 @@ class AttachmentsList extends AttachmentsTableWithPreview
             $counter++;
             $file['id'] = $this->model->id;
             $file['file_id'] = $model->id;
+            
+            if($this->enableUpdateAltDescription){
+                $file['alt_description'] = $model->alt_description;
+            }
+
+            if ($this->setAltDescriprionAsName) {
+                $file['alt_description'] = $model->alt_description;
+
+                if (!is_null($file['alt_description']) && $file['alt_description'] != ''){
+                    $model->name = $model->alt_description;
+                    $model->save();
+                }
+            }
+            
             $files[] = $file;
             $filesQuantity++;
         }
@@ -224,7 +341,12 @@ class AttachmentsList extends AttachmentsTableWithPreview
             'label' => $this->label,
             'filesList' => $files,
             'viewFilesCounter' => $this->viewFilesCounter,
-            'filesQuantity' => $filesQuantity
+            'filesQuantity' => $filesQuantity,
+            'useOnlyOneColumn' => $this->useOnlyOneColumn,
+            'categorizationEnabled' => $categorizationEnabled,
+            'idRand' => md5($attribute . mt_rand()),          
+            'enableUpdateAltDescription' => $this->enableUpdateAltDescription,
+            'setAltDescriprionAsName' => $this->setAltDescriprionAsName
         ]);
     }
 }

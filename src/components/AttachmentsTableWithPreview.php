@@ -43,22 +43,49 @@ class AttachmentsTableWithPreview extends Widget
     
     /**
      * 
-     * @var type
+     * @var string
      */
     public $attribute;
     
     /**
      * 
-     * @var type
+     * @var array
      */
     public $tableOptions = ['class' => 'table table-striped table-bordered table-condensed'];
     
     /**
      * 
-     * @var type
+     * @var boolean
      */
     public $viewDeleteBtn = true;
-    
+
+    /**
+     * If true, the button to edit the file data will be displayed. This
+     * parameter will be forced to false if file categorization is not active
+     * @var boolean
+     */
+    public $viewUpdateBtn = true;
+
+    /**
+     * Maximum length of the attachment category name displayed in the list
+     * @var int
+     */
+    public $categoryNameMaxLength = 50;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        parent::__construct($config);
+
+        $module = $this->getModule();
+        if ((empty($module->categorizationEnabled))
+            || (empty($module->categorizationModelsEnabled))) {
+            $this->viewUpdateBtn = false;
+        }
+    }
+
     /**
      * 
      * @return type

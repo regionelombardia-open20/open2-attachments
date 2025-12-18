@@ -4,7 +4,7 @@ async function getFileFromUrl(url,namefile = '') {
     const mime = blob.type;
     const ext = mime.slice(mime.lastIndexOf("/") + 1, mime.length);
 
-    const file = new File([blob], namefile+`_filename.${ext}`, {
+    const file = new File([blob], namefile+`.${ext}`, {
         type: mime,
     })
 

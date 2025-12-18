@@ -10,6 +10,7 @@
 
 use open20\amos\admin\models\UserProfile;
 use open20\amos\attachments\FileModule;
+use open20\amos\attachments\models\AttachFileCategorie;
 use open20\amos\attachments\models\AttachGalleryImage;
 use open20\amos\core\helpers\Html;
 
@@ -73,7 +74,7 @@ $form = ActiveForm::begin([
             <?= $form->field($model, 'uploadData')->widget(DateControl::class, [
                 'type' => DateControl::FORMAT_DATE
             ])
-                ->label(FileModule::t('amosattachments', 'Creata a partire dal'))
+                ->label(FileModule::t('amosattachments', 'Caricato a partire dal'))
             ?>
         </div>
 
@@ -84,10 +85,9 @@ $form = ActiveForm::begin([
                     'placeholder' => FileModule::t('amosattachments', 'Seleziona ...')
                 ],
             ])
-                ->label(FileModule::t('amosattachments', 'Creata da'));
+                ->label(FileModule::t('amosattachments', 'Creato da'));
             ?>
         </div>
-
 
         <div class="col-md-4">
             <?= $form->field($model, 'customTagsSearch')->widget(Tagit::class, [
@@ -106,6 +106,21 @@ $form = ActiveForm::begin([
                 ->label(FileModule::t('amosevents', 'Tag liberi'))
             ?>
         </div>
+        
+        <?php if ((!empty($module->categorizationEnabled))
+            && (!empty($module->categorizationModelsEnabled))): ?>
+        <div class="clearfix"></div>
+        <div class="col-md-4">
+            <?= $form->field($model, 'attachmentCatSearch')->widget(Select2::class, [
+                'data' => ArrayHelper::map(AttachFileCategorie::find()
+                    ->select(['id', 'titolo'])->asArray()->all(), 'id', 'titolo'),
+                'options' => [
+                    'placeholder' => FileModule::t('amosattachments', 'Seleziona ...')
+                ],
+            ]);
+            ?>
+        </div>
+        <?php endif; ?>
 
     </div>
 

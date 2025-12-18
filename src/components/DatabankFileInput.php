@@ -23,6 +23,7 @@ use Yii;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidParamException;
 use yii\base\Widget;
+use yii\helpers\Json;
 use yii\widgets\InputWidget;
 use yii\widgets\ActiveForm;
 
@@ -107,15 +108,26 @@ class DatabankFileInput extends Widget
         if (!(!empty(\Yii::$app->params['bsVersion']) && \Yii::$app->params['bsVersion'] == '4.x')){
             SpinnerWaitAsset::register($this->getView());
         }
-    $this->view->registerJsVar('loadedOnce', 0);
-    $this->view->registerJsVar('pageSize', $this->pageSize);
+        $this->view->registerJsVar('selected_file_ids', []);
+        $this->view->registerJsVar('selected_file_names', []);
+        $this->view->registerJsVar('loadedOnce', []);
+        $this->view->registerJsVar('loadedStaticOnce', 0);
+        $this->view->registerJsVar('pageSize', $this->pageSize);
+
+        $extensions = ($this->options['extensions'] === '') ? '' : Json::encode($this->options['extensions']);
+
         $js = <<<JS
-        $(document).on('click', '.open-modal-databank-file', function (event) {
+        $(document).on('click', '.open-modal-databank-file.$attribute', function (event) {
             event.preventDefault();
             $('.loading').show();
             var attribute = $(this).attr('data-attribute');
+            var extensions = '{$extensions}';
+            var link = '/attachments/attach-databank-file/load-modal?attribute='+attribute+'&pageSize='+pageSize;
+            if(extensions != '') {
+                link = link + '&extensions=' + extensions;
+            }
             $('#attach-databank-file-'+attribute+' > .modal-dialog > .modal-content > .modal-body')
-            .load('/attachments/attach-databank-file/load-modal?attribute='+attribute+'&pageSize='+pageSize, function () {
+            .load(link, function () {
                 $('#attach-databank-file-'+attribute).modal('show');
                 $('.loading').hide();
             });

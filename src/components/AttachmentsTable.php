@@ -58,6 +58,11 @@ class AttachmentsTable extends Widget
      * @var type
      */
     public $viewDeleteBtn = true;
+    /**
+     * 
+     * @var type boolean
+     */
+    public $enableUpdateAltDescription = false;
     
     /**
      * 
@@ -126,6 +131,19 @@ class AttachmentsTable extends Widget
                 }
             ]
         ];
+            
+        if($this->enableUpdateAltDescription){
+            
+            $columns[] = [
+                'label' => FileModule::t('amosattachments', '#alt_description'),
+                'format' => 'raw',
+                'value' => function ($model) {
+                    
+                    return Html::input('text', 'update_alt_desription['.$model->id.']', $model->alt_description, ['class' => 'form-control']);
+                }
+            ];
+            
+        }
         
         if ($this->viewDeleteBtn) {
             $columns[] = [
@@ -151,6 +169,7 @@ class AttachmentsTable extends Widget
                                     'attribute' => $this->attribute
                                 ],
                                 [
+                                    'data-toggle'=>'tooltip',
                                     'title' => FileModule::t('amosattachments', 'Delete'),
                                     'data-confirm' => FileModule::t('amosattachments', 'Are you sure you want to delete this item?'),
                                     'data-method' => 'post'

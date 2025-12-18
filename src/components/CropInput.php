@@ -92,6 +92,27 @@ class CropInput extends InputWidget
      * @var bool
      */
     var $hidePreviewDeleteButton = false;
+    
+    /**
+     * @var bool
+     */
+    var $enableMultipleUploads = false;
+    /**
+     * @var integer
+     * used to limit to upload more then 10 imaged at a time
+     */
+    var $maxMultipleUploads = 10; 
+    
+    /**
+     * @var bool
+     */
+    var $enableAltDescription = false;
+    /**
+     * @var bool
+     * used in single image upload
+     * auto disabled if enableMultipleUploads = true
+     */
+    var $enableUpdateAltDescription = false;
 
     /**
      * only call this method after a form closing and
@@ -124,13 +145,14 @@ class CropInput extends InputWidget
             if($fileModule->disableGallery){
                 $this->enableUploadFromGallery = false;
             }
-            if(!isset($fileModule->shutterstockConfigs['enable']) && isset($fileModule->shutterstockConfigs['enable']) && $fileModule->shutterstockConfigs['enable'] !== true){
+            if(!isset($fileModule->shutterstockConfigs['enable']) || (isset($fileModule->shutterstockConfigs['enable']) && $fileModule->shutterstockConfigs['enable'] !== true)){
                 $this->enableUploadFromShutterstock = false;
             }
         }
 
-        $oldGetAttribute = 'get'.ucfirst($this->attribute);
+        $oldGetAttribute = 'get'.ucfirst($this->attribute);      
         if ((property_exists($this->model, $this->attribute) || isset($this->model->{$this->attribute})) && ($this->model->{$this->attribute} || method_exists($this->model,$oldGetAttribute))) {
+             
             if (is_null($this->defaultPreviewImage)) {
                 $this->defaultPreviewImage = $this->model->{$this->attribute}->url;
             }
@@ -153,6 +175,15 @@ class CropInput extends InputWidget
                 'alt' => 'Crop this image'
             ];
         }
+        
+        if($this->enableMultipleUploads){
+            $this->enableUpdateAltDescription = false;
+        }
+        
+        if(!$this->enableMultipleUploads){
+            if(isset($this->options) && isset($this->options['multiple']))
+                $this->options['multiple'] = false;       
+        }
 
         $this->imageOptions['id'] = Yii::$app->getSecurity()->generateRandomString(10);
 
@@ -172,7 +203,7 @@ class CropInput extends InputWidget
 
         $this->jcropOptions = array_merge($default_jcropOptions, $this->jcropOptions);
         $this->options = array_merge($default_options, $this->options);
-
+       
         return $this->render('crop-view', [
             'inputField' => $inputField,
             'crop' => $this,

@@ -15,7 +15,7 @@ class AttachGenericImage extends File
     const TYPE_LUYA_FILE = 'open20\amos\attachments\models\EmptyContentModel';
 
     public $customTags;
-    public $tagsImage;
+    public $tagsImage = [];
     public $extension;
     public $originalModel = null;
 

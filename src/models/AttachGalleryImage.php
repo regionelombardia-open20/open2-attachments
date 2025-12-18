@@ -84,8 +84,7 @@ class AttachGalleryImage
     public function rules()
     {
         return ArrayHelper::merge(parent::rules(), [
-            [['attachImage'], 'file'],
-            [['attachImage'], 'required']
+            [['attachImage'], 'file', 'extensions' => 'jpg, jpeg, png, gif, svg, bmp, eps', 'maxSize' => 1024 * 1024 * 1.5] // 1.5 MB
         ]);
     }
 
@@ -269,6 +268,16 @@ class AttachGalleryImage
             }
         }
     }
+    
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function saveAltDescription()
+    {
+        $this->attachImage->alt_description = $this->altDescription;
+        $this->attachImage->save(false);
+                       
+    }
 
     /**
      * @throws \yii\base\InvalidConfigException
@@ -288,9 +297,20 @@ class AttachGalleryImage
                 foreach ($tagsMm as $tagMm) {
                     $this->tagsImage [] = $tagMm->tag_id;
                 }
-                $this->tagsImage = array_unique($this->tagsImage);
+                if(!empty($this->tagsImage)){
+                    $this->tagsImage = array_unique($this->tagsImage);
+                }
+                
             }
         }
+    }
+    
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function loadAltDescription()
+    {
+        $this->altDescription = $this->attachImage->alt_description;                     
     }
 
     /**

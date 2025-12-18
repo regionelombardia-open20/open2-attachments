@@ -300,6 +300,7 @@ class ShutterstockController extends CrudController
                     'success' => true,
                     'gallery_image_id' => $attachGalleryImage->id,
                     'urlDownload' => $attachGalleryImage->attachImage->getWebUrl(),
+                    'alt_description'=>$attachGalleryImage->attachImage->alt_description,
                     'message' => FileModule::t('amosattachments', "Salvataggio completato")
                 ];
             }

@@ -1,8 +1,6 @@
 <?php
 
-/**
- * @var $model \open20\amos\attachments\models\File
- */
+/** @var \open20\amos\attachments\models\File $model */
 
 use open20\amos\attachments\FileModule;
 use yii\helpers\Html;
@@ -10,13 +8,14 @@ use yii\helpers\Html;
 $createdAt = $model->getCreatedAt();
 $tagsCustomImage = $model->getCustomTagsModel();
 
+$modulo = FileModule::instance();
 ?>
 
 <div class="content-modal-databank-file">
     <div class="row">
         <div class="col-lg-2 col-md-4 m-b-20">
             <?= $this->render('_icon', ['model' => $model, 'hideView' => true]) ?>
-            <?php      echo Html::a(
+            <?= Html::a(
                 FileModule::t('amosattachment', 'Scarica'),
                $model->getWebUrl(),
                 [
@@ -25,8 +24,7 @@ $tagsCustomImage = $model->getCustomTagsModel();
                     'target' => 'blank'
                 ]
             );?>
-            <?php
-            echo Html::a(
+            <?= Html::a(
                 FileModule::t('amosattachments', 'Copia url'),
                 \Yii::$app->params['platform']['frontendUrl'].$model->getWebUrl(),
                 [
@@ -49,33 +47,44 @@ $tagsCustomImage = $model->getCustomTagsModel();
 
                 <p>
                     <strong>
-                        <?= FileModule::t('amosattachments', "Estensione")
-                        . ': ' ?>
+                        <?= FileModule::t('amosattachments', "Estensione") . ': ' ?>
                     </strong>
                     <?= $model->type ?>
                 </p>
 
                 <p>
                     <strong>
-                        <?= FileModule::t('amosattachments', "Dimensione")
-                        . ': ' ?>
+                        <?= FileModule::t('amosattachments', "Dimensione") . ': ' ?>
                     </strong>
                     <?= $model->formattedSize ?>
                 </p>
 
                 <p>
-                    <strong><?= FileModule::t('amosattachments', "Url file") ?></strong>
+                    <strong>
+                        <?= FileModule::t('amosattachments', "Url file") . ': ' ?>
+                    </strong>
                     <?= \Yii::$app->params['platform']['frontendUrl'].$model->getWebUrl() ?>
                 </p>
                 <?php if (!empty($tagsCustomImage)) { ?>
-                    <br>
-                    <p>
-                        <strong><?= FileModule::t('amosattachments', "Tag liberi") ?></strong>
+                <br>
+                <p>
+                    <strong>
+                        <?= FileModule::t('amosattachments', "Tag liberi") . ': ' ?>
+                    </strong>
                     <div class="content-tag">
                         <?= \open20\amos\attachments\utility\AttachmentsUtility::formatTags($tagsCustomImage) ?>
                     </div>
-                    </p>
+                </p>
                 <?php } ?>
+                <?php if ((!empty($modulo->categorizationEnabled))
+                    || (!empty($modulo->categorizationModelsEnabled))): ?>
+                <p>
+                    <strong>
+                        <?= FileModule::t('amosattachments', "Categoria") . ': ' ?>
+                    </strong>
+                    <?= $model->getNomeCategoria() ?>
+                </p>
+                <?php endif; ?>
             </div>
         </div>
     </div>

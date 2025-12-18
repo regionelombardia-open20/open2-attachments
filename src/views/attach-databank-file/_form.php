@@ -8,6 +8,8 @@
  * @package    @vendor/open20/amos-attachments/src/views
  */
 
+use open20\amos\attachments\models\File;
+use open20\amos\attachments\models\AttachFileCategorie;
 use open20\amos\core\helpers\Html;
 use open20\amos\core\forms\ActiveForm;
 use kartik\datecontrol\DateControl;
@@ -113,13 +115,56 @@ if ($model->attachmentFile) {
 
             <div class="row m-b-10 m-t-15">
                 <div class="col-md-12">
-                    <label><?= FileModule::t('amosattachments', 'Nome del file') ?></label>
-                    <br><span id="name-id-label"><?= $selectedFile ?></span>
+                    <label><?= FileModule::t('amosattachments', 'Nome del file') ?></label><br>
+                    <span id="name-id-label"><?= $selectedFile ?></span>
                 </div>
             </div>
 
         </div>
 
+        <?php if ((!empty($module->categorizationEnabled))
+            && (!empty($module->categorizationModelsEnabled))): ?>
+        <?php   if ($fileExist): ?>
+        <div class="col-md-6">
+            <div class="row m-b-10 m-t-15">
+<!--                <div class="col-md-12">
+                    <label>< ?= FileModule::t('amosattachments', 'Categoria') ?></label><br>
+                    <span>< ?= $model->attachmentFile->getNomeCategoria() ?></span>
+                </div>-->
+            <?= $form->field($model->attachmentFile, 'attach_file_categorie_id')->widget(Select::class, [
+                'data' => ArrayHelper::map(
+                    AttachFileCategorie::find()->select(['id', 'titolo'])->asArray()->all(),
+                    'id', 'titolo'),
+                'pluginOptions' => [
+                    'allowClear' => true
+                ],
+                'options' => [
+                    'multiple' => false,
+                    'placeholder' => FileModule::t('amosattachments', 'Select...')
+                ]
+            ]); ?>
+                
+            </div>
+        </div>
+        <?php   else: ?>
+        <div class="clearfix"></div>
+        <div class="col-md-6">
+            <?= $form->field(File::instance(), 'attach_file_categorie_id')->widget(Select::class, [
+                'data' => ArrayHelper::map(
+                    AttachFileCategorie::find()->select(['id', 'titolo'])->asArray()->all(),
+                    'id', 'titolo'),
+                'pluginOptions' => [
+                    'allowClear' => true
+                ],
+                'options' => [
+                    'multiple' => false,
+                    'placeholder' => FileModule::t('amosattachments', 'Select...')
+                ]
+            ]) ?>
+        </div>
+        <?php   endif; ?>
+
+        <?php endif; ?>
 
         <div class="clearfix"></div>
         <div class="col-md-12">

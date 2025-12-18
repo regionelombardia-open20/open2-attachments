@@ -24,6 +24,8 @@ $filePath = $model->getPath();
 if (file_exists($filePath)) {
     $src = $model->getWebUrl();
 
+$iconSelected = 'checkbox-blank-outline';
+    
 ?>
     <div class="masonry-item">
         <div class="content-item">
@@ -41,17 +43,24 @@ if (file_exists($filePath)) {
                     'style' => 'display:none'
                 ]
             ) ?>
-            <?php echo Html::img($urlPlaceholder, [
+            <?= Html::img($urlPlaceholder, [
                 'class' => 'placeholder-image full-width',
                 'title' => FileModule::t('amosattachments', 'Apri immagine' . ' ' . $model->getGenericName()),
             ]) ?>
             <div class="info-item">
-                <?php if ($model->isBackendFile() && $model->isFromShutterstock()) { ?>
+                <?php if ($model->isBackendFile() && $model->isFromShutterstock()): ?>
                     <span class="mdi mdi-web icon-file-cms" tabindex="0" data-toggle="tooltip" data-placement="bottom" title="<?= \Yii::t('amosattachments', 'Immagine proveniente da libreria Shutterstock') ?>"></span>
-                <?php } ?>
+                <?php endif; ?>
             </div>
 
             <div class="action-item">
+                <?php if ($multiSelection): ?>
+                
+                    <div class="multi-selection-item">
+                        <span data-name="<?= $model->name . '.' . $model->type ?>" data-key="<?= $model->id ?>" class="select-multimage-<?= $attribute ?> checkbox-selection mdi mdi-<?= $iconSelected ?> icon-file-check mdi-18px btn"></span>
+                    </div>
+                
+                <?php else: ?>
                 <?= \yii\helpers\Html::a(
                     AmosIcons::show('plus', ['class' => 'am']),
                     '',
@@ -67,6 +76,7 @@ if (file_exists($filePath)) {
                     ]
                 );
                 ?>
+                <?php endif; ?>
             </div>
 
             <div class="content-action-item">

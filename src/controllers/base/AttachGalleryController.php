@@ -112,13 +112,13 @@ class AttachGalleryController extends CrudController
             $titleSection = FileModule::t('amosattachments', 'Galleria');
         }
 
-        $this->view->params = [
-            'titleSection' => $titleSection,
-            'labelLinkAll' => FileModule::t('amosattachment', 'Cerca immagini su Shutterstock'),
-            'urlLinkAll' => '/attachments/shutterstock/index',
-            'titleLinkAll' => FileModule::t('amosattachment', 'Cerca le immagini su Shutterstock')
-        ];
+        $this->view->params['titleSection'] = $titleSection;
 
+        if(isset($this->module->shutterstockConfigs['enable']) && $this->module->shutterstockConfigs['enable']) {
+            $this->view->params['labelLinkAll'] = FileModule::t('amosattachment', 'Cerca immagini su Shutterstock');
+            $this->view->params['urlLinkAll'] = '/attachments/shutterstock/index';
+            $this->view->params['titleLinkAll'] = FileModule::t('amosattachment', 'Cerca le immagini su Shutterstock');
+        }
         if (!parent::beforeAction($action)) {
             return false;
         }

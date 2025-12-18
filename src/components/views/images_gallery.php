@@ -27,7 +27,7 @@ if(file_exists(\Yii::getAlias('@frontend').'/web/img/placeholder-img.gif')){
     
     <?= ListView::widget([
         'dataProvider' => $dataProvider,
-        'viewParams' => ['attribute' => $attribute,  'urlPlaceholder' => $urlPlaceholder],
+        'viewParams' => ['attribute' => $attribute,  'urlPlaceholder' => $urlPlaceholder, 'multiSelection' => $multiSelection],
         'itemView' => '_item_gallery',
         'masonry' => false,
         // Se masonry settato a TRUE decommentare e settare i parametri seguenti

@@ -22,6 +22,7 @@ $this->title = Yii::t('amoscore', 'Attach Gallery Image');
 $this->params['breadcrumbs'][] = ['label' => '', 'url' => ['/attachments']];
 $this->params['breadcrumbs'][] = $this->title;
 
+//da rimuovere dopo refactoring del controller
 \open20\amos\attachments\utility\AttachmentsUtility::filterFilesDoesntExit($dataProvider);
 
 ?>

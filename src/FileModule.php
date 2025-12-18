@@ -17,7 +17,9 @@ use open20\amos\core\exceptions\AmosAbuseReplyAttemptsException;
 use open20\amos\core\interfaces\BreadcrumbInterface;
 use open20\amos\core\module\AmosModule;
 use open20\amos\core\utilities\ZipUtility;
+use Yii;
 use yii\base\Exception;
+use yii\console\Application;
 use yii\db\ActiveQuery;
 use yii\helpers\ArrayHelper;
 use yii\helpers\FileHelper;
@@ -229,6 +231,18 @@ class FileModule extends AmosModule implements BreadcrumbInterface {
      * @var array
      */
     public $shutterstockConfigs = [];
+    
+    /**
+     * If set to true, categorization will be enabled
+     * @var boolean
+     */
+    public $categorizationEnabled = false;
+    /**
+     * Contains the classes of models enabled for categorization.
+     * This attribute will be ignored if 'categorizationEnabled' is false
+     * @var string[]
+     */
+    public $categorizationModelsEnabled = [];
 
     /**
      *
@@ -334,7 +348,9 @@ class FileModule extends AmosModule implements BreadcrumbInterface {
         $saveWithoutModel = false,
         $encrypt = false,
         $filePersonalized = null,
-        $originalAttachFileId = null
+        $originalAttachFileId = null,
+        $renameOriginal = true,
+        $altDescription = ''
     )
     {
         if (!$saveWithoutModel) {
@@ -384,7 +400,11 @@ class FileModule extends AmosModule implements BreadcrumbInterface {
         }
 
         //Rename current file to avoid any problem
-        rename($filePath, $cleanFilePath);
+        if($renameOriginal){
+            rename($filePath, $cleanFilePath);
+        }else{
+            $cleanFilePath = $filePath;
+        }
         // compress it!
         if (in_array($fileType, ['jpg'])) {
             $image = imagecreatefromjpeg($cleanFilePath);
@@ -452,6 +472,9 @@ class FileModule extends AmosModule implements BreadcrumbInterface {
         if (!$exists) {
             copy($cleanFilePath, $newFilePath);
             $file = new File();
+            if(!\Yii::$app instanceof Application) {
+                $file->load(\Yii::$app->request->post());
+            }
             $file->name = $fileName;
             $file->model = $ownerClass;
             $file->item_id = $ownerId;
@@ -460,6 +483,7 @@ class FileModule extends AmosModule implements BreadcrumbInterface {
             $file->type = $fileType;
             $file->mime = FileHelper::getMimeType($cleanFilePath);
             $file->attribute = $attribute;
+            $file->alt_description = $altDescription;
             if (isset(\Yii::$app->user)){
                 if (!\Yii::$app instanceof \yii\console\Application) {
                     $file->created_by = \Yii::$app->user->id;
@@ -523,6 +547,7 @@ class FileModule extends AmosModule implements BreadcrumbInterface {
                 return false;
             }
         } else {
+            $exists->load(\Yii::$app->request->post());
             if ($dropOriginFile) {
                 unlink($cleanFilePath);
             }
@@ -671,6 +696,8 @@ class FileModule extends AmosModule implements BreadcrumbInterface {
             'attach-gallery/single-gallery',
             'attach-databank-file/index',
             'shutterstock/index',
+            'attach-file-categorie/index',
+            'file/index',
         ];
     }
 
@@ -682,6 +709,10 @@ class FileModule extends AmosModule implements BreadcrumbInterface {
             'attach-gallery' => '/attachments/attach-gallery/index',
             'attach-gallery-image' => '/attachments/attach-gallery/index',
             'attach-databank-file' => '/attachments/attach-databank-file/index',
+            'shutterstock' => '/attachments/shutterstock/index',
+            'attach-file-categorie'
+                => '/attachments/attach-file-categorie/index',
+            'file' => '/attachments/file/index',
         ];
     }
 
@@ -693,6 +724,10 @@ class FileModule extends AmosModule implements BreadcrumbInterface {
             'attach-gallery' => '/attachments/attach-gallery/index',
             'attach-gallery-image' => '/attachments/attach-gallery/index',
             'attach-databank-file' => '/attachments/attach-databank-file/index',
+            'shutterstock' => '/attachments/shutterstock/index',
+            'attach-file-categorie'
+                => '/attachments/attach-file-categorie/index',
+            'file' => '/attachments/file/index',
         ];
     }
 
@@ -709,8 +744,15 @@ class FileModule extends AmosModule implements BreadcrumbInterface {
             'attach-gallery-image' => self::t('amosattachments', "Galleria"),
             'attach-databank-file' => self::t('amosattachments', "Asset Allegati"),
             'shutterstock' => self::t('amosattachments', "Shutterstock"),
-
+            'attach-file-categorie' => self::t('amosattachments',
+                'Categorie Allegati')
         ];
+        if (!empty(Yii::$app->params['befe'])) {
+            $names['file'] = self::t('amosattachments', 'Asset allegati');
+        }
+        else {
+            $names['file'] = self::t('amosattachments', 'File');
+        }
 
         return $names;
     }

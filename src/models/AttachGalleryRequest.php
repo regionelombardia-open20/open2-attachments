@@ -97,10 +97,7 @@ class AttachGalleryRequest
     public function init()
     {
         if ($this->isNewRecord) {
-            $this->status = $this->getWorkflowSource()->getWorkflow(
-                self::GALLERY_IMAGE_REQUEST_WORKFLOW
-            )
-            ->getInitialStatusId();
+            $this->status = $this->getWorkflowSource()->getWorkflow(self::GALLERY_IMAGE_REQUEST_WORKFLOW)->getInitialStatusId();
         }
         
         parent::init();
@@ -119,7 +116,7 @@ class AttachGalleryRequest
 
     /**
      * 
-     * @return type
+     * @return
      */
     public function rules()
     {

@@ -9,7 +9,7 @@
 use open20\amos\attachments\FileModule;
 
 ?>
-<button class="dropdown-toggle btn btn-primary btn-file" id="crop-browse-<?= $attribute?>" type="button" data-toggle="dropdown"
+<button style="font-size: initial" class="dropdown-toggle btn btn-primary btn-file" id="crop-browse-<?= $attribute?>" type="button" data-toggle="dropdown"
         aria-haspopup="true" aria-expanded="false">
     <span class="mdi mdi-image"></span><?= FileModule::t('amosattachments', 'Inserisci immagine') ?>
     <span class="caret"></span>
@@ -22,7 +22,7 @@ use open20\amos\attachments\FileModule;
                href="#"><?= FileModule::t('amosattachments', 'Seleziona da allegati') ?></a></li>
     <?php } ?>
     <?php if ($enableUploadFromGallery) { ?>
-        <li><a data-attribute="<?= $attribute?>" data-gallery="1" class="open-modal-gallery"
+        <li><a data-attribute="<?= $attribute?>" data-gallery="1" class="open-modal-gallery open-modal-gallery-<?= $attribute?>"
                href="#"><?= FileModule::t('amosattachments', 'Seleziona da databank immagini') ?></a></li>
     <?php } ?>
     <?php if ($enableUploadFromShutterstock) { ?>

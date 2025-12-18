@@ -191,6 +191,7 @@ IMPORT STYLE-CUSTOM
 
   .preview-pane {
     z-index: 1;
+    margin: 5px;
     /* override uploadcrop.css */
     .deleteImageCrop {
       position: absolute;
@@ -202,6 +203,16 @@ IMPORT STYLE-CUSTOM
       position: relative;
       padding: 0;
     }
+  }
+  
+  .preview-info-container{
+      display:flex;
+      padding: 5px;
+      color: initial;
+      font-size:14px;
+      div{
+          flex:1;
+      }
   }
 }
 
@@ -285,4 +296,41 @@ IMPORT STYLE-CUSTOM
       }
     }
   }
+}
+
+//---------------------------------------
+// PREPEND INPUT
+//---------------------------------------
+.form-group.input-prepend{
+    position: relative;
+    
+    label{
+        position: absolute;
+        margin: 0;
+        top: 0;
+        left: 0;
+        width: 100px;
+        min-width: 100px;
+        max-width: 100px;
+        height: 100%;       
+        padding: 0 5px;      
+        text-transform: inherit;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        border-top-right-radius: 0px;
+        border-bottom-right-radius: 0px;
+        cursor: auto;
+    }
+    
+    input{
+        padding-left: 110px;
+    }
+}
+
+.bootstrap-dialog.type-info .modal-header{
+    background: #fff;
+    div{
+        display:none;
+    }
 }

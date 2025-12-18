@@ -114,6 +114,12 @@ $createdAt = $model->getCreatedAt();
             </strong>
             <?= $model->formattedSize ?>
             <br/>
+            <strong class="h4">
+                <?= FileModule::t('amosattachments', "#alt_description")
+                . ': ' ?>
+            </strong>
+            <?= $model->alt_description ?>
+            <br/>
         </p>
 
         <?php if ($tagsImage) : ?>

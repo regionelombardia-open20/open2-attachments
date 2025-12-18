@@ -187,6 +187,7 @@ class AttachmentsUtility
     /**
      * @param $dataProvider
      * @return void
+     * @deprecated since version 1.17.1
      */
     public static function filterFilesDoesntExit($dataProvider)
     {

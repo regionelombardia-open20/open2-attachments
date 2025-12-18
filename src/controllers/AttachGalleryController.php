@@ -78,23 +78,25 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
      */
     public function actionLoadModal($galleryId, $attribute)
     {
-        $gallery   = AttachGallery::findOne($galleryId);
+        $gallery = AttachGallery::findOne($galleryId);
         $csrfParam = \Yii::$app->request->csrfParam;
         $csrfToken = \Yii::$app->request->get($csrfParam);
+        $multiSelection = (boolean)\Yii::$app->request->get('multiSelection',false);
 
         if ($gallery) {
-            $modelSearch =  new AttachGalleryImageSearch();
-            $images     = $gallery->attachGalleryImages;
+            $modelSearch = new AttachGalleryImageSearch();
+            $images = $gallery->attachGalleryImages;
             $categories = AttachGalleryCategory::find()->orderBy('default_order ASC')->all();
             return $this->renderAjax('@vendor/open20/amos-attachments/src/components/views/gallery-view',
-                    [
+                [
                     'attribute' => $attribute,
                     'images' => $images,
                     'gallery' => $gallery,
                     'categories' => $categories,
                     'csrf' => $csrfToken,
-                    'modelSearch' => $modelSearch
-            ]);
+                    'modelSearch' => $modelSearch,
+                    'multiSelection' => $multiSelection,
+                ]);
         }
         return '';
     }
@@ -107,13 +109,13 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
     {
         $this->setUpLayout('list');
         $this->setAvailableViews([
-        'list' => [
-            'name' => 'list',
-            'label' => AmosIcons::show('view-list')
-                . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'List')),
-            'url' => '?currentView=list'
-        ],
-    ]);
+            'list' => [
+                'name' => 'list',
+                'label' => AmosIcons::show('view-list')
+                    . Html::tag('p', BaseAmosModule::tHtml('amoscore', 'List')),
+                'url' => '?currentView=list'
+            ],
+        ]);
         $this->model = $this->findModel(1);
         $this->setCreateNewBtnLabelSingle();
         $modelSearch = new AttachGalleryImageSearch();
@@ -154,7 +156,8 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
      * @throws \yii\base\InvalidConfigException
      * @throws \yii\web\NotFoundHttpException
      */
-    public function actionDeleteAttachmentsWithNoFile(){
+    public function actionDeleteAttachmentsWithNoFile()
+    {
         $this->model = $this->findModel(1);
         $this->setCreateNewBtnLabelSingle();
         $modelSearch = new AttachGalleryImageSearch();
@@ -174,9 +177,9 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
     {
         $module = \Yii::$app->getModule('attachments');
         $btnUploadImage = Html::a(FileModule::t('amosattachments', "Carica"), [
-                '/attachments/attach-gallery-image/create',
-                'id' => 1
-            ],
+            '/attachments/attach-gallery-image/create',
+            'id' => 1
+        ],
             [
                 'class' => 'btn btn-primary',
                 'title' => FileModule::t('amosattachments', "Carica nuova immmagine")
@@ -187,11 +190,11 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
         $this->buttonRequestImage();
 
 
-        if(\Yii::$app->user->can('ADMIN')){
+        if (\Yii::$app->user->can('ADMIN')) {
             Yii::$app->view->params['additionalButtons']['htmlButtons'] = [
-                Html::a(\open20\amos\attachments\FileModule::t('amosattachments',"Ripulisci allegati"), ['/attachments/attach-gallery/delete-attachments-with-no-file'], [
+                Html::a(\open20\amos\attachments\FileModule::t('amosattachments', "Ripulisci allegati"), ['/attachments/attach-gallery/delete-attachments-with-no-file'], [
                     'class' => 'btn btn-xs btn-secondary mb-4',
-                    'title' => \open20\amos\attachments\FileModule::t('amosattachments',"Ripulisci allegati senza file")
+                    'title' => \open20\amos\attachments\FileModule::t('amosattachments', "Ripulisci allegati senza file")
                 ])];
         }
 
@@ -220,7 +223,8 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
     /**
      *
      */
-    public function buttonRequestImage(){
+    public function buttonRequestImage()
+    {
         $module = \Yii::$app->getModule('attachments');
         if (
             $module->enableRequestImageForGallery == true
@@ -231,8 +235,8 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
             $titleSecondAction = FileModule::t('amosattachments', "Richiedi nuova immagine");
             Yii::$app->view->params['urlSecondAction'] = $urlSecondAction;
             Yii::$app->view->params['labelSecondAction'] = $labelSecondAction;
-            Yii::$app->view->params['titleSecondAction']= $titleSecondAction;
-            Yii::$app->view->params['hideSecondAction']= false;
+            Yii::$app->view->params['titleSecondAction'] = $titleSecondAction;
+            Yii::$app->view->params['hideSecondAction'] = false;
 
         }
     }

@@ -58,7 +58,7 @@ $this->registerJs($js);
 $dataProvider->pagination->pageSize = 18;
 $models = $dataProvider->models;
 
-\open20\amos\attachments\utility\AttachmentsUtility::filterFilesDoesntExit($dataProvider);
+//\open20\amos\attachments\utility\AttachmentsUtility::filterFilesDoesntExit($dataProvider);
 
 ?>
 

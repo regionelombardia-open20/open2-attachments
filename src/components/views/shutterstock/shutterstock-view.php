@@ -123,6 +123,7 @@ if(!loadedOnce){
                     let list = new DataTransfer();
                     list.items.add(file);
                 
+                    $('.{$attribute}_alt_description').val(data.alt_description);
                     $('#crop-input-container-id-$attribute input[type="file"]').prop('files', list.files);
                     $('#crop-input-container-id-$attribute input[type="file"]').trigger('change');
                 });

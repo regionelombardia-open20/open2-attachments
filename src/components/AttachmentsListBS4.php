@@ -185,6 +185,28 @@ class AttachmentsListBS4 extends AttachmentsTableWithPreview
 
             }
 
+            if ($this->viewUpdateBtn) {
+                $btn = '';
+                if ($userHasUpdatePermission) {
+                    $btn = Html::a(
+                        Html::tag('span', '', ['class' => 'btn btn-icon am am-edit']),
+                        [
+                            '/' . FileModule::getModuleName() . '/file/update',
+                            'id' => $model->id,
+                            'item_id' => $this->model->id,
+                            'model' => $this->getModule()->getClass($this->model),
+                            'attribute' => $this->attribute
+                        ],
+                        [
+                            'title' => FileModule::t('amosattachments', '#attach_list_update_title'),
+                        ]
+                    );
+                }
+                $file['updateButton'] = $btn;
+            } else {
+                $file['updateButton'] = null;
+            }
+
             $counter++;
             $file['id'] = $this->model->id;
             $files[] = $file;

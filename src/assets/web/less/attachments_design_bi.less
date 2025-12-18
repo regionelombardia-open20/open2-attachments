@@ -31,10 +31,15 @@ IMPORT AMOS-LAYOUT VARIABLES and UTILITY
         display: flex;
         flex-wrap: wrap;
     }
+    
+    .flex-column{
+        flex: 1;
+    }
 
     .attachment-list-item {
         justify-content: normal;
         padding: 5px 15px;
+        flex-wrap: wrap;
 
         @media (min-width: 992px) {
             align-items: baseline;
@@ -48,7 +53,7 @@ IMPORT AMOS-LAYOUT VARIABLES and UTILITY
             display: flex;
             position: relative;
             /* flex-wrap: wrap; */
-            align-items: center;
+            align-items: baseline;
             margin-right: auto;
 
             .icon {
@@ -105,6 +110,10 @@ IMPORT AMOS-LAYOUT VARIABLES and UTILITY
                     color: darken(@primary-color, 15%);
                 }
             }
+        }
+        
+        .attachment-list-item-alt-desciption{
+            flex-basis: 100%;
         }
     }
 }
