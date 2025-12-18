@@ -86,4 +86,11 @@ $iconSelected = 'checkbox-blank-outline';
     </div>
 
     <div class="clearfix"></div>
+<?php } else { ?>
+    <div class="masonry-item no-image-avaible">
+        <div class="content-item">
+            <span class="icon icon-image icon-sm am am-block"></span>
+            Immagine non disponibile
+        </div>
+    </div>
 <?php } ?>

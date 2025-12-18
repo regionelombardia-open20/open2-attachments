@@ -228,7 +228,8 @@ class AttachGalleryController extends CrudController
         $this->setUpLayout('list');
         $this->model = $this->findModel($id);
 
-        $modelSearch = new AttachGalleryImageSearch();
+        $module = \Yii::$app->getModule('attachments');
+        $modelSearch = $module->createModel('AttachGalleryImageSearch');
         $this->setListViewsParams($setCurrentDashboard = true);
         $dataProviderImages = $modelSearch->search(\Yii::$app->request->get(), $this->model->id);
 

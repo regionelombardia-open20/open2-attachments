@@ -15,16 +15,18 @@
  */
 
 use open20\amos\attachments\FileModule;
+use open20\amos\attachments\models\AttachFileCategorie;
 use open20\amos\attachments\models\AttachGalleryImage;
 use open20\amos\core\forms\ActiveForm;
 
-use kartik\select2\Select2;
+use open20\amos\core\forms\editors\Select;
 
 use xj\tagit\Tagit;
 
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 
+/** @var FileModule $module */
 $module = \Yii::$app->getModule('attachments');
 
 $form = ActiveForm::begin([
@@ -48,7 +50,7 @@ $form = ActiveForm::begin([
             </div>
         </div>
 
-        <div class="col-sm-2">
+        <div class="col-sm-4">
             <div>
                 <?= FileModule::t('amosattachments', 'Estensione') ?>
             </div>
@@ -57,8 +59,29 @@ $form = ActiveForm::begin([
             </div>
         </div>
 
+        <?php if($module->categorizationEnabled && property_exists($modelSearch, 'attachmentCatSearch')) : ?>
+            <div class="col-sm-4">
+                <div>
+                    <?= FileModule::t('amosattachments', 'Categoria') ?>
+                </div>
+                <div>
+                    <?= $form->field($modelSearch, 'attachmentCatSearch')->widget(Select::class, [
+                        'data' => ArrayHelper::map(
+                            AttachFileCategorie::find()->select(['id', 'titolo'])->asArray()->all(),
+                            'id', 'titolo'),
+                        'pluginOptions' => [
+                            'allowClear' => true
+                        ],
+                        'options' => [
+                            'multiple' => false,
+                            'placeholder' => FileModule::t('amosattachments', 'Seleziona Categoria')
+                        ]
+                    ])->label(false);//textInput(['placeholder' => \Yii::t('amosattachments','')])->label(false) ?>
+                </div>
+            </div>
+        <?php endif; ?>
 
-        <div class="col-sm-3">
+        <div class="col-sm-12">
             <div>
                 <?= FileModule::t('amosattachments', 'Tag liberi') ?>
             </div>
@@ -78,7 +101,7 @@ $form = ActiveForm::begin([
                 ])->label(false) ?>
             </div>
         </div>
-        <div class="col-md-3 text-right m-t-35">
+        <div class="col-md-12 text-right m-b-10">
             <?= Html::a(FileModule::t('amosattachments', 'Cancel'), '', [
                 'class' => 'btn btn-secondary',
                 'id' => 'btn-cancel-databank-file-' . $attribute,

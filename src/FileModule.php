@@ -213,6 +213,11 @@ class FileModule extends AmosModule implements BreadcrumbInterface {
     public $disableCounterForCroppedImage = false;
 
     /**
+     * @var int $attachFileCategorieTitleMaxLength
+     */
+    public $attachFileCategorieTitleMaxLength = 50;
+
+    /**
      *
      * @return string
      */
@@ -681,10 +686,12 @@ class FileModule extends AmosModule implements BreadcrumbInterface {
 
     /**
      *
-     * @return type
+     * @return string[]
      */
     public function getDefaultModels() {
-        return File::class;
+        return [
+            'AttachGalleryImageSearch' => __NAMESPACE__ . '\\' . 'models\search\AttachGalleryImageSearch',
+        ];
     }
 
     /**

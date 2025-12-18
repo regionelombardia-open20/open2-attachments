@@ -78,7 +78,7 @@ class AttachGalleryImageController
     public function actionUploadFromGalleryAjax($id, $attribute, $csrf)
     {
         \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-        $image = AttachGenericImage::findOne($id);  
+        $image = AttachGenericImage::findOne($id);
         if ($image) {
             $data = \Yii::$app->session->get($csrf);
             $data [$attribute] = ['id' => $id, 'attribute' => $attribute, 'type' => AttachGalleryImage::className()];
@@ -87,36 +87,36 @@ class AttachGalleryImageController
         }
         return ['success' => false];
     }
-    
+
     public function actionMultiUploadFromGalleryAjax($attribute, $csrf)
     {
         \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         $response = ['success' => false];
         $data = [];
-        
+
         $ids = \Yii::$app->request->post('ids');
-        
-        $images = AttachGenericImage::find()->where(['id'=>$ids])->all();  
+
+        $images = AttachGenericImage::find()->where(['id'=>$ids])->all();
 
         foreach($images as $image) {
-           
+
             $filePath = $image->getPath();
             if (file_exists($filePath)) {
-        
+
                 $data[] = [
-                    'id' => $image->id, 
+                    'id' => $image->id,
                     'type' => AttachGalleryImage::className(),
                     'src' => $image->getWebUrl(),
                     'name' => $image->name,
                     'alt_description' => $image->alt_description,
                 ];
-          
+
             }
         }
-        
+
         if(count($data) > 0)
-            $response = ['success' => true,'data'=>$data];       
-        
+            $response = ['success' => true,'data'=>$data];
+
         return $response;
     }
 
@@ -186,7 +186,7 @@ class AttachGalleryImageController
     public function actionLoadDetail($id_image, $attribute)
     {
         $multiSelection = (boolean)\Yii::$app->request->get('multiSelection',false);
-      
+
         $template = '@vendor/open20/amos-attachments/src/components/views/_detail_image_modal';
         $model = AttachGenericImage::findOne($id_image);
         if ($model) {
@@ -206,8 +206,9 @@ class AttachGalleryImageController
     public function actionSearchGalleryAjax()
     {
         $template = '@vendor/open20/amos-attachments/src/components/views/images_gallery';
-        $model = new AttachGalleryImageSearch();
-        
+        $module = \Yii::$app->getModule('attachments');
+        $model = $module->createModel('AttachGalleryImageSearch');
+
         $attribute = \Yii::$app->request->get('attribute');
         $multiSelection = (boolean)\Yii::$app->request->get('multiSelection',false);
 

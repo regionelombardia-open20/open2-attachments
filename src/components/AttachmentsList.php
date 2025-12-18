@@ -50,6 +50,15 @@ class AttachmentsList extends AttachmentsTableWithPreview
     public $enableUpdateAltDescription = false;
 
     public $setAltDescriprionAsName = false;
+    
+    /**
+     * 
+     * @var bool $publicFiles
+     */
+    public $publicFiles = false;
+
+    public $viewPreviewBtn = true;
+    public $activateAttrDownloadOnAnchor = false;
 
     public function __construct(array $config = []) {
         $this->label = FileModule::t('amosattachments', '#attach');
@@ -158,8 +167,9 @@ class AttachmentsList extends AttachmentsTableWithPreview
             $file_name = '<span>' . StringHelper::truncate($model->name, $filnameLength) . '</span>' . $stingExtension;
             $file_name_long = $model->name . ($this->hideExtensionFile ? '' : "." . $model->type);
             
-            $file['filename'] = Html::tag('div', Html::a($file_name, $model->getUrl(), [
+            $file['filename'] = Html::tag('div', Html::a($file_name, ($this->publicFiles ? $model->getWebUrl() : $model->getUrl()), [
                     'class' => 'filename',
+                    'download' => $this->activateAttrDownloadOnAnchor? '': null,
                     'title' => "Dowload file ". $file_name_long,
                 ])
                 . html::tag('span', strtoupper($model->type) . " (". $model->formattedSize . ")",
@@ -167,26 +177,32 @@ class AttachmentsList extends AttachmentsTableWithPreview
                 . $categoryHtml,
             ['class'=> 'fileinfos']);
             $file['type'] = $model->type;
+            $file['filename_cat'] = str_replace($categoryHtml, '', $file['filename']);
 
             // Get rendered preview button
+            if($this->viewPreviewBtn) {
+                $renderedPreviewHtml = "";
 
-            $renderedPreviewHtml = "";
+                if (in_array(strtolower($model->type), ['jpg', 'jpeg', 'png', 'gif'])) {
 
-            if (in_array(strtolower($model->type), ['jpg', 'jpeg', 'png', 'gif'])) {
+                    $renderedPreviewHtml = Html::a(
+                        Html::tag('span', '', ['class' => 'am am-search']),
+                        ($this->publicFiles ? $model->getWebUrl() : $model->getUrl()),
+                        [
+                            'data-toggle' => 'tooltip',
+                            'class' => 'att' . $model->item_id . ' cboxElement',
+                            'title' => 'Clicca qui per visualizzare l\'anteprima del file ' . $file_name_long,
+                            //'aria-describedby' => 'preview-file',
+                        ]
+                    );
+                    //Html::tag('p', 'Clicca qui per visualizzare l\'anteprima del file ' . $file_name_long,['class' => 'sr-only']);
+                }
 
-                $renderedPreviewHtml = Html::a(
-                    Html::tag('span', '', ['class' => 'am am-search']),
-                    $model->getUrl(),
-                    [
-                        'data-toggle'=>'tooltip',
-                        'class' => 'att' . $model->item_id . ' cboxElement',
-                        'title' => FileModule::t('amosattachments', '#attach_list_preview_icon_title')
-                    ]
-                );
-
+                $file['preview'] = $renderedPreviewHtml;
+            } else {
+                $file['preview'] = null;
             }
 
-            $file['preview'] = $renderedPreviewHtml;
 
             // Get rendered delete button if set visible
             if (($this->viewDeleteBtn)
@@ -301,7 +317,7 @@ class AttachmentsList extends AttachmentsTableWithPreview
 
                 $btn = Html::a(
                     Html::tag('span', '', ['class' => 'am am-download']),
-                    $model->getUrl(),
+                    ($this->publicFiles ? $model->getWebUrl() : $model->getUrl()),
                     [
                         'title' => FileModule::t('amosattachments', '#attach_list_download_title'),
                         'class' => 'btn btn-icon'

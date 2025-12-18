@@ -37,6 +37,12 @@ class AttachmentsListBS4 extends AttachmentsTableWithPreview
     public $viewSortBtns = true;
     
     public $hideExtensionFile = false;
+    
+    /**
+     * 
+     * @var bool $publicFiles
+     */
+    public $publicFiles = false;
 
     // EDITED
     public function drawWidget($attribute = null)
@@ -66,7 +72,7 @@ class AttachmentsListBS4 extends AttachmentsTableWithPreview
 
             // Get rendered filename and download link
             $file_name = $model->name . ($this->hideExtensionFile ? '' : "." . $model->type);
-            $file['filename'] = Html::a($file_name, $model->getUrl(), [
+            $file['filename'] = Html::a($file_name, ($this->publicFiles ? $model->getWebUrl() : $model->getUrl()), [
                 'class' => ' ',
                 'title' => "File " . $model->type . " - ". ($model->size/1024) . " KB"
             ]);
@@ -79,7 +85,7 @@ class AttachmentsListBS4 extends AttachmentsTableWithPreview
 
                 $renderedPreviewHtml = Html::a(
                     Html::tag('span', '', ['class' => 'btn btn-icon am am-search']),
-                    $model->getUrl(),
+                    ($this->publicFiles ? $model->getWebUrl() : $model->getUrl()),
                     [
                         'class' => 'att' . $model->item_id . ' cboxElement',
                         'title' => FileModule::t('amosattachments', '#attach_list_preview_icon_title')
@@ -171,7 +177,7 @@ class AttachmentsListBS4 extends AttachmentsTableWithPreview
 
                 $btn = Html::a(
                     Html::tag('span', '', ['class' => 'btn btn-icon am am-download']),
-                    $model->getUrl(),
+                    ($this->publicFiles ? $model->getWebUrl() : $model->getUrl()),
                     [
                         'title' => FileModule::t('amosattachments', '#attach_list_download_title')
                     ]

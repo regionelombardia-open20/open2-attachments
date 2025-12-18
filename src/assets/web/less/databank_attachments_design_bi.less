@@ -33,7 +33,7 @@ IMPORT AMOS-LAYOUT VARIABLES and UTILITY
             }
 
             @media (min-width:992px) {
-                width: calc(100% / 6) !important;
+                width: calc(100% / 5) !important;
             }
 
             &:empty {
@@ -67,10 +67,15 @@ IMPORT AMOS-LAYOUT VARIABLES and UTILITY
 
 .file-databank-list {
     overflow-y: auto;
-    height: 65vh;
+    height: auto;
     display: flex;
     flex-direction: column;
     position: relative;
+
+    .gallery-masonry-attachments{
+        padding-left: 15px;
+        padding-right: 15px;
+    }
 
     .icon-file-check {
         position: absolute;
@@ -503,6 +508,14 @@ IMPORT AMOS-LAYOUT VARIABLES and UTILITY
             -webkit-column-break-inside: avoid;
             -moz-column-break-inside: avoid;
             break-inside: avoid-column;
+            &.no-image-avaible{
+                background-color: #e3e4e6;
+                border-radius: 8px;
+                padding: 8px;
+                &:hover{
+                    background-color: #e3e4e6;
+                }
+            }
 
             .content-action-item {
                 a.link-list-title {

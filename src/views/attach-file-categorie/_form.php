@@ -44,7 +44,7 @@ use xj\tagit\Tagit;
             <!-- titolo string -->
             <?= $form->field($model, 'titolo')->textInput(['maxlength' => true])
                 ->hint(FileModule::t('amosattachments', '#max_char_category_title_hint',
-                    ['num_max_char' => $model::MAX_LENGTH_TITLE])) ?>
+                    ['num_max_char' => FileModule::instance()->attachFileCategorieTitleMaxLength])) ?>
         </div>
         <div class="col-lg-6 col-sm-12">
             <!-- assetClassesForm string -->

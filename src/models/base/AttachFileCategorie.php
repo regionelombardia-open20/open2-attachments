@@ -29,8 +29,6 @@ use Yii;
  */
 class AttachFileCategorie extends \open20\amos\core\record\Record
 {
-    const MAX_LENGTH_TITLE = 50;
-
     public $isSearch = false;
 
     /**
@@ -51,7 +49,7 @@ class AttachFileCategorie extends \open20\amos\core\record\Record
             [['created_at', 'updated_at', 'deleted_at'], 'safe'],
             [['created_by', 'updated_by', 'deleted_by'], 'integer'],
 //            [['titolo'], 'string', 'max' => 255],
-            [['titolo'], 'string', 'max' => self::MAX_LENGTH_TITLE],
+            [['titolo'], 'string', 'max' => FileModule::instance()->attachFileCategorieTitleMaxLength],
         ];
     }
 

@@ -15,10 +15,8 @@ use open20\amos\core\helpers\Html;
 use open20\amos\core\icons\AmosIcons;
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\FileModuleTrait;
-
 use open20\amos\core\utilities\ModalUtility;
 use kartik\widgets\FileInput;
-
 use yii\base\InvalidConfigException;
 use yii\bootstrap\Modal;
 use yii\helpers\FileHelper;
@@ -30,15 +28,14 @@ use yii\jui\JuiAsset;
  * @package File\components
  * @property FileActiveRecord $model
  */
-class AttachmentsInput extends FileInput
-{
+class AttachmentsInput extends FileInput {
+
     use FileModuleTrait;
 
     /**
      * 
      * @var type
      */
-    
     public $asyncMode = false;
 
     /**
@@ -46,7 +43,7 @@ class AttachmentsInput extends FileInput
      * @var type
      */
     public $enableGoogleDrive = false;
-    
+
     /**
      * 
      * @var type
@@ -63,37 +60,33 @@ class AttachmentsInput extends FileInput
      * @var bool
      */
     public $enableUploadFormDatabankFile = true;
-
     public $allowAllExtensions = false;
 
     /**
      * @throws InvalidConfigException
      */
-    public function init()
-    {
+    public function init() {
         $fileModule = \Yii::$app->getModule('attachments');
         JuiAsset::register($this->view);
 
         if (empty($this->model)) {
             throw new InvalidConfigException(
-                FileModule::t('amosattachments', "Property {model} cannot be blank")
+                            FileModule::t('amosattachments', "Property {model} cannot be blank")
             );
         }
 
         // Delete all uploaded files in past
         FileHelper::removeDirectory($this->getModule()->getUserDirPath($this->attribute));
 
-        $initials = $this->model->isNewRecord 
-            ? [] 
-            : $this->model->getInitialPreviewByAttributeName(
-                $this->attribute, 
-                ['width' => 326, 'height' => 348, 'quality' => 80]
-            )
+        $initials = $this->model->isNewRecord ? [] : $this->model->getInitialPreviewByAttributeName(
+                        $this->attribute,
+                        ['width' => 326, 'height' => 348, 'quality' => 80]
+                )
         ;
-        
+
         $initialCount = count($initials);
         $driveButton = '';
-        $dropdownBrowse  = '';
+        $dropdownBrowse = '';
         $enableDropdown = false;
         $classHideOriginalBrowseButton = '';
 
@@ -103,10 +96,10 @@ class AttachmentsInput extends FileInput
         if ($this->asyncMode) {
             //Url to upload files
             $this->pluginOptions['uploadUrl'] = Url::toRoute([
-                '/file/file/upload-for-record',
-                'attribute' => $this->attribute,
-                'model' => get_class($this->model),
-                'id' => get_class($this->model->id)
+                        '/file/file/upload-for-record',
+                        'attribute' => $this->attribute,
+                        'model' => get_class($this->model),
+                        'id' => get_class($this->model->id)
             ]);
 
             //Async mode
@@ -126,8 +119,8 @@ class AttachmentsInput extends FileInput
 
         // 'allowedFileExtensions' deve essere array
         $this->pluginOptions['allowedFileExtensions'] = isset($this->pluginOptions['allowedFileExtensions']) ?
-            $this->pluginOptions['allowedFileExtensions'] : '';
-        if(!$this->allowAllExtensions) {
+                $this->pluginOptions['allowedFileExtensions'] : '';
+        if (!$this->allowAllExtensions) {
             if (empty($this->pluginOptions['allowedFileExtensions'])) {
                 if (!empty($fileModule->whiteListExtensions)) {
                     $this->pluginOptions['allowedFileExtensions'] = $fileModule->whiteListExtensions;
@@ -142,34 +135,34 @@ class AttachmentsInput extends FileInput
         }
 
         // GIMAGE GALLERY
-        if($fileModule){
-            if($fileModule->disableGallery){
+        if ($fileModule) {
+            if ($fileModule->disableGallery) {
                 $this->enableUploadFromGallery = false;
             }
-            if($fileModule->enableDatabankFile == false){
+            if ($fileModule->enableDatabankFile == false) {
                 $this->enableUploadFormDatabankFile = false;
             }
         }
         //ENABLE DATABANK IMMAGINI
         if ($this->enableUploadFromGallery) {
-            $buttonGallery =  \open20\amos\attachments\components\GalleryInput::widget(['attribute' => $this->attribute]);
+            $buttonGallery = \open20\amos\attachments\components\GalleryInput::widget(['attribute' => $this->attribute]);
 //            $enableDropdown = true;
         }
 
         //ENABLE DATABANK FILE
-        if($this->enableUploadFormDatabankFile){
-            $buttonDatabankFile =  DatabankFileInput::widget(['attribute' => $this->attribute, 'options' => ['extensions' => $this->pluginOptions['allowedFileExtensions']]]);
+        if ($this->enableUploadFormDatabankFile) {
+            $buttonDatabankFile = DatabankFileInput::widget(['attribute' => $this->attribute, 'options' => ['extensions' => $this->pluginOptions['allowedFileExtensions']]]);
             $enableDropdown = true;
         }
 
         //ENABLE CARICAMENTO A GOOGLE DRIVE
-        if($this->enableGoogleDrive) {
+        if ($this->enableGoogleDrive) {
             $driveButton = Html::button(AmosIcons::show('google-drive'), ['id' => 'auth', 'class' => 'btn btn-primary']);
         }
 
         // SE databank immagini o databank file sono abilitati allora mostro il DROPDOWN
-        if($enableDropdown) {
-            $classHideOriginalBrowseButton = ' hidden main-browse-btn-'.$this->attribute;
+        if ($enableDropdown) {
+            $classHideOriginalBrowseButton = ' hidden main-browse-btn-' . $this->attribute;
             $dropdownBrowse = $this->render('_dropdown_attach_input', [
                 'attribute' => $this->attribute,
                 'enableUploadFromGallery' => $this->enableUploadFromGallery,
@@ -178,45 +171,44 @@ class AttachmentsInput extends FileInput
         }
 
         $this->pluginOptions = array_replace(
-            [
-                'language' => \kartik\base\Config::getLang(\Yii::$app->language),
-                'initialPreview' => $initials,
-                'initialPreviewConfig' => $this->model->isNewRecord ? [] : $this->model->getInitialPreviewConfigByAttributeName($this->attribute),
-                //'otherActionButtons' => '<button class="download-file btn-xs btn-default" title="download" {dataKey}><i class="glyphicon glyphicon-download"></i></button>',
-                'overwriteInitial' => false,
-                'initialPreviewCount' => $initialCount,
-                'validateInitialCount' => true,
-                'maxFileCount' => $fileValidatorForAttribute ? $fileValidatorForAttribute->maxFiles : 1,
-                'showPreview' => true,
-                'showCaption' => true,
-                'showRemove' => true,
-                'dropZoneEnabled' => $this->enableDragAndDrop,
-                'showDrag' => $this->enableDragAndDrop,
-                'indicatorNew' => false,
-                'previewSettings' => [
-                    'image' => [
-                        'width' => '100px',
-                        'height' => '100px'
-                    ]
+                [
+                    'language' => \kartik\base\Config::getLang(\Yii::$app->language),
+                    'initialPreview' => $initials,
+                    'initialPreviewConfig' => $this->model->isNewRecord ? [] : $this->model->getInitialPreviewConfigByAttributeName($this->attribute),
+                    //'otherActionButtons' => '<button class="download-file btn-xs btn-default" title="download" {dataKey}><i class="glyphicon glyphicon-download"></i></button>',
+                    'overwriteInitial' => false,
+                    'initialPreviewCount' => $initialCount,
+                    'validateInitialCount' => true,
+                    'maxFileCount' => $fileValidatorForAttribute ? $fileValidatorForAttribute->maxFiles : 1,
+                    'showPreview' => true,
+                    'showCaption' => true,
+                    'showRemove' => true,
+                    'dropZoneEnabled' => $this->enableDragAndDrop,
+                    'showDrag' => $this->enableDragAndDrop,
+                    'indicatorNew' => false,
+                    'previewSettings' => [
+                        'image' => [
+                            'width' => '100px',
+                            'height' => '100px'
+                        ]
+                    ],
+                    'allowedPreviewTypes' => false,
+                    'previewFileIconSettings' => [
+                        'docx' => '<span class="glyphicon glyphicon-file"></span>',
+                        'jpg' => '<span class="glyphicon glyphicon-file"></span>',
+                        'png' => '<span class="glyphicon glyphicon-file"></span>',
+                        'gif' => '<span class="glyphicon glyphicon-file"></span>',
+                    ],
+                    'showUpload' => false,
+                    'layoutTemplates' => [
+                        'actions' => '<div class="file-actions"><div class="file-footer-buttons">{upload} {delete} {zoom} {other}</div><div class="clearfix"></div></div>'
+                    ],
+                    'minFileSize' => null,
+                    'browseClass' => 'btn btn-primary' . $classHideOriginalBrowseButton,
+                    'browseLabel' => FileModule::t('amosattachments', 'Carica'),
+                    'browseIcon' => '<span class="mdi mdi-folder-open"></span>',
                 ],
-                'allowedPreviewTypes' => false,
-                'previewFileIconSettings' => [
-                    'docx' => '<span class="glyphicon glyphicon-file"></span>',
-                    'jpg' => '<span class="glyphicon glyphicon-file"></span>',
-                    'png' => '<span class="glyphicon glyphicon-file"></span>',
-                    'gif' => '<span class="glyphicon glyphicon-file"></span>',
-                ],
-                'showUpload' => false,
-                'layoutTemplates' => [
-                    'actions' => '<div class="file-actions"><div class="file-footer-buttons">{upload} {delete} {zoom} {other}</div><div class="clearfix"></div></div>'
-                ],
-                'minFileSize' => null,
-                'browseClass' => 'btn btn-primary'.$classHideOriginalBrowseButton,
-                'browseLabel' => FileModule::t('amosattachments','Carica'),
-                'browseIcon' => '<span class="mdi mdi-folder-open"></span>',
-
-            ],
-            $this->pluginOptions
+                $this->pluginOptions
         );
 
         if ($this->pluginOptions['showPreview'] == false) {
@@ -243,9 +235,9 @@ class AttachmentsInput extends FileInput
                                                                   </div>
                                                                   <div class=\"input-group-btn\">
                                                                     {upload}
-                                                                    {browse}" .$dropdownBrowse. $driveButton . "
+                                                                    {browse}" . $dropdownBrowse . $driveButton . "
                                                                   </div>
-                                                                </div>".$buttonDatabankFile;
+                                                                </div>" . $buttonDatabankFile;
 
             $this->pluginOptions['layoutTemplates']['main2'] = "<div id=\"errorDropUpload -{$this->attribute}\"></div>
                                                                 {preview}
@@ -269,25 +261,25 @@ class AttachmentsInput extends FileInput
                     <span class="file-caption-icon"></span>
                     <input class="file-caption-name" onkeydown="return false;" onpaste="return false;" tabindex="1">
                 </div>
-                <div class="input-group-btn input-group-append"> {remove}'.$cancelTemplate.'{upload}{browse}'. $dropdownBrowse.$driveButton.'
+                <div class="input-group-btn input-group-append"> {remove}' . $cancelTemplate . '{upload}{browse}' . $dropdownBrowse . $driveButton . '
                  </div>
-                </div>'.$buttonGallery.$buttonDatabankFile;
+                </div>' . $buttonGallery . $buttonDatabankFile;
             $this->pluginOptions['layoutTemplates']['main2'] = '{preview}<div class="kv-upload-progress kv-hidden"></div><div class="clearfix"></div>
-               {remove}'.$cancelTemplate.'{upload}{browse}'. $driveButton.$buttonGallery.$buttonDatabankFile;
+               {remove}' . $cancelTemplate . '{upload}{browse}' . $driveButton . $buttonGallery . $buttonDatabankFile;
         }
 
         $fileAttribute = $this->pluginOptions['maxFileCount'] != 1 ? '[]' : '';
 
         $this->options = array_replace(
-            $this->options,
-            [
-                //'id' => $this->id,
-                //'model' => $this->model,  COMMENTATO perchè si rompeva, essendo che viene passato il model come attributo tel tag input
+                $this->options,
+                [
+                    //'id' => $this->id,
+                    //'model' => $this->model,  COMMENTATO perchè si rompeva, essendo che viene passato il model come attributo tel tag input
 
-                'attribute' => $this->attribute,
-                'name' =>  (!empty($this->name) ? $this->name : \yii\helpers\Html::getInputName($this->model,  $this->attribute)) . $fileAttribute,
-                'multiple' => (!empty($fileAttribute))
-            ]
+                    'attribute' => $this->attribute,
+                    'name' => (!empty($this->name) ? $this->name : \yii\helpers\Html::getInputName($this->model, $this->attribute)) . $fileAttribute,
+                    'multiple' => (!empty($fileAttribute))
+                ]
         );
 
         @parent::init();
@@ -321,14 +313,7 @@ class AttachmentsInput extends FileInput
          });
 
             var fileInput{$this->attribute} = $('#{$inputId}');
-            var files{$this->attribute} = fileInput{$this->attribute}.fileinput('getFilesCount');
-            var form{$this->attribute} = fileInput{$this->attribute}.closest('form');
-            
-            form{$this->attribute}.on('beforeValidate', function(event) {
-                if (files{$this->attribute}) {
-                    form{$this->attribute}.yiiActiveForm('remove', '{$inputId}');
-                }
-            });
+                      
             fileInput{$this->attribute}.on('click', function(event) {
                 var imputBox = jQuery(this).parents('.file-input');
                 var thumbs = jQuery('.file-preview .file-preview-thumbnails .file-preview-frame',imputBox);
@@ -353,6 +338,20 @@ class AttachmentsInput extends FileInput
             
 JS;
 
-        \Yii::$app->view->registerJs($js);
+        $jsLoad = <<<JS
+
+            var fileInput{$this->attribute} = $('#{$inputId}');
+            var files{$this->attribute} = fileInput{$this->attribute}.fileinput('getFilesCount');
+            var form{$this->attribute} = fileInput{$this->attribute}.closest('form');
+
+            form{$this->attribute}.on('beforeValidate', function(event) {
+                if (files{$this->attribute}) {					
+                    form{$this->attribute}.yiiActiveForm('remove', '{$inputId}');
+                }
+            });
+JS;
+
+        \Yii::$app->view->registerJs($js, \yii\web\View::POS_READY);
+        \Yii::$app->view->registerJs($jsLoad, \yii\web\View::POS_LOAD);
     }
 }

@@ -19,6 +19,7 @@ use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use yii\helpers\ArrayHelper;
+use yii\helpers\VarDumper;
 
 /**
  * AttachGalleryImageSearch represents the model behind the search form about `open20\amos\attachments\models\AttachGalleryImage`.
@@ -203,6 +204,7 @@ class AttachGalleryImageSearch extends AttachGalleryImage
      */
     public function searchGenericFiles($params = [], $gallery_id = null)
     {
+
         $module = \Yii::$app->getModule('attachments');
         $query = AttachGenericImage::find();
         $query->andWhere(['OR',

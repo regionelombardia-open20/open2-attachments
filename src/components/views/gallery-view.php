@@ -331,7 +331,10 @@ $this->registerJs($js2);
 ?>
 
 <div id="container-gallery-<?= $attribute ?>">
-    <?php $modelSearch = new \open20\amos\attachments\models\search\AttachGalleryImageSearch(); ?>
+    <?php
+    $module = \Yii::$app->getModule('attachments');
+    $modelSearch = $module->createModel('AttachGalleryImageSearch');
+    ?>
     <?= $this->render('_search_gallery_view', [
         'modelSearch' => $modelSearch,
         'attribute' => $attribute,

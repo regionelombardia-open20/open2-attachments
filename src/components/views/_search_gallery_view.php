@@ -103,7 +103,7 @@ $form = ActiveForm::begin([
         </div>
 
         <div class="col-sm-6">
-            <div class="mb-4">
+            <div>
                 <?= FileModule::t('amosattachments', 'Aspect ratio') ?>
             </div>
             

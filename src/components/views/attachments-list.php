@@ -8,9 +8,11 @@
  * @package    open20\amos\attachments\components\views
  * @category   CategoryName
  */
+
 use open20\amos\attachments\assets\ModuleAttachmentsAsset;
 use open20\amos\attachments\FileModule;
 use open20\amos\core\helpers\Html;
+
 //use himiklab\colorbox\Colorbox;
 use yii\helpers\ArrayHelper;
 
@@ -21,6 +23,8 @@ use yii\helpers\ArrayHelper;
 /** @var boolean $useOnlyOneColumn */
 /** @var boolean $categorizationEnabled */
 /** @var string $idRand */
+/** @var string $label */
+
 ModuleAttachmentsAsset::register($this);
 
 if (!empty($filesList)) {
@@ -80,8 +84,6 @@ JS;
     if ($categorizationEnabled) {
         $js3 = <<<JS
     $(document).ready(function() {
-        $(".attachments-list-view-cat-{$idRand}").hide();
-
         $('.attachments-list-switch-{$idRand}').on('change', function(e) {
             $(".attachments-list-view-standard-{$idRand}").toggle();
             $(".attachments-list-view-cat-{$idRand}").toggle();
@@ -96,27 +98,27 @@ JS;
     ksort($listByCat);
 
     $txtSwitchView = FileModule::t('amosattachments', '#file_list_switch_view')
-            . Html::tag('span', '', ['class' => 'am am-info-outline m-l-5',
-                'data-toggle' => 'tooltip',
-                'title' => FileModule::t('amosattachments', '#file_list_switch_view_tooltip')]);
+        . Html::tag('span', '', ['class' => 'am am-info-outline m-l-5',
+            'data-toggle' => 'tooltip',
+            'title' => FileModule::t('amosattachments', '#file_list_switch_view_tooltip')]);
 }
 ?>
-
 <div class="attachments-list m-t-20 row">
-    <div class="col-md-12">
-        <div class="d-flex">
-            <?php if ($filesList): ?>
+    <?php if ($filesList) { ?>
+        <div class="col-md-12">
+            <div class="d-flex">
                 <label class="text-uppercase"><?= $label ?></label>
-                <?php if ($categorizationEnabled): ?>
+                <?php if ($categorizationEnabled) { ?>
                     <div class="ml-auto">
                         <!--<button type="button" class="attachments-list-switch btn btn-secondary btn-xs">Visualizza allegati divisi per categoria</button>-->
                         <div class="checkbox">
                             <label>
-                                <input type="checkbox" value="1" class="attachments-list-switch-<?= $idRand ?>"> <?= $txtSwitchView ?>
+                                <input type="checkbox" value="1"
+                                       class="attachments-list-switch-<?= $idRand ?>"> <?= $txtSwitchView ?>
                             </label>
                         </div>
                     </div>
-                <?php endif; ?>
+                <?php } ?>
             </div>
         </div>
 
@@ -134,49 +136,49 @@ JS;
             }
             ?>
 
-    <div class="d-flex flex-column flex-nowrap">
-        <?php
-        $i = 1;
-        foreach ($array1 as $file) :
-            echo $this->render('_item_attachments-list', [
-                'file' => $file,
-                'i' => $i,
-                'label' => $label,
-                'enableUpdateAltDescription' => $enableUpdateAltDescription,
-                'setAltDescriprionAsName' => $setAltDescriprionAsName
-            ]);
-            $i++;
-        endforeach; ?>
-    </div>
+            <div class="d-flex flex-column flex-nowrap">
+                <?php
+                $i = 1;
+                foreach ($array1 as $file) {
+                    echo $this->render('_item_attachments-list', [
+                        'file' => $file,
+                        'i' => $i,
+                        'label' => $label,
+                        'enableUpdateAltDescription' => $enableUpdateAltDescription,
+                        'setAltDescriprionAsName' => $setAltDescriprionAsName
+                    ]);
+                    $i++;
+                } ?>
+            </div>
 
-        <?php if ((!$useOnlyOneColumn) && (!empty($array2))): ?>
-        <div class="d-flex flex-column flex-nowrap">
-            <?php
-            $i = 1;
-            foreach ($array2 as $file) :
-                echo $this->render('_item_attachments-list', [
-                    'file' => $file,
-                    'i' => $i,
-                    'label' => $label,
-                    'enableUpdateAltDescription' => $enableUpdateAltDescription,
-                    'setAltDescriprionAsName' => $setAltDescriprionAsName
-                ]);
-                $i++;
-            endforeach; ?>
+            <?php if ((!$useOnlyOneColumn) && (!empty($array2))) { ?>
+                <div class="d-flex flex-column flex-nowrap">
+                    <?php
+                    $i = 1;
+                    foreach ($array2 as $file) {
+                        echo $this->render('_item_attachments-list', [
+                            'file' => $file,
+                            'i' => $i,
+                            'label' => $label,
+                            'enableUpdateAltDescription' => $enableUpdateAltDescription,
+                            'setAltDescriprionAsName' => $setAltDescriprionAsName
+                        ]);
+                        $i++;
+                    } ?>
+                </div>
+            <?php } ?>
         </div>
-        <?php endif; ?>
-    </div>
 
         <?php if ($categorizationEnabled) { ?>
-            <div class="attachments-list-view-cat-<?= $idRand ?> w-100">
+            <div class="attachments-list-view-cat-<?= $idRand ?> w-100" - style="display: none">
                 <div class="d-flex flex-column flex-nowrap">
                     <?php
                     $j = 1;
-                    foreach ($listByCat as $catName => $files){
+                    foreach ($listByCat as $catName => $files) {
                         ?>
                         <div class="col-md-12 m-t-20">
                             <h6><?= $catName ?></h6>
-                            <?php foreach ($files as $file){
+                            <?php foreach ($files as $file) {
                                 if ($setAltDescriprionAsName && !is_null($file['alt_description']) && $file['alt_description'] != '') {
                                     $file['filename'] = $file['alt_description'] . '.' . $file['type'];
                                 }
@@ -186,6 +188,7 @@ JS;
                                     'file' => $file,
                                     'i' => $j,
                                     'label' => $label,
+                                    'showCategory' => true
                                 ]);
                                 ?>
                                 <?php
@@ -197,11 +200,12 @@ JS;
                 </div>
             </div>
         <?php } ?>
-    <?php else: ?>
-    <!--<label class="text-uppercase"><?= $label ?></label>-->
-        <div class="no-items text-muted"><?=
-            FileModule::t('amosattachments', '#no_attach')
-            . (($categorizationEnabled) ? ' ' . FileModule::t('amosattachments', '#save_to_categorize') : '');
-            ?></div>
-    <?php endif; ?>
+    <?php } else { ?>
+            <div class="col-md-12 m-t-20">
+                <label class="text-uppercase"><?= $label ?></label>
+                <div class="no-items text-muted"><?= FileModule::t('amosattachments', '#no_attach')
+                    . (($categorizationEnabled && Yii::$app->controller->action->id != 'view') ? ' ' . FileModule::t('amosattachments', '#save_to_categorize') : ''); ?>
+                </div>
+            </div>
+    <?php } ?>
 </div>

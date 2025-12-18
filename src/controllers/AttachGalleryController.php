@@ -84,7 +84,8 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
         $multiSelection = (boolean)\Yii::$app->request->get('multiSelection',false);
 
         if ($gallery) {
-            $modelSearch = new AttachGalleryImageSearch();
+            $module = \Yii::$app->getModule('attachments');
+            $modelSearch = $module->createModel('AttachGalleryImageSearch');
             $images = $gallery->attachGalleryImages;
             $categories = AttachGalleryCategory::find()->orderBy('default_order ASC')->all();
             return $this->renderAjax('@vendor/open20/amos-attachments/src/components/views/gallery-view',
@@ -118,7 +119,8 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
         ]);
         $this->model = $this->findModel(1);
         $this->setCreateNewBtnLabelSingle();
-        $modelSearch = new AttachGalleryImageSearch();
+        $module = \Yii::$app->getModule('attachments');
+        $modelSearch = $module->createModel('AttachGalleryImageSearch');
         $this->setModelSearch($modelSearch);
 
         $this->setListViewsParams(true);
@@ -160,7 +162,8 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
     {
         $this->model = $this->findModel(1);
         $this->setCreateNewBtnLabelSingle();
-        $modelSearch = new AttachGalleryImageSearch();
+        $module = \Yii::$app->getModule('attachments');
+        $modelSearch = $module->createModel('AttachGalleryImageSearch');
         $this->setModelSearch($modelSearch);
         $this->setListViewsParams(true);
         $dataProviderImages = $modelSearch->searchGenericFiles(\Yii::$app->request->get(), $this->model->id);

@@ -55,9 +55,8 @@ class AttachGenericFile extends File
     {
         $tags = [];
         if ($this->isBackendFile()) {
-            $this->loadCustomTags();
-            $explode = explode(',', $this->customTags);
-            foreach ($explode as $tag_name) {
+            $this->loadCustomTags();           
+            foreach ($this->customTags as $tag_name) {
                 $tag = Tag::find()->andWhere(['nome' => $tag_name])->one();
                 if ($tag) {
                     if (!empty($tag->nome)) {
@@ -116,8 +115,7 @@ class AttachGenericFile extends File
                 ->all();
             foreach ($tagsMm as $tagMm) {
                 $this->customTags [] = $tagMm->tag->nome;
-            }
-            $this->customTags = implode(',', $this->customTags);
+            }           
         }
     }
 

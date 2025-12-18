@@ -12,7 +12,7 @@
 /**
  * @var $file array
  * @var $i int
- *
+ * @var $showCategory bool
  */
 use open20\amos\attachments\FileModule;
 use yii\helpers\Html;
@@ -29,6 +29,8 @@ $css = <<< CSS
 
 CSS;
 $this->registerCss($css);
+
+$filenameToRender = (isset($showCategory)) ? $file['filename_cat'] : $file['filename'];
 ?>
     <div id="attachment-list-item-<?= $file['file_id'] ?>" class="attachment-list-item order-<?= $i ?>">
         <div class="attachment-list-item-name">
@@ -47,7 +49,7 @@ $this->registerCss($css);
                     <span class="icon icon-link icon-sm mdi mdi-link-box"></span>
                 <?php endif ?>
             </div>
-            <?= $file['filename']; ?>
+            <?= $filenameToRender ?>
     
         </div>
         <div class="attachment-list-item-action">
