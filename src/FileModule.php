@@ -488,10 +488,15 @@ class FileModule extends AmosModule implements BreadcrumbInterface {
             $file->type = $fileType;
             $file->mime = FileHelper::getMimeType($cleanFilePath);
             $file->attribute = $attribute;
-            $file->alt_description = $altDescription;
+            if($file->hasAttribute('alt_description')){
+                $file->alt_description = $altDescription;
+            }
+            
             if (isset(\Yii::$app->user)){
                 if (!\Yii::$app instanceof \yii\console\Application) {
-                    $file->created_by = \Yii::$app->user->id;
+                    if($file->hasAttribute('created_by')){
+                        $file->created_by = \Yii::$app->user->id;
+                    }
                 }
             }
             if (!empty($tableNameOwner)) {
