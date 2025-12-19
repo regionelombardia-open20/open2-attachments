@@ -191,6 +191,11 @@ class FileModule extends AmosModule implements BreadcrumbInterface {
      */
     public $virusScanClass = '\open20\amos\attachments\scanners\ClamAVScanner';
 
+    /** Check a PDF, if it contains Javascript, then drop it.
+     * @var bool $enablePdfVulnerabilityJsScan
+     */
+    public $enablePdfVulnerabilityJsScan = false;
+
     /**
      * @var int restrict to load files only on tot seconds for action FileController::actionUploadFiles
      */
@@ -242,12 +247,20 @@ class FileModule extends AmosModule implements BreadcrumbInterface {
      * @var boolean
      */
     public $categorizationEnabled = false;
+
     /**
      * Contains the classes of models enabled for categorization.
      * This attribute will be ignored if 'categorizationEnabled' is false
      * @var string[]
      */
     public $categorizationModelsEnabled = [];
+
+    /**
+     * Whitelist of accepted mime types for file upload.
+     * If empty, all mime types are accepted.
+     * @var string[] $acceptedMimeTypes
+     */
+    public $acceptedMimeTypes = [];
 
     /**
      *

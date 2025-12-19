@@ -138,4 +138,6 @@ return [
     '#file_list_switch_view' => 'Visualizza allegati divisi per categoria',
     '#file_list_switch_view_tooltip' => 'Le categorie saranno mostrate in ordine alfabetico',
     '#attach_list_update_title' => 'Modifica',
+    '#pdf_with_js_warning' => 'Il Pdf contiene del codice Javascript, per questioni di sicurezza non è possibile salvarlo',
+    'The file {filename} is not safe and has been dropped' => 'Il file {filename} non è sicuro e non è stato caricato',
 ];

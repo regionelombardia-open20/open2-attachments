@@ -21,6 +21,7 @@ use open20\amos\attachments\models\FileRefs;
 use open20\amos\attachments\models\search\FileSearch;
 use open20\amos\attachments\utilities\AwsUtility;
 use open20\amos\attachments\exceptions\AmosAbuseReplyAttemptsException;
+use open20\amos\attachments\utility\AttachmentsUtility;
 use open20\amos\core\module\BaseAmosModule;
 use open20\amos\core\record\RecordDynamicModel;
 use open20\amos\core\utilities\SortModelsUtility;
@@ -41,6 +42,7 @@ use yii\helpers\StringHelper;
 use yii\helpers\Url;
 use Imagine\Image\Box;
 use Imagine\Image\Point;
+use yii\helpers\VarDumper;
 use yii\image\drivers\Image_GD;
 use yii\image\drivers\Image_Imagick;
 use yii\image\ImageDriver;
@@ -386,6 +388,7 @@ class FileController extends Controller
                 if (
                     $size == 'original' || !in_array(strtolower($file->type), ['jpg', 'jpeg', 'png', 'gif'])
                 ) {
+                    AttachmentsUtility::checkNetworkAccess($file);
                     $this->addDownloadNumber($file);
                     $zipTmpFolderName = uniqid();
 
@@ -459,8 +462,8 @@ class FileController extends Controller
         //Original file
         $filePath = $file->getPath();
 
-        if ($fileRef) {
-            $cropPath = $fileRef->getPath();
+        if($fileRef) {
+            $cropPath = $fileRef->getPath($fileRef->is_webp? 'webp': null);
         } else {
             $fileDir = AttachemntsHelper::getPathByHash($file->hash, false) . DIRECTORY_SEPARATOR;
             $cropPath = $fileDir
@@ -491,6 +494,7 @@ class FileController extends Controller
 
         //Crop and return
         $cropper = new ImageDriver();
+        $cropper->driver = 'Imagick';
 
         $configStack = [
             'width' => null,
@@ -541,11 +545,13 @@ class FileController extends Controller
         extract($cropConfig, EXTR_PREFIX_ALL, 'cr');
 
         /**
-         * @var $image Image_GD | Image_Imagick
+         * @var $image Image_Imagick
          */
         $image = $cropper->load($filePath);
 
-        $image->resize($cr_width, $cr_height, $cr_master);
+        // SEMPRE qualità 100! Questo permette comunque di mantenere avere un ridimensiaonamento FILTER_LANCZOS e blur 1.
+        // Mantiene bordi più morbidi su immagini piccole.
+        $image->resize($cr_width, $cr_height, $cr_master,100, ($fileRef->is_webp? true: false));
 
         if ($cr_crop_width && $cr_crop_height) {
             $image->crop(
@@ -576,19 +582,22 @@ class FileController extends Controller
             $image->background($cr_bg_color, $cr_bg_opacity);
         }
 
-        $image->save($cropPath, $cr_quality);
-
-        //WebP Version
-        //$image->save($fileRef->getPath('webp'), ['format' => 'webp', 'quality' => 100]);
+        if (!empty($fileRef) && $fileRef->is_webp) {
+            // WebP Version - qualità sempre 100! per le immagini webp
+            $image->save($fileRef->getPath('webp'), 100);
+        } else {
+            $image->save($cropPath, $cr_quality);
+        }
 
         //Store to s3
         AwsUtility::uploadS3ByPath($file, $cropPath, $crop, $fileRef);
 
         //Return the new image
-        return \Yii::$app->response->sendFile($cropPath, "$file->name.$file->type",
-            [
-                'inline' => true
-            ]);
+        $type = (!empty($fileRef) && $fileRef->is_webp)? 'webp' : $file->type;
+        return \Yii::$app->response->sendFile($cropPath, "$file->name.$type",
+                [
+                    'inline' => true
+        ]);
     }
 
     /**
@@ -1055,7 +1064,7 @@ class FileController extends Controller
                     BaseAmosModule::t('amoscore', 'Item not updated, check data'));
             }
         }
-        
+
         $tabCat = AttachFileCategorie::tableName();
         $tabCatAss = AttachFileCategorieAssetsMm::tableName();
         $categorie = ArrayHelper::map(AttachFileCategorie::find()
@@ -1064,7 +1073,7 @@ class FileController extends Controller
             ->select([$tabCat . '.id', $tabCat . '.titolo'])
             ->asArray()->all(),
         'id', 'titolo');
-        
+
         $catIsValid = true;
         $nomeCat = '';
         $modelCat = $model->categoria;

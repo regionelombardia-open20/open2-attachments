@@ -37,6 +37,8 @@ class AttachmentsListBS4 extends AttachmentsTableWithPreview
     public $viewSortBtns = true;
     
     public $hideExtensionFile = false;
+
+    public $disableLabelList = false;
     
     /**
      * 
@@ -74,7 +76,8 @@ class AttachmentsListBS4 extends AttachmentsTableWithPreview
             $file_name = $model->name . ($this->hideExtensionFile ? '' : "." . $model->type);
             $file['filename'] = Html::a($file_name, ($this->publicFiles ? $model->getWebUrl() : $model->getUrl()), [
                 'class' => ' ',
-                'title' => "File " . $model->type . " - ". ($model->size/1024) . " KB"
+                'title' => "File " . $model->type . " - ". ($model->size/1024) . " KB",
+                'target' => '_blank',
             ]);
 
             // Get rendered preview button
@@ -222,7 +225,8 @@ class AttachmentsListBS4 extends AttachmentsTableWithPreview
         return $this->render('attachments-listBS4', [
             'filesList' => $files,
             'viewFilesCounter' => $this->viewFilesCounter,
-            'filesQuantity' => $filesQuantity
+            'filesQuantity' => $filesQuantity,
+            'disableLabelList' => $this->disableLabelList
         ]);
     }
 }

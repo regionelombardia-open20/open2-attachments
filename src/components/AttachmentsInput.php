@@ -231,7 +231,7 @@ class AttachmentsInput extends FileInput {
                                                                 <div class=\"input-group {class}\">
                                                                   <div class=\"file-caption form-control {class}\" tabindex=\"1\">
                                                                     <span class=\"file-caption-icon\"></span>
-                                                                    <input class=\"file-caption-name\" onkeydown=\"return false;\" onpaste=\"return false;\" tabindex=\"-1\">
+                                                                    <input class=\"file-caption-name\" onkeydown=\"return false;\" onpaste=\"return false;\" tabindex=\"-1\" aria-label='\"Seleziona file ...\"'>
                                                                   </div>
                                                                   <div class=\"input-group-btn\">
                                                                     {upload}
@@ -259,7 +259,7 @@ class AttachmentsInput extends FileInput {
                 <div class="input-group {class}">
                 <div class="file-caption form-control {class}" tabindex="1">
                     <span class="file-caption-icon"></span>
-                    <input class="file-caption-name" onkeydown="return false;" onpaste="return false;" tabindex="1">
+                    <input class="file-caption-name" onkeydown="return false;" onpaste="return false;" tabindex="1" aria-label="Seleziona file ...">
                 </div>
                 <div class="input-group-btn input-group-append"> {remove}' . $cancelTemplate . '{upload}{browse}' . $dropdownBrowse . $driveButton . '
                  </div>

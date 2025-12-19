@@ -11,6 +11,7 @@
 
 namespace open20\amos\attachments\components;
 
+use open20\amos\attachments\FileModule;
 use yii\widgets\InputWidget;
 use Yii;
 use yii\base\InvalidParamException;
@@ -64,6 +65,9 @@ class CropInput extends InputWidget
     /** @var string */
     var $defaultPreviewImage = null;
 
+    /** @var string */
+    var $defaultPreviewImageAlt = null;
+
 
     /** @var string */
     var $customHint = null;
@@ -73,6 +77,12 @@ class CropInput extends InputWidget
 
     /** @var boolean */
     var $enableUploadFromShutterstock = true;
+
+    /**
+     * Custom label for upload button
+     * @var string
+     */
+    var $uploadBtnLabel = null;
 
     /**
      *
@@ -157,6 +167,10 @@ class CropInput extends InputWidget
                 $this->defaultPreviewImage = $this->model->{$this->attribute}->url;
             }
 
+            if (is_null($this->defaultPreviewImageAlt)) {
+                $this->defaultPreviewImageAlt = FileModule::t('amosattachments', 'Anteprima per: ') . ' ' . $this->model->getAttributeLabel($this->attribute);
+            }
+
             if (empty($this->jcropOptions)) {
                 $this->jcropOptions = [
                     'aspectRatio' => 1,
@@ -211,6 +225,7 @@ class CropInput extends InputWidget
             'customHint'=> $this->customHint,
             'aspectRatioChoices' => $this->aspectRatioChoices,
             'cropModalCloseButton' => $this->cropModalCloseButton,
+            'uploadBtnLabel' => $this->uploadBtnLabel,
         ]);
     }
 }

@@ -12,10 +12,12 @@ namespace open20\amos\attachments\utility;
 
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\models\File;
+use open20\amos\community\models\CommunityType;
 use open20\amos\core\icons\AmosIcons;
 use open20\amos\core\helpers\Html;
 
 use open20\amos\utility\models\PlatformConfigs;
+use Yii;
 use yii\helpers\ArrayHelper;
 
 /**
@@ -277,6 +279,46 @@ class AttachmentsUtility
         $config->save(false);
 
         return $config;
+    }
+
+    /**
+     * If the file is a network content, check if the user is allowed to access it.
+     * If it's a community content and the community type is restricted or closed, check if the user is a member of the community.
+     * @param $file File
+     * @return void
+     * @throws \open20\amos\community\exceptions\CommunityException
+     * @throws \yii\web\ForbiddenHttpException
+     */
+    public static function checkNetworkAccess($file)
+    {
+        $ownerModelClassname = $file->model;
+        if (class_exists($ownerModelClassname) && is_subclass_of($ownerModelClassname, '\yii\db\ActiveRecord')) {
+            $ownerModel = $ownerModelClassname::findOne($file->item_id);
+            if ($ownerModel && method_exists($ownerModel, 'isNetworkContent') && $ownerModel->isNetworkContent('community')) {
+                $communityId = null;
+                $ownerDestinatari = $ownerModel->getDestinatari();
+                if (!empty($ownerDestinatari)) {
+                    foreach ($ownerDestinatari as $network) {
+                        if (strpos($network, 'community-') !== false) {
+                            $communityId = str_replace('community-', '', $network);
+                            break;
+                        }
+                    }
+                    if (!empty($communityId)) {
+                        $moduleCommunity = Yii::$app->getModule('community');
+                        $communityModelClassname = $moduleCommunity->model('Community');
+                        /** @var \open20\amos\community\models\Community $community */
+                        $community = $communityModelClassname::findOne($communityId);
+                        if ($community && in_array($community->community_type_id, [CommunityType::COMMUNITY_TYPE_PRIVATE, CommunityType::COMMUNITY_TYPE_CLOSED])) {
+                            $userIsCommunityMember = \open20\amos\community\utilities\CommunityUtil::userIsCommunityMember($communityId, Yii::$app->user->id);
+                            if (!$userIsCommunityMember) {
+                                throw new \yii\web\ForbiddenHttpException('You are not allowed to access this file');
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
 

@@ -169,7 +169,7 @@ class AttachGalleryController extends \open20\amos\attachments\controllers\base\
         $dataProviderImages = $modelSearch->searchGenericFiles(\Yii::$app->request->get(), $this->model->id);
         $dataProviderImages->pagination = false;
         AttachmentsUtility::deleteAttachmentsWithNoFile($dataProviderImages);
-        return $this->redirect('single-gallery');
+        return $this->redirect('/attachments/attach-gallery/single-gallery');
 
     }
 

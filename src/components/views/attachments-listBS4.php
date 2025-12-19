@@ -40,22 +40,18 @@ JS
 }
 
 ?>
-
-<div class="attachments-list row nop">
-
-    <?php if ($filesList) : ?>
-
-        <label><?= FileModule::t('amosattachments', '#attach_list_title'); ?></label>
-
-    <?php else: ?>
-
-        <div class="no-items"><?= FileModule::t('amosattachments', '#attach_list_no_items'); ?></div>
-
-    <?php endif; ?>
+<?php if(!$disableLabelList && !empty($filesList)){ ?>
+    <label><?= FileModule::t('amosattachments', '#attach_list_title'); ?></label>
+<?php } ?>
 
 
-    <?php foreach ($filesList as $file) : ?>
-        <div class="attachment-item card-wrapper mb-4 card-teaser card-one-block col-lg-4 col-md-6">
+<?php if(empty($filesList)){ ?>
+    <div class="no-items"><?= FileModule::t('amosattachments', '#attach_list_no_items'); ?></div>
+<?php } ?>
+
+
+<?php foreach ($filesList as $file) : ?>
+        <div class="attachment-item card-wrapper my-2 card-teaser card-one-block col-lg-4 col-md-6">
             <div class="card card-teaser card-one-block  shadow p-4">
                 <svg class="icon icon-primary">
                     <use xlink:href=" <?=$bootstrapItaliaAsset->baseUrl ?>/node_modules/bootstrap-italia/dist/svg/sprite.svg#it-clip"></use>
@@ -85,6 +81,5 @@ JS
             'coreStyle' => 4,
         ]); ?>
 
-    <?php endforeach; ?>
+<?php endforeach; ?>
 
-</div>

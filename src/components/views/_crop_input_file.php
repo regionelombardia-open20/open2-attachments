@@ -4,6 +4,7 @@
  * @var $aspectRatio
  * @var $customHint
  * @var $enableUploadFromGallery
+ * @var $uploadBtnLabel string
  */
 
 use open20\amos\attachments\FileModule;
@@ -21,10 +22,11 @@ $classEnableDropdown = 'display:none';
 <?php // SELECTION FROM GALLERY AND DROPDOWN ?>
     <div id="crop-dropdown-container-id-<?= $crop->attribute ?>">
         <div class="input-group">
-            <div class="file-caption form-control" tabindex="1">
+            <div class="file-caption form-control" >
 
                 <input class="file-caption-name" onkeydown="return false;" onpaste="return false;" tabindex="-1"
-                       placeholder="<?= FileModule::t('amosattachments', "Seleziona file ...") ?>">
+                    placeholder="<?= $crop->options['placeholder'] ?: FileModule::t('amosattachments', "Seleziona file ...") ?>"
+                    aria-label="Seleziona file ...">
             </div>
             <div class="input-group-btn">
                 <?php if($enableDropdown){?>
@@ -32,12 +34,13 @@ $classEnableDropdown = 'display:none';
                     'attribute' => $crop->attribute,
                     'enableUploadFromGallery' => $enableUploadFromGallery,
                     'enableUploadFormDatabankFile' => false,
-                    'enableUploadFromShutterstock' => $enableUploadFromShutterstock
+                    'enableUploadFromShutterstock' => $enableUploadFromShutterstock,
+                    'uploadBtnLabel' => $uploadBtnLabel
                 ]) ?>
                 <?php } else { ?>
                     <button style="font-size: initial" class="dropdown-toggle btn btn-primary btn-file"
                             id="btn-dropdown-crop-browse-<?= $crop->attribute ?>" type="button">
-                        <span class="mdi mdi-image"></span><?= FileModule::t('amosattachments', 'Inserisci immagine') ?>
+                        <span class="mdi mdi-image"></span><?= $uploadBtnLabel ?: FileModule::t('amosattachments', 'Inserisci immagine') ?>
                     </button>
                 <?php } ?>
             </div>
@@ -55,7 +58,7 @@ $classEnableDropdown = 'display:none';
                             <span class='am am-info'></span>
                         </button>"; ?>
 
-        <?= $crop->form->field($crop->model, $crop->attribute.'[]', ['enableError' => false])
+        <?= $crop->form->field($crop->model, $crop->attribute.'[]')
             ->fileInput($crop->options)
             ->label(
                 FileModule::t('amosattachments', '#attach_label'),
@@ -65,7 +68,7 @@ $classEnableDropdown = 'display:none';
         ?>
 
     <?php } else { ?>
-        <?= $crop->form->field($crop->model, $crop->attribute.'[]', ['enableError' => false])
+        <?= $crop->form->field($crop->model, $crop->attribute.'[]')
             ->fileInput($crop->options)
             ->label(
                 FileModule::t('amosattachments', '#attach_label'),

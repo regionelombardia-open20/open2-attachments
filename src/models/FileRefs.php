@@ -20,6 +20,7 @@ use open20\amos\core\record\Record;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\helpers\Url;
+use yii\helpers\VarDumper;
 
 /**
  * This is the model class for table "attach_file_refs".
@@ -33,6 +34,7 @@ use yii\helpers\Url;
  * @property string $crop
  * @property integer $protected
  * @property integer $is_main
+ * @property integer $is_webp
  * @property integer $sort
  * @property File $attachFile
  * @property string $s3_url
@@ -84,7 +86,7 @@ class FileRefs extends Record
         return [
             [['model', 'attribute', 'item_id', 'attach_file_id', 'hash'], 'required'],
             [['item_id', 'is_main', 'sort'], 'integer'],
-            [['protected'], 'safe'],
+            [['protected', 'is_webp'], 'safe'],
             [['model', 'hash', 'crop'], 'string', 'max' => 255],
             [['s3_url'], 'string']
         ];
@@ -127,8 +129,9 @@ class FileRefs extends Record
         if ($this->protected == false && AttachemntsHelper::getIsStaticServed()) {
             $subdirs = AttachemntsHelper::getSubDirs($this->hash);
 
+            $type = $this->is_webp ? 'webp' : $this->attachFile->type;
             $baseUrl = Url::to([
-                                   '/static/' . $subdirs . DIRECTORY_SEPARATOR . $this->hash . '.' . $this->attachFile->type
+                                   '/static/' . $subdirs . DIRECTORY_SEPARATOR . $this->hash . '.' . $type
                                ]);
         } else {
             $baseUrl = Url::to([
@@ -186,7 +189,7 @@ class FileRefs extends Record
      * @return FileRefs|null
      * @throws \yii\base\InvalidConfigException
      */
-    public static function getRefByAttachFile(File $attachFile, $crop, $protected = true)
+    public static function getRefByAttachFile(File $attachFile, $crop, $protected = true, $webp = false)
     {
         // Custom crops values?
         if (is_array($crop)) {
@@ -200,6 +203,7 @@ class FileRefs extends Record
                            'item_id' => $attachFile->item_id,
                            'attribute' => $attachFile->attribute,
                            'crop' => $crop,
+                           'is_webp' => $webp,
                            'protected' => $protected
                        ])
             ->one();
@@ -219,6 +223,7 @@ class FileRefs extends Record
             'is_main' => $attachFile->is_main,
             'sort' => $attachFile->sort ?: 0,
             'crop' => $crop,
+            'is_webp' => $webp,
             'protected' => $protected,
         ];
 
@@ -228,7 +233,6 @@ class FileRefs extends Record
 
         if ($newFileRef->validate()) {
             $newFileRef->save();
-
             return $newFileRef;
         }
 

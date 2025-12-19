@@ -424,6 +424,7 @@ class AttachGalleryRequest
                 $tags [] = $tag->nome;
             }
         }
+        $tags = array_unique($tags);
         return implode(', ', $tags);
     }
 

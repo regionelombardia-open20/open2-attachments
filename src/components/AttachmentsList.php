@@ -26,6 +26,8 @@ use yii\helpers\Html;
  */
 class AttachmentsList extends AttachmentsTableWithPreview
 {
+    public $hideWidgetIfEmpty = false;
+
     var $viewDownloadBtn = false;
     var $viewFilesCounter = false;
 
@@ -353,16 +355,20 @@ class AttachmentsList extends AttachmentsTableWithPreview
             $filesQuantity++;
         }
 
-        return $this->render('attachments-list', [
-            'label' => $this->label,
-            'filesList' => $files,
-            'viewFilesCounter' => $this->viewFilesCounter,
-            'filesQuantity' => $filesQuantity,
-            'useOnlyOneColumn' => $this->useOnlyOneColumn,
-            'categorizationEnabled' => $categorizationEnabled,
-            'idRand' => md5($attribute . mt_rand()),          
-            'enableUpdateAltDescription' => $this->enableUpdateAltDescription,
-            'setAltDescriprionAsName' => $this->setAltDescriprionAsName
-        ]);
+        if($this->hideWidgetIfEmpty && $filesQuantity == 0) {
+            return '';
+        } else {
+            return $this->render('attachments-list', [
+                'label' => $this->label,
+                'filesList' => $files,
+                'viewFilesCounter' => $this->viewFilesCounter,
+                'filesQuantity' => $filesQuantity,
+                'useOnlyOneColumn' => $this->useOnlyOneColumn,
+                'categorizationEnabled' => $categorizationEnabled,
+                'idRand' => md5($attribute . mt_rand()),
+                'enableUpdateAltDescription' => $this->enableUpdateAltDescription,
+                'setAltDescriprionAsName' => $this->setAltDescriprionAsName
+            ]);
+        }
     }
 }

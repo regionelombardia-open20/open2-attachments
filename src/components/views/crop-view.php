@@ -201,7 +201,8 @@ $alertString = FileModule::t('amosattachment', "Estensione file non permessa, in
                     $defaultPreviewImageOptions = [
                         'id' => Yii::$app->getSecurity()->generateRandomString(10),
                         'width' => '100%',
-                        'class' => 'preview_image'
+                        'class' => 'preview_image',
+                        'alt' => $crop->defaultPreviewImageAlt
                     ];
                     echo Html::img($crop->defaultPreviewImage, $defaultPreviewImageOptions);
                 }

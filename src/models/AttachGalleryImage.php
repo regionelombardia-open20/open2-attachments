@@ -81,10 +81,9 @@ class AttachGalleryImage
         return isset($hints[$attribute]) ? $hints[$attribute] : null;
     }
 
-    public function rules()
-    {
+    public function rules() {
         return ArrayHelper::merge(parent::rules(), [
-            [['attachImage'], 'file', 'extensions' => 'jpg, jpeg, png, gif, svg, bmp, eps', 'maxSize' => 1024 * 1024 * 1.5] // 1.5 MB
+                    [['attachImage'], 'file', 'extensions' => 'jpg, jpeg, png, gif, svg, bmp, eps', 'checkExtensionByMimeType' => true, 'maxSize' => 1024 * 1024 * 1.5] // 1.5 MB
         ]);
     }
 

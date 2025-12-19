@@ -65,8 +65,9 @@ class AttachDatabankFile extends \open20\amos\attachments\models\base\AttachData
 
     public function rules()
     {
+        $whiteListExtensions = \Yii::$app->getModule('attachments')->whiteListExtensions;
         return ArrayHelper::merge(parent::rules(), [
-            [['attachmentFile'], 'file']
+            [['attachmentFile'], 'file', 'extensions' => $whiteListExtensions, 'checkExtensionByMimeType' => true],
         ]);
     }
 

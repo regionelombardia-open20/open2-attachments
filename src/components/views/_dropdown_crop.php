@@ -4,6 +4,7 @@
  * @var $enableUploadFormDatabankFile string
  * @var $enableUploadFromGallery string
  * @var $enableUploadFromShutterstock string
+ * @var $uploadBtnLabel string
  */
 
 use open20\amos\attachments\FileModule;
@@ -11,7 +12,7 @@ use open20\amos\attachments\FileModule;
 ?>
 <button style="font-size: initial" class="dropdown-toggle btn btn-primary btn-file" id="crop-browse-<?= $attribute?>" type="button" data-toggle="dropdown"
         aria-haspopup="true" aria-expanded="false">
-    <span class="mdi mdi-image"></span><?= FileModule::t('amosattachments', 'Inserisci immagine') ?>
+    <span class="mdi mdi-image"></span><?= $uploadBtnLabel ?: FileModule::t('amosattachments', 'Inserisci immagine') ?>
     <span class="caret"></span>
 </button>
 

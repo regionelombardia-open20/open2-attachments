@@ -23,6 +23,7 @@ use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use yii\helpers\Url;
+use yii\helpers\VarDumper;
 
 /**
  * Class File
@@ -211,6 +212,16 @@ class File extends Record
     public function getWebUrl($size = 'original', $absolute = false, $canCache = false)
     {
         $ref = FileRefs::getRefByAttachFile($this, $size, false);
+        return $ref ? $ref->getUrl($size, $absolute, $canCache) : null;
+    }
+
+    /**
+     * @param $size
+     * @return string
+     */
+    public function getWebPUrl($size = 'original', $absolute = false, $canCache = false)
+    {
+        $ref = FileRefs::getRefByAttachFile($this, $size, false, true);
         return $ref ? $ref->getUrl($size, $absolute, $canCache) : null;
     }
 
