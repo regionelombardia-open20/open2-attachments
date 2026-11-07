@@ -1,5 +1,6 @@
 {
     "name": "open20/amos-attachments",
+    "license": "GPL-3.0-or-later",
     "description": "Extension for file uploading and attaching to the models",
     "keywords": [
         "yii2",
