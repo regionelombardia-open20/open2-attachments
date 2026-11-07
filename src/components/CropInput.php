@@ -11,6 +11,7 @@
 
 namespace open20\amos\attachments\components;
 
+use open20\amos\attachments\FileModule;
 use yii\widgets\InputWidget;
 use Yii;
 use yii\base\InvalidParamException;
@@ -28,6 +29,33 @@ class CropInput extends InputWidget
     /** @var array */
     var $imageOptions;
 
+    /**
+     * Example:
+     *   [
+     *       [
+     *           'label' => 'X',
+     *           'value' => 'x',
+     *           'title' => 'Elimina il crop',
+     *       ],
+     *       [
+     *           'label' => '1:1',
+     *          'value' => 1,
+     *           'title' => 'Fattore di crop 1:1',
+     *       ],
+     *       [
+     *           'label' => '19:9',
+     *           'value' => (16/9),
+     *           'title' => 'Fattore di crop 16:9',
+     *       ],
+     *       [
+     *           'label' => 'free',
+     *           'value' => 'NaN',
+     *           'title' => 'Fattore di crop libero',
+     *       ],
+     *   ],
+     *  @var array */
+    var $aspectRatioChoices;
+
     /** @var array */
     var $jcropOptions = [];
 
@@ -35,10 +63,66 @@ class CropInput extends InputWidget
     var $maxSize = 300;
 
     /** @var string */
-    var $defaultPreviewImage = NULL;
+    var $defaultPreviewImage = null;
+
+    /** @var string */
+    var $defaultPreviewImageAlt = null;
+
+
+    /** @var string */
+    var $customHint = null;
 
     /** @var boolean */
     var $enableUploadFromGallery = true;
+
+    /** @var boolean */
+    var $enableUploadFromShutterstock = true;
+
+    /**
+     * Custom label for upload button
+     * @var string
+     */
+    var $uploadBtnLabel = null;
+
+    /**
+     *
+     * @var boolean
+     */
+    var $isFrontend = false;
+
+    /**
+     * @param boolean  for enable hint message
+     */
+    var $enableHintMessage = true;
+
+    /** @var array */
+    var $cropModalCloseButton = [];
+
+    /**
+     * @var bool
+     */
+    var $hidePreviewDeleteButton = false;
+    
+    /**
+     * @var bool
+     */
+    var $enableMultipleUploads = false;
+    /**
+     * @var integer
+     * used to limit to upload more then 10 imaged at a time
+     */
+    var $maxMultipleUploads = 10; 
+    
+    /**
+     * @var bool
+     */
+    var $enableAltDescription = false;
+    /**
+     * @var bool
+     * used in single image upload
+     * auto disabled if enableMultipleUploads = true
+     */
+    var $enableUpdateAltDescription = false;
 
     /**
      * only call this method after a form closing and
@@ -71,10 +155,20 @@ class CropInput extends InputWidget
             if($fileModule->disableGallery){
                 $this->enableUploadFromGallery = false;
             }
+            if(!isset($fileModule->shutterstockConfigs['enable']) || (isset($fileModule->shutterstockConfigs['enable']) && $fileModule->shutterstockConfigs['enable'] !== true)){
+                $this->enableUploadFromShutterstock = false;
+            }
         }
-        if ((property_exists($this->model, $this->attribute) || isset($this->model->{$this->attribute})) && $this->model->{$this->attribute}) {
+
+        $oldGetAttribute = 'get'.ucfirst($this->attribute);      
+        if ((property_exists($this->model, $this->attribute) || isset($this->model->{$this->attribute})) && ($this->model->{$this->attribute} || method_exists($this->model,$oldGetAttribute))) {
+             
             if (is_null($this->defaultPreviewImage)) {
                 $this->defaultPreviewImage = $this->model->{$this->attribute}->url;
+            }
+
+            if (is_null($this->defaultPreviewImageAlt)) {
+                $this->defaultPreviewImageAlt = FileModule::t('amosattachments', 'Anteprima per: ') . ' ' . $this->model->getAttributeLabel($this->attribute);
             }
 
             if (empty($this->jcropOptions)) {
@@ -95,24 +189,43 @@ class CropInput extends InputWidget
                 'alt' => 'Crop this image'
             ];
         }
+        
+        if($this->enableMultipleUploads){
+            $this->enableUpdateAltDescription = false;
+        }
+        
+        if(!$this->enableMultipleUploads){
+            if(isset($this->options) && isset($this->options['multiple']))
+                $this->options['multiple'] = false;       
+        }
 
         $this->imageOptions['id'] = Yii::$app->getSecurity()->generateRandomString(10);
 
-        $inputField = Html::getInputId($this->model, $this->attribute, ['data-image_id' => $this->imageOptions['id']]);
+        $inputField = (isset($this->options['id']) && (!empty($this->options['id'])))? $this->options['id']: Html::getInputId($this->model, $this->attribute, ['data-image_id' => $this->imageOptions['id']]);
 
         $default_jcropOptions = [
             'aspectRatio' => 1,
             'viewMode' => 2,
-            'dashed' => FALSE,
-            'zoomable' => FALSE,
+            'dashed' => false,
+            'zoomable' => false,
             'rotatable' => true
+        ];
+        $default_options = [
+            'accept' => "image/*",
+            'aria-label' => 'Seleziona file',
         ];
 
         $this->jcropOptions = array_merge($default_jcropOptions, $this->jcropOptions);
-
+        $this->options = array_merge($default_options, $this->options);
+       
         return $this->render('crop-view', [
-        'inputField' => $inputField,
-        'crop' => $this
+            'inputField' => $inputField,
+            'crop' => $this,
+            'aspectRatio' => $this->jcropOptions['aspectRatio'],
+            'customHint'=> $this->customHint,
+            'aspectRatioChoices' => $this->aspectRatioChoices,
+            'cropModalCloseButton' => $this->cropModalCloseButton,
+            'uploadBtnLabel' => $this->uploadBtnLabel,
         ]);
     }
 }

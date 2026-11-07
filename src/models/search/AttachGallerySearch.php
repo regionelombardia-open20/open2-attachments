@@ -5,7 +5,7 @@
  * OPEN 2.0
  *
  *
- * @package    Open20Package
+ * @package    open20\amos\attachments\models\search
  * @category   CategoryName
  */
 

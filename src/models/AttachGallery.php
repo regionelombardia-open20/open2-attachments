@@ -5,8 +5,7 @@
  * OPEN 2.0
  *
  *
- * @package    Open20Package
- * @category   CategoryName
+ * @package    open20\amos\attachments\models
  */
 
 namespace open20\amos\attachments\models;
@@ -18,33 +17,42 @@ use yii\helpers\ArrayHelper;
 /**
  * This is the model class for table "attach_gallery".
  */
-class AttachGallery extends \open20\amos\attachments\models\base\AttachGallery
+class AttachGallery
+    extends \open20\amos\attachments\models\base\AttachGallery
 {
     /**
      * @inheritdoc
      */
     public function behaviors()
     {
-        return ArrayHelper::merge(parent::behaviors(),
+        return ArrayHelper::merge(
+            parent::behaviors(),
             [
                 'slug' => [
-                    'class' => SluggableBehavior::className(),
+                    'class' => SluggableBehavior::class,
                     'attribute' => 'name',
                     'ensureUnique' => true
-                    // 'slugAttribute' => 'slug',
                 ],
-        ]);
+            ]
+        );
     }
+
+    /**
+     *
+     * @return type
+     */
+    public function attributeHints()
+    {
+        return [];
+    }
+
+    /**
+     * @see\open20\amos\core\record\Record::representingColumn() or more info.
+     */
     public function representingColumn()
     {
         return [
-//inserire il campo o i campi rappresentativi del modulo
-        ];
-    }
-
-    public function attributeHints()
-    {
-        return [
+            'name'
         ];
     }
 
@@ -52,33 +60,42 @@ class AttachGallery extends \open20\amos\attachments\models\base\AttachGallery
      * Returns the text hint for the specified attribute.
      * @param string $attribute the attribute name
      * @return string the attribute hint
-     * @see attributeHints
      */
     public function getAttributeHint($attribute)
     {
         $hints = $this->attributeHints();
+
         return isset($hints[$attribute]) ? $hints[$attribute] : null;
     }
 
+    /**
+     *
+     */
     public function rules()
     {
-        return ArrayHelper::merge(parent::rules(), [
-        ]);
+        return ArrayHelper::merge(
+            parent::rules(),
+            []
+        );
     }
 
+    /**
+     *
+     */
     public function attributeLabels()
     {
-        return
-            ArrayHelper::merge(
-                parent::attributeLabels(),
-                [
-                ]);
+        return ArrayHelper::merge(
+            parent::attributeLabels(),
+            []
+        );
     }
 
-
-    public static function getEditFields()
+    /**
+     *
+     */
+    public function getEditFields()
     {
-        $labels = self::attributeLabels();
+        $labels = $this->attributeLabels();
 
         return [
             [
@@ -113,7 +130,7 @@ class AttachGallery extends \open20\amos\attachments\models\base\AttachGallery
      */
     public function getEvents()
     {
-        return NULL; //TODO
+        return null; //TODO
     }
 
     /**
@@ -121,7 +138,7 @@ class AttachGallery extends \open20\amos\attachments\models\base\AttachGallery
      */
     public function getUrlEvent()
     {
-        return NULL; //TODO e.g. Yii::$app->urlManager->createUrl([]);
+        return null; //TODO e.g. Yii::$app->urlManager->createUrl([]);
     }
 
     /**
@@ -129,7 +146,7 @@ class AttachGallery extends \open20\amos\attachments\models\base\AttachGallery
      */
     public function getColorEvent()
     {
-        return NULL; //TODO
+        return null; //TODO
     }
 
     /**
@@ -137,8 +154,17 @@ class AttachGallery extends \open20\amos\attachments\models\base\AttachGallery
      */
     public function getTitleEvent()
     {
-        return NULL; //TODO
+        return null; //TODO
     }
+
+    /**
+     *
+     */
+    public function getFullViewUrl()
+    {
+        return '/attachments/attach-gallery-image?id=' . $this->id;
+    }
+
 
 
 }

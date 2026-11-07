@@ -5,7 +5,7 @@
  * OPEN 2.0
  *
  *
- * @package    Open20Package
+ * @package    open20\amos\attachments\models\search
  * @category   CategoryName
  */
 
@@ -32,7 +32,7 @@ class FileSearch extends File
     {
         return [
             [['id'], 'integer'],
-            [['name','model','attribute','itemId','hash','type','mime','creator_id', 'table_name_form'], 'safe'],
+            [['name','model','attribute','item_id','hash','type','mime','creator_id', 'table_name_form'], 'safe'],
         ];
     }
 
@@ -90,7 +90,7 @@ class FileSearch extends File
                 'name' => $this->name,
                 'model' => $this->model,
                 'attribute' => $this->attribute,
-                'itemId' => $this->itemId,
+                'item_id' => $this->item_id,
                 'hash' => $this->hash,
                 'size' => $this->size,
                 'type' => $this->type,
@@ -110,7 +110,7 @@ class FileSearch extends File
                 'name' => $this->name,
                 'model' => $this->model,
                 'attribute' => $this->attribute,
-                'itemId' => $this->itemId,
+                'item_id' => $this->item_id,
                 'hash' => $this->hash,
                 'size' => $this->size,
                 'type' => $this->type,

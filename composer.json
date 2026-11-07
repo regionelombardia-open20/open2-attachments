@@ -10,7 +10,7 @@
     ],
     "homepage": "http://www.open20.it/",
     "type": "yii2-extension",
-    "license": "BSD-4-Clause",
+    "proscription": "BSD-4-Clause",
     "support": {
         "issues": "http://www.example.com/",
         "forum": "http://www.example.com/forum/",
@@ -20,15 +20,19 @@
     "minimum-stability": "stable",
     "require": {
         "php": ">=5.4.0",
-        "open20/amos-core":"^1.11.0",
-        "yiisoft/yii2": "^2.0.0",
-        "kartik-v/yii2-widget-fileinput": "1.0.6",
+        "ext-sockets": "*",
+        "bower-asset/jquery-cropper": "^1.0",
+        "open20/amos-core": "^1.32.0",
         "himiklab/yii2-colorbox-widget": "*",
-        "yiisoft/yii2-jui": "^2.0",
-        "yurkinx/yii2-image": "*",
+        "kartik-v/yii2-widget-fileinput": "*",
+        "rosell-dk/webp-convert": "^2.9.2",
         "uitrick/yii2-widget-upload-crop": "^1.0.0",
+        "xantios/mimey": "^2.2.0",
+        "yiisoft/yii2-jui": "^2.0",
         "yiisoft/yii2-imagine": "^2.1.0",
-        "bower-asset/jquery-cropper": "^1.0"
+        "enshrined/svg-sanitize": "*",
+        "smalot/pdfparser": "*",
+        "open20/yii2-image": "^1.0.1"
     },
     "autoload": {
         "psr-4": {

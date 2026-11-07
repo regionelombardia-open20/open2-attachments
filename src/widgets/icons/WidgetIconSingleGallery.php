@@ -29,7 +29,7 @@ class WidgetIconSingleGallery extends WidgetIcon
     {
         parent::init();
 
-        $this->setLabel(FileModule::tHtml('amosattachments', '#label_gallery_image'));
+        $this->setLabel(FileModule::tHtml('amosattachments', '#label_image'));
         $this->setDescription(FileModule::t('amosattachments', '#desc_gallery_image'));
         $this->setIcon('linentita');
         $this->setUrl(['/attachments/attach-gallery/single-gallery']);

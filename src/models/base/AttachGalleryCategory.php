@@ -5,7 +5,7 @@
  * OPEN 2.0
  *
  *
- * @package    Open20Package
+ * @package    open20\amos\attachments\models\base
  * @category   CategoryName
  */
 
@@ -79,6 +79,9 @@ class  AttachGalleryCategory extends \open20\amos\core\record\Record
      */
     public function getAttachGalleryImages()
     {
-        return $this->hasMany(\open20\amos\attachments\models\AttachGalleryImage::className(), ['category_id' => 'id']);
+        return $this->hasMany(
+            \open20\amos\attachments\models\AttachGalleryImage::class,
+            ['category_id' => 'id']
+        );
     }
 }

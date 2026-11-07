@@ -94,87 +94,62 @@ public function rules()
 }
 ```
 
-Cropper
--------
+Other Functions
+-----------
 
-Thanks to [Yurknix](https://github.com/yurkinx/yii2-image) library for image manipulation in yii2, this plugin includes a cropper.
-
-### Basic Cropping
-
-`From version 1.2.5`
-
-There is 3 base crop sizes
-
- * Small `square_small` - 100x100 px
- * Medium `square_medium` - 500x500 px
- * Large `square_large` - 1000x1000 px
-
-To use the cropper you only need to pass the crop alias to the Url Getter of the File Record, eg:
-
-```php
-<?php
-$cropUrl = $myRecordWithAttachments->myFieldSingleFile->getUrl('square_small');
-
-echo $cropUrl; // http://sample.com/file/file/download?id=$this->id&hash=$this->hash&size=square_small
-```
-
-### Custom Crops
-
-`From version 1.2.5`
-
-You can define your own crops in the module configuration, for example:
-
-```php
-<?php
-'modules' => [
-    'file' => [
-        'class' => 'file\FileModule',
-        'webDir' => 'files',
-        'tempPath' => '@common/uploads/temp',
-        'storePath' => '@common/uploads/store',
-        'tableName' => '{{%attach_file}}',
-        'config' => [
-            'crops' => [
-                'square_small' => ['width' => 100, 'height' => 100, 'quality' => 100],
-                'simone' => ['width' => 10000, 'height' => 1000, 'rotate_degrees' => 90]
-            ]
-        ]
-    ],
-]
-```
-
-Here is the list of cropping attributes you can set
-
- * `width`
- * `height`
- * `master`
- * `crop_width`
- * `crop_height`
- * `crop_width`
- * `crop_height`
- * `crop_offset_x`
- * `crop_offset_y`
- * `rotate_degrees`
- * `rotate_degrees`
- * `refrect_height`
- * `refrect_opacity`
- * `refrect_fade_in`
- * `flip_direction`
- * `flip_direction`
- * `bg_color`
- * `bg_opacity`
- * `quality`
+### Cropper
+For some image formats tou can enable cropping/resizing/rotation ecc [Read the Doc](crop.md)
  
- ### Upload from gallery
+### Upload from gallery
 ##### disableGallery  (default :true)
 Turn off the gallery in all the platform
 ```php
 <?php
 'modules' => [
-    'file' => [
+    'attachments' => [
        'disableGallery' => true
     ],
 ]
 ```
 ##### enableSingleGallery 
 You can only have one gallery
+
+### Antivirus Scan
+
+`From version 1.11.0`
+
+Antivirus scanning for new files can be enabled in few steps, first you must set to TRUE the antivirus option
+```php
+<?php
+'modules' => [
+    'attachments' => [
+       'enableVirusScan' => true
+    ],
+]
+```
+
+Next you can configure the scanner class, by default is `\open20\amos\attachments\scanners\ClamAVScanner`, eg.
+
+```php
+<?php
+'modules' => [
+    'attachments' => [
+       'virusScanClass' => '\open20\amos\attachments\scanners\ClamAVScanner'
+    ],
+]
+```
+In this case, you must have the required software installed on the server, `apt install clamav-daemon`
+
+### Statically served files
+
+`From version 1.11.0`
+
+It is possible to serve files without any application call (public files only), this reduces the application load when serving static files, like images, thumbnails ecc
+
+You can do it by simply configure a new bootstrap component like this
+```php
+<?php
+'bootstrap' => [
+    'open20\amos\attachments\bootstrap\StaticFilesManagement'
+]
+```

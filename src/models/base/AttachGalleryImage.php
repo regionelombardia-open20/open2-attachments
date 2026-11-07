@@ -5,7 +5,7 @@
  * OPEN 2.0
  *
  *
- * @package    Open20Package
+ * @package    open20\amos\attachments\models\base
  * @category   CategoryName
  */
 
@@ -21,6 +21,8 @@ use Yii;
  * @property integer $gallery_id
  * @property string $name
  * @property string $description
+ * @property string $shutterstock_image_id
+ * @property string $aspect_ratio
  * @property string $created_at
  * @property string $updated_at
  * @property string $deleted_at
@@ -33,7 +35,18 @@ use Yii;
  */
 class  AttachGalleryImage extends \open20\amos\core\record\Record
 {
-
+    /**
+     * 
+     * @var type
+     */
+    public $customTags;
+    
+    /**
+     * 
+     * @var type
+     */
+    public $tagsImage = [];
+    public $altDescription;
 
     /**
      * @inheritdoc
@@ -49,13 +62,12 @@ class  AttachGalleryImage extends \open20\amos\core\record\Record
     public function rules()
     {
         return [
-            [['category_id', 'gallery_id'], 'required'],
+            [['gallery_id','name'], 'required'],
             [['category_id', 'gallery_id', 'created_by', 'updated_by', 'deleted_by'], 'integer'],
-            [['description'], 'string'],
-            [['created_at', 'updated_at', 'deleted_at'], 'safe'],
-            [['name'], 'string', 'max' => 255],
-            [['gallery_id'], 'exist', 'skipOnError' => true, 'targetClass' => AttachGallery::className(), 'targetAttribute' => ['gallery_id' => 'id']],
-            [['category_id'], 'exist', 'skipOnError' => true, 'targetClass' => AttachGalleryCategory::className(), 'targetAttribute' => ['category_id' => 'id']],
+            [['description', 'customTags'], 'string'],
+            [['shutterstock_image_id','aspect_ratio', 'tagsImage','customTags','created_at', 'updated_at', 'deleted_at'], 'safe'],
+            [['name','altDescription'], 'string', 'max' => 255],
+            [['gallery_id'], 'exist', 'skipOnError' => true, 'targetClass' => AttachGallery::class, 'targetAttribute' => ['gallery_id' => 'id']],
         ];
     }
 
@@ -84,7 +96,10 @@ class  AttachGalleryImage extends \open20\amos\core\record\Record
      */
     public function getGallery()
     {
-        return $this->hasOne(\open20\amos\attachments\models\AttachGallery::className(), ['id' => 'gallery_id']);
+        return $this->hasOne(
+            \open20\amos\attachments\models\AttachGallery::class,
+            ['id' => 'gallery_id']
+        );
     }
 
     /**
@@ -92,6 +107,9 @@ class  AttachGalleryImage extends \open20\amos\core\record\Record
      */
     public function getCategory()
     {
-        return $this->hasOne(\open20\amos\attachments\models\AttachGalleryCategory::className(), ['id' => 'category_id']);
+        return $this->hasOne(
+            \open20\amos\attachments\models\AttachGalleryCategory::class,
+            ['id' => 'category_id']
+        );
     }
 }

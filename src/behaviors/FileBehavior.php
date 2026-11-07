@@ -5,30 +5,39 @@
  * OPEN 2.0
  *
  *
- * @package    open20\amos\attachments
+ * @package    open20\amos\attachments\behaviors
  * @category   CategoryName
  */
 
 namespace open20\amos\attachments\behaviors;
 
+use open20\amos\admin\models\UserProfile;
+use open20\amos\attachments\components\CustomUploadFile;
 use open20\amos\attachments\FileModule;
 use open20\amos\attachments\FileModuleTrait;
+use open20\amos\attachments\interfaces\VirusScanInterface;
+use open20\amos\attachments\models\AttachDatabankFile;
 use open20\amos\attachments\models\AttachGalleryImage;
+use open20\amos\attachments\models\AttachGenericFile;
+use open20\amos\attachments\models\AttachGenericImage;
 use open20\amos\attachments\models\File;
+use open20\amos\attachments\validators\PdfContainsJSValidator;
 use open20\amos\core\views\toolbars\StatsToolbarPanels;
+use open20\amos\core\utilities\ClassUtility;
+use Imagine\Image\Box;
+use Imagine\Image\Point;
+use yii\imagine\Image;
 use yii\base\Behavior;
-use yii\db\ActiveQuery;
+use yii\base\ModelEvent;
 use yii\db\ActiveRecord;
 use yii\helpers\FileHelper;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\validators\FileValidator;
 use yii\web\UploadedFile;
-
-use yii\imagine\Image;
 use yii\helpers\Json;
-use Imagine\Image\Box;
-use Imagine\Image\Point;
+use yii\base\InvalidArgumentException;
+use enshrined\svgSanitize\Sanitizer;
 
 /**
  * Class FileBehavior
@@ -37,12 +46,17 @@ use Imagine\Image\Point;
  */
 class FileBehavior extends Behavior
 {
+
+    /**
+     *
+     */
     use FileModuleTrait;
 
     /**
      * @var array $permissions
      */
     public $permissions = [];
+    public static $savedDatabankAttributes = [];
 
     /**
      * @var array $rules
@@ -100,7 +114,8 @@ class FileBehavior extends Behavior
     }
 
     /**
-     * Parse file behaviors and find for the choosed attribute for hasOne or hasMultiple files relation
+     * Parse file behaviors and find for the choosed attribute for hasOne
+     * or hasMultiple files relation
      * @param string $name
      * @return array|mixed
      * @throws \yii\base\UnknownPropertyException
@@ -113,7 +128,7 @@ class FileBehavior extends Behavior
         $fileValidator = $this->getFileValidator($name);
 
         if ($fileValidator) {
-            if(isset($this->overrideAttributes[$name])) {
+            if (isset($this->overrideAttributes[$name])) {
                 return $this->overrideAttributes[$name];
             }
 
@@ -163,14 +178,16 @@ class FileBehavior extends Behavior
         if (\Yii::$app->request->isConsoleRequest || !\Yii::$app->request->isPost) {
             return false;
         }
-
+//        if(get_class($this->owner) == 'open20\amos\news\models\News') {
         $attributes = $this->getFileAttributes();
-
         if (!empty($attributes)) {
             foreach ($attributes as $attribute) {
                 $this->saveAttributeUploads($attribute);
             }
         }
+//        if (get_class($this->owner) == 'open20\amos\documenti\models\Documenti') {
+//            die;
+//        }
     }
 
     /**
@@ -243,6 +260,12 @@ class FileBehavior extends Behavior
         return $fileValidators;
     }
 
+    /**
+     *
+     * @param type $attribute
+     * @return boolean
+     * @throws \Exception
+     */
     protected function saveAttributeUploads($attribute)
     {
         //Find shot model class name
@@ -254,28 +277,97 @@ class FileBehavior extends Behavior
         $files = UploadedFile::getInstancesByName($attribute) ?: UploadedFile::getInstancesByName("{$ownerName}[{$attribute}]");
 
         /**
+         * BASE64 Encoded Files
+         */
+        $postData = \Yii::$app->request->post($ownerName);
+
+        $fileAsString = (isset($postData[$attribute]) && !is_array($postData[$attribute])) ? $postData[$attribute] : null;
+
+        if (!empty($fileAsString)) {
+            $decodedFileTempName = hash('sha256', time() . $attribute);
+            $decodedFilePath = sys_get_temp_dir() . '/' . $decodedFileTempName;
+
+            //Decode
+            file_put_contents($decodedFilePath, base64_decode($fileAsString));
+
+            //Get File Type
+            $mime = mime_content_type($decodedFilePath);
+            $mimes = new \Mimey\MimeTypes;
+            $extension = $mimes->getExtension($mime);
+
+            //Create new file instance
+            $newFile = new CustomUploadFile();
+            $newFile->name = $decodedFileTempName . '.' . $extension;
+            $newFile->tempName = $decodedFilePath;
+            $newFile->type = $mime;
+
+            $files[] = $newFile;
+        }
+
+
+        /**
          * @var FileValidator $fileValidator
          */
         $fileValidator = $this->getFileValidator($attribute);
 
         //Crop data
-        $cropData = \Yii::$app->request->post("{$attribute}_data");
-
-        //Upload file from gallery
-        $csrf = \Yii::$app->request->post("_csrf-backend");
-        $dataImage = \Yii::$app->session->get($csrf);
-        if(!empty($dataImage)) {
-            $this->saveFileFormGallery($attribute, $csrf, $dataImage);
+        $cropData = \Yii::$app->request->post("{$attribute}_crop_info");
+        //source
+        $source = \Yii::$app->request->post("{$attribute}_source");
+        //alt description
+        $altDescription = \Yii::$app->request->post("{$attribute}_alt_description");
+        //updatealt description
+        $updateAltDescriptions = \Yii::$app->request->post("update_alt_desription", null);
+        foreach ($updateAltDescriptions as $id_file => $value) {
+            $file = File::findOne(['id' => $id_file]);
+            if ($file) {
+                $file->alt_description = $value;
+                $file->save(false);
+            }
         }
 
-        foreach ($files as $file) {
+        //Upload file from gallery
+        $csrfParam = \Yii::$app->request->csrfParam;
+        $csrf = \Yii::$app->request->post($csrfParam);
+        $datas = \Yii::$app->session->get($csrf);
+
+        $this->saveFileFromUploadBigFile($attribute);
+
+        if (!empty($datas)) {
+            $this->saveFileFromDatabanks($attribute, $csrf, $datas);
+        }
+
+        $tableOwner = self::getTableOwner($this->owner);
+        $mimeTypesWhitelist = $this->getModule()->acceptedMimeTypes;
+        foreach ($files as $i => $file) {
+            self::sanitizeFile($file);
+            // Check MIME type
+            if (!empty($mimeTypesWhitelist) && is_array($mimeTypesWhitelist) && !in_array($file->type, $mimeTypesWhitelist)) {
+                $this->owner->addError($attribute, FileModule::t('amosattachments', "Il file {filename} non ha un tipo consentito.", ['filename' => $file->name]));
+                \Yii::$app->session->addFlash('danger', FileModule::t('amosattachments', "Il file {filename} non ha un tipo consentito.", ['filename' => $file->name]));
+                continue;
+            }
+
             if ($fileValidator && $fileValidator->maxFiles == 1 && file_exists($file->tempName)) {
                 //Drop to make space for new image
-                $this->deleteAttachments($this->owner,$attribute);
+                $this->deleteAttachments($this->owner, $attribute, $tableOwner);
             }
 
             if ($cropData) {
-                $this->cropImage($file, $cropData);
+                try {
+                    $cropInfo = Json::decode($cropData[$i]);
+                    // yii\base\InvalidArgumentException if there is any decoding error - so we catch the error
+                } catch (InvalidArgumentException $iae) {
+                    $cropInfo = array();
+                }
+
+                if (
+                    (
+                        isset($cropInfo['width']) && ($cropInfo['width'] > 0)
+                    ) && ((isset($cropInfo['height'])) && ($cropInfo['height'] > 0))
+                ) {
+                    $this->cropImage($file, $cropData[$i]);
+                }
             }
 
             if (!$file->saveAs($this->getModule()->getUserDirPath($attribute) . $file->name)) {
@@ -289,28 +381,122 @@ class FileBehavior extends Behavior
 
         $userTempDir = $this->getModule()->getUserDirPath($attribute);
 
-        //If the firectory doen't exists go out
-        if(!is_dir($userTempDir)) {
+        //If the directory doesn't exist go out
+        if (!is_dir($userTempDir)) {
             return false;
         }
 
-        foreach (FileHelper::findFiles($userTempDir) as $file) {
-            if (!$this->getModule()->attachFile($file, $this->owner, $attribute, true, false, (in_array($attribute, $this->encryptedAttributes)))) {
-                $this->owner->addError($attribute, 'File upload failed.');
-                return true;
+        /**
+         * I manage the updating of some of the data related to the file in case
+         * there is no loading/replacement of the latter
+         */
+        $filesInDir = FileHelper::findFiles($userTempDir);
+        if ((empty($filesInDir)) && (!empty($this->owner->$attribute))) {
+            $modelFile = File::instance();
+            if (!empty(\Yii::$app->request->post($modelFile->formName()))) {
+                $this->owner->$attribute->load(\Yii::$app->request->post());
+                $this->owner->$attribute->save();
             }
         }
 
-        //Getting query
-        //$getter = 'get' . ucfirst($attribute);
+        foreach ($filesInDir as $i => $file) {
+            $newFile = $this->getModule()->attachFile(
+                $file,
+                $this->owner,
+                $attribute,
+                true,
+                false,
+                (in_array($attribute, $this->encryptedAttributes)),
+                null,
+                null,
+                true,
+                $alt_description
+            );
+            if (!$newFile) {
+                $this->owner->addError($attribute, 'File upload failed.');
+                return true;
+            } else {
+                if (!in_array(get_class($this->owner), [UserProfile::className(), AttachGalleryImage::className(), AttachDatabankFile::className()])) {
+//                    if($attribute == 'newsImage') {
+//                    }
 
-        /** @var ActiveQuery $activeQuery */
-        /*$getResult = $this->owner->{$getter}();
-        if ($getResult instanceof ActiveQuery) {
-            $this->owner->{$attribute} = $getResult->multiple ? $getResult->all() : $getResult->one();
-        } else {
-            $this->owner->{$attribute} = $getResult;
-        }*/
+                    $this->copyFileOnDatabanks($newFile, $cropInfo, $source[$i], $alt_description);
+                }
+            }
+        }
+    }
+
+    public static function sanitizeFile($file)
+    {
+        if (strpos($file->type, 'svg') !== false) {
+            $filePath = $file->tempName;
+// Leggi il contenuto del file SVG
+            $svgContent = file_get_contents($filePath);
+
+// Inizializza il sanitizer
+            $sanitizer = new Sanitizer();
+
+// Pulisci il contenuto
+            $cleanedSvg = $sanitizer->sanitize($svgContent);
+
+// Salva il file ripulito
+            if ($cleanedSvg) {
+                file_put_contents($filePath, $cleanedSvg);
+            }
+        }
+    }
+
+    /**
+     * @param $owner
+     * @return string|null
+     */
+    public static function getTableOwner($owner)
+    {
+        $tableNameOwner = null;
+        if (
+            $owner instanceof \open20\amos\core\record\RecordDynamicModel && method_exists($owner, 'getTableName')
+        ) {
+            $tblName = $owner->getTableName();
+            if (!empty($tblName)) {
+                $tableNameOwner = $tblName;
+            }
+        }
+        return $tableNameOwner;
+    }
+
+    /**
+     * @param $file File
+     * @param $cropInfo
+     * @return void
+     * @throws \Exception
+     */
+    public function copyFileOnDatabanks($file, $cropInfo, $source, $alt_description = '')
+    {
+        if ($this->getModule()->autoSaveInDatabanks) {
+            if (!empty($cropInfo)) {
+                if (!in_array($source, ['upload_from_gallery', 'upload_from_shutterstock'])) {
+                    $aspectRatio = round($cropInfo['width'] / $cropInfo['height'], 1);
+                    $galleryImage = new AttachGalleryImage();
+                    $galleryImage->gallery_id = 1;
+                    $galleryImage->name = $file->name;
+                    $galleryImage->aspect_ratio = $aspectRatio;
+                    $galleryImage->save(false);
+                    $newFile = $this->getModule()->attachFile($file->path, $galleryImage, 'attachImage', false, false, true, $file->name, null, true, $alt_description);
+                    if ($newFile) {
+                        $galleryImage->saveOnLuya();
+                    }
+                }
+            } else {
+                $databankFile = new AttachDatabankFile();
+                $databankFile->name = $file->name;
+                $databankFile->extension = $file->type;
+                $databankFile->save(false);
+                $newFile = $this->getModule()->attachFile($file->path, $databankFile, 'attachmentFile', false, false, true, $file->name);
+                if ($newFile) {
+                    $databankFile->saveOnLuya();
+                }
+            }
+        }
     }
 
     /**
@@ -319,79 +505,149 @@ class FileBehavior extends Behavior
      * @param $attribute
      * @return bool
      */
-    private function deleteAttachments($model, $attribute) {
+    private function deleteAttachments($model, $attribute, $tableOwner = null)
+    {
         return File::deleteAll([
             'model' => get_class($model),
             'attribute' => $attribute,
-            'itemId' => $model->id
+            'item_id' => $model->id,
+            'table_name_form' => $tableOwner
         ]);
     }
 
+    /**
+     *
+     * @param UploadedFile $file
+     * @param type $data
+     */
     protected function cropImage(UploadedFile $file, $data)
     {
         //if temp file from post attributes is still present, the cropped image has to be saved
-        if(file_exists($file->tempName)) {
+        if (file_exists($file->tempName)) {
             //The image file to be cropped
             $image = Image::getImagine()->open($file->tempName);
 
             // rendering information about crop of ONE option
             $cropInfo = Json::decode($data);
 
-            if(isset($cropInfo['rotate'])) {
+            if (isset($cropInfo['rotate'])) {
                 $image->rotate($cropInfo['rotate']);
             }
-            //$cropInfo['dWidth'] = (int)$cropInfo['dWidth']; //new width image
-            //$cropInfo['dHeight'] = (int)$cropInfo['dHeight']; //new height image
+
             $cropInfo['x'] = abs($cropInfo['x']); //begin position of frame crop by X
             $cropInfo['y'] = abs($cropInfo['y']); //begin position of frame crop by Y
             $cropInfo['width'] = (int)$cropInfo['width']; //width of cropped image
             $cropInfo['height'] = (int)$cropInfo['height']; //height of cropped image
-            // Properties bolow we don't use in this example
-            //$cropInfo['ratio'] = $cropInfo['ratio'] == 0 ? 1.0 : (float)$cropInfo['ratio']; //ratio image.
-
-            /*//delete old images
-            $oldImages = FileHelper::findFiles($file->tempName, [
-                'only' => [
-                    $this->id . '.*',
-                    'thumb_' . $this->id . '.*',
-                ],
-            ]);
-
-            for ($i = 0; $i != count($oldImages); $i++) {
-                @unlink($oldImages[$i]);
-            }*/
-
             //saving thumbnail
-            //$newSizeThumb = new Box($cropInfo['dWidth'], $cropInfo['dHeight']);
             $cropSizeThumb = new Box($cropInfo['width'], $cropInfo['height']); //frame size of crop
             $cropPointThumb = new Point($cropInfo['x'], $cropInfo['y']);
-            $pathThumbImage = $file->tempName . '_thumb_' . $file->name;//$file->tempName;
+            $pathThumbImage = $file->tempName . '_thumb_' . $file->name; //$file->tempName;
 
             $image
-                //->resize($newSizeThumb)
                 ->crop($cropPointThumb, $cropSizeThumb)
                 ->save($pathThumbImage, ['quality' => 100]);
 
             @unlink($file->tempName);
             rename($pathThumbImage, $file->tempName);
-
-            //saving original
-            //$this->image->saveAs(Yii::getAlias('@path/to/save/image') . $this->id . '.' . $this->image->getExtension());
         }
     }
 
     /**
      * When update save files before the validation
-     * @param $event
+     * @param $event ModelEvent
      * @return bool|void
      */
     public function evalAttributes($event)
     {
         $attributes = $this->getFileAttributes();
+        $sessImg = null;
+
+        if (!(\Yii::$app instanceof \yii\console\Application) && \Yii::$app->request->isPost) {
+            $csrfParam = \Yii::$app->request->csrfParam;
+            $csrf = \Yii::$app->request->post($csrfParam);
+            $sessImg = \Yii::$app->session->get($csrf);
+        }
 
         if (!empty($attributes)) {
             foreach ($attributes as $attribute) {
-                $files = UploadedFile::getInstancesByName($attribute);
+                $files = UploadedFile::getInstancesByName(
+                    ClassUtility::getClassBasename($this->owner->className()) . "[" . $attribute . "]"
+                );
+
+                //Let check if we need to scan the file
+                $module = FileModule::getInstance();
+
+                if ((is_object($module)) && ($module->enableVirusScan)) {
+                    /**
+                     * @var $scanner VirusScanInterface
+                     */
+                    $scanner = \Yii::createObject($module->virusScanClass);
+
+                    foreach ($files as $file) {
+                        $basePath = \Yii::getAlias('@common/uploads/temp');
+                        $scanPath = realpath($basePath) . '/' . hash('md5', $file->tempName) . '.scan';
+                        $scanReady = $file->saveAs($scanPath, false);
+                        $scanResult = $scanner->scanFile($scanPath);
+
+                        if ($scanReady && !$scanResult) {
+                            unlink($file->tempName);
+                            $this->owner->addError(
+                                $attribute,
+                                FileModule::t('amosattachments', 'The file {filename} is not safe and has been dropped', ['filename' => $file->name])
+                            );
+                        }
+
+                        //Drop Copy Anyway
+                        unlink($scanPath);
+                    }
+                }
+
+                if ((is_object($module)) && ($module->enablePdfVulnerabilityJsScan)) {
+                    $pdfValidator = new PdfContainsJSValidator();
+                    foreach ($files as $file) {
+                        /**
+                         * Il file può essere stato cancellato prima oppure l'owner può avere due volte un FileValidator
+                         * (quindi il codice sotto è già stato eseguito sullo stesso attributo e ha già provveduto
+                         * a cancellare il file ritenuto contenente JS
+                         */
+                        if (file_exists($file->tempName)) {
+                            $basePath = \Yii::getAlias('@common/uploads/temp');
+                            $scanPath = realpath($basePath) . '/' . hash('md5', $file->tempName);
+                            $file->saveAs($scanPath, false);
+
+                            if ((FileHelper::getMimeType($file->name) === 'application/pdf') && !$pdfValidator->validate($scanPath, $error)) {
+                                unlink($file->tempName);
+                                $this->owner->addError(
+                                    $attribute,
+                                    FileModule::t('amosattachments', 'The file {filename} is not safe and has been dropped', ['filename' => $file->name])
+                                );
+                            }
+
+                            //Drop Copy Anyway
+                            unlink($scanPath);
+                        }
+                    }
+                }
+
+                if (!empty($sessImg) && is_array($sessImg) && array_key_exists($attribute, $sessImg)) {
+                    if (!empty($sessImg[$attribute]['id'])) {
+                        $imgGallery = AttachGalleryImage::findOne($sessImg[$attribute]['id']);
+
+                        if (!empty($imgGallery)) {
+                            if (array_key_exists($attribute . '_data', \Yii::$app->request->post())) {
+                                $newBody = [];
+
+                                foreach (\Yii::$app->request->post() as $k => $post) {
+                                    $newBody[$k] = $post;
+                                }
+                                //commentato perchè  a riga 316 si aspetta un json ed il json_decode si romperebbe, da capire a che serviva
+                                // $newBody[$attribute.'_data'] = 'ok';
+                                \Yii::$app->request->setBodyParams($newBody);
+                            }
+                        }
+                    }
+                }
+
                 if (!empty($files)) {
                     $maxFiles = 1;
 
@@ -402,7 +658,9 @@ class FileBehavior extends Behavior
                             }
                         }
                     }
+
                     $setter = 'set' . ucfirst($attribute);
+
                     if (method_exists($this->owner, $setter)) {
                         $this->owner->{$setter}($maxFiles == 1 ? reset($files) : $files);
                     } else {
@@ -435,7 +693,10 @@ class FileBehavior extends Behavior
         $attributes = $this->getFileAttributes();
 
         foreach ($attributes as $attribute) {
-            //Enruse var is unsetted from override
+            //Drop Attribute Values, now let saveUploads do his job
+            unset($this->owner->{$attribute});
+
+            //Ensure var is unsetted from override
             if (isset($this->overrideAttributes[$attribute])) {
                 unset($this->overrideAttributes[$attribute]);
             }
@@ -474,7 +735,7 @@ class FileBehavior extends Behavior
         $fileQuery = File::find()
             ->where(
                 [
-                    'itemId' => $this->owner->getAttribute('id'),
+                    'item_id' => $this->owner->getAttribute('id'),
                     'model' => $this->getModule()->getClass($this->owner)
                 ]
             );
@@ -517,7 +778,7 @@ class FileBehavior extends Behavior
     {
         $fileQuery = File::find()
             ->where([
-                'itemId' => $this->owner->id,
+                'item_id' => $this->owner->id,
                 'model' => $this->getModule()->getClass($this->owner),
                 'attribute' => $attribute,
             ]);
@@ -554,16 +815,24 @@ class FileBehavior extends Behavior
         $initialPreview = [];
         $userTempDir = $this->getModule()->getUserDirPath($attribute);
 
-        if(is_dir($userTempDir)) {
+        if (is_dir($userTempDir)) {
             foreach (FileHelper::findFiles($userTempDir) as $file) {
 
                 if (substr(FileHelper::getMimeType($file), 0, 5) === 'image') {
-                    $initialPreview[] = Html::img(['/' . FileModule::getModuleName() . '/file/download-temp', 'filename' => basename($file)], ['class' => 'file-preview-image']);
+                    $initialPreview[] = Html::img(
+                        [
+                            '/'
+                            . FileModule::getModuleName()
+                            . '/file/download-temp',
+                            'filename' => basename($file)
+                        ],
+                        ['class' => 'file-preview-image']
+                    );
                 } else {
-                    $initialPreview[] = Html::beginTag('div', ['class' => 'file-preview-other']) 
-                        . Html::beginTag('span', ['class' => 'file-other-icon']) 
-                        . Html::tag('i', '', ['class' => 'glyphicon glyphicon-file']) 
-                        . Html::endTag('span') 
+                    $initialPreview[] = Html::beginTag('div', ['class' => 'file-preview-other'])
+                        . Html::beginTag('span', ['class' => 'file-other-icon'])
+                        . Html::tag('i', '', ['class' => 'glyphicon glyphicon-file'])
+                        . Html::endTag('span')
                         . Html::endTag('div');
                 }
             }
@@ -574,20 +843,19 @@ class FileBehavior extends Behavior
         if (is_array($files)) {
             foreach ($files as $file) {
                 /** @var File $file */
-
                 if (substr($file->mime, 0, 5) === 'image') {
                     $initialPreview[] = Html::img($file->getUrl($size), ['class' => 'file-preview-image']);
                 } else {
-                    $initialPreview[] = Html::beginTag('div', ['class' => 'file-preview-other']) 
-                        . Html::beginTag('span', ['class' => 'file-other-icon']) 
-                        . Html::tag('i', '', ['class' => 'glyphicon glyphicon-file']) 
-                        . Html::endTag('span') 
+                    $initialPreview[] = Html::beginTag('div', ['class' => 'file-preview-other'])
+                        . Html::beginTag('span', ['class' => 'file-other-icon'])
+                        . Html::tag('i', '', ['class' => 'glyphicon glyphicon-file'])
+                        . Html::endTag('span')
                         . Html::endTag('div');
                 }
             }
             return $initialPreview;
         }
-        
+
         return [];
     }
 
@@ -601,7 +869,7 @@ class FileBehavior extends Behavior
 
         $userTempDir = $this->getModule()->getUserDirPath($attribute);
 
-        if(is_dir($userTempDir)) {
+        if (is_dir($userTempDir)) {
             foreach (FileHelper::findFiles($userTempDir) as $file) {
                 $filename = basename($file);
                 $initialPreviewConfig[] = [
@@ -648,7 +916,7 @@ class FileBehavior extends Behavior
     {
         $count = File::find()
             ->where([
-                'itemId' => $this->owner->getAttribute('id'),
+                'item_id' => $this->owner->getAttribute('id'),
                 'model' => $this->getModule()->getClass($this->owner)
             ])
             ->count();
@@ -663,32 +931,107 @@ class FileBehavior extends Behavior
         return StatsToolbarPanels::getDocumentsPanel($this->owner, $this->getFileCount());
     }
 
-    /**
-     * @param $attribute
-     * @param $csrf
-     * @param $dataImage
-     * @return bool
-     * @throws \Exception
-     */
-    private function saveFileFormGallery($attribute, $csrf, $dataImage){
-        $idGalleryImage = $dataImage['id'];
-        $galleryAttribute = $dataImage['attribute'];
+    private function saveFileFromDatabanks($attribute, $csrf, $datas)
+    {
+        $ok = true;
 
-        if($attribute == $galleryAttribute){
-            $imageGallery = AttachGalleryImage::findOne($idGalleryImage);
-            if ($imageGallery) {
-                $filePath = $imageGallery->attachImage->getPath();
-                if(file_exists($filePath)) {
-                    $this->deleteAttachments($this->owner, $attribute);
-                    if($this->getModule()->attachFile($filePath, $this->owner, $attribute, false)){
-                        \Yii::$app->session->remove($csrf);
-                        return true;
+        foreach ($datas as $item) {
+            if ($attribute == $item['attribute'] && !in_array($attribute, self::$savedDatabankAttributes)) {
+                if ($item['type'] == AttachDatabankFile::className()) {
+                    $ok = $this->saveFileFromDatabankFile($attribute, $item) && $ok;
+                }
+//                else if ($item['type'] == AttachGalleryImage::className()) {
+//                    $ok = $this->saveFileFromGallery($attribute, $item) && $ok;
+//                }
+                self::$savedDatabankAttributes [] = $attribute;
+            }
+        }
+
+        return true;
+    }
+
+    private function saveFileFromUploadBigFile($attribute)
+    {
+
+        $paramsBigFiles = \Yii::$app->request->post('mainDocumentBigFile');
+
+        if (!empty($paramsBigFiles)) {
+            foreach ($paramsBigFiles as $paramsBigFile) {
+                if ($attribute == $paramsBigFile['attribute']) {
+                    $filePath = $paramsBigFile['path'];
+                    $parts = explode('.', $paramsBigFile['filename']);
+                    $ext = array_pop($parts); // Rimuove l'ultimo elemento, l'estensione
+                    $FilenameWithoutExt = implode('.', $parts);
+                    $filename = $paramsBigFile['filename'];
+                    $fileAttribute = $paramsBigFile['attribute'];
+                    if (!empty($filePath) && !empty($filename)) {
+                        $modelFile = $this->getModule()->attachFile($filePath, $this->owner, $attribute, false, false, false, $FilenameWithoutExt);
                     }
-                } else {
-                    return false;
                 }
             }
         }
+        return true;
     }
 
+    private function saveFileFromDatabankFile($attribute, $item)
+    {
+        $ok = false;
+        $idsFile = $item['ids'];
+        $databankFileAttribute = $item['attribute'];
+        if ($attribute == $databankFileAttribute) {
+            //I retrieve some data before starting the loop
+            /** @var File $modelFile */
+            $modelFile = File::instance();
+            $formName = $modelFile->formName();
+            foreach ($idsFile as $idFile) {
+                $file = AttachGenericFile::findOne($idFile);
+                if ($file) {
+                    $filePath = $file->getPath();
+                    if (file_exists($filePath)) {
+                        $modelFile = $this->getModule()->attachFile($filePath,
+                            $this->owner, $attribute, false, false, false,
+                            $file->name);
+                        if (!empty($modelFile)) {
+                            /** @var File $modelFile */
+                            $ok = true;
+                            /**
+                             * if there is no specific attachment update data
+                             * coming from a form (which have already been
+                             * managed by 'attachFile'), I copy some data from
+                             * the "parent" and save the model
+                             */
+                            if (empty(\Yii::$app->request->post($formName))) {
+                                $modelFile->attach_file_categorie_id = $file->attach_file_categorie_id;
+                                if (!empty($modelFile->getDirtyAttributes())) {
+                                    $ok = $modelFile->save();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $ok;
+    }
+
+    private function saveFileFromGallery($attribute, $item)
+    {
+        $ok = false;
+        $idFile = $item['id'];
+        $galleryAttribute = $item['attribute'];
+
+        if ($attribute == $galleryAttribute) {
+            $image = AttachGenericImage::findOne($idFile);
+            if ($image) {
+                $filePath = $image->getPath();
+                if (file_exists($filePath)) {
+                    $this->deleteAttachments($this->owner, $attribute);
+                    if ($a = $this->getModule()->attachFile($filePath, $this->owner, $attribute, false)) {
+                        $ok = true;
+                    }
+                }
+            }
+        }
+        return $ok;
+    }
 }
