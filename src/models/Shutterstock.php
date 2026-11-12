@@ -496,7 +496,7 @@ class Shutterstock extends Model
      * @param $format_type
      * @return mixed|null
      */
-    public static function activeLicenseforimage($licenses, $format_type)
+    public static function activeLicenseForImage($licenses, $format_type)
     {
         foreach ($licenses->data as $license) {
             if ($license->image->format->size == $format_type && $license->is_downloadable) {

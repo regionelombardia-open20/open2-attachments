@@ -338,7 +338,7 @@ class ShutterstockController extends CrudController
             $isBought = false;
             $licenses = $shutterstock->getLicenses(['image_id' => $id]);
             $msg = $shutterstock->errorMessage;
-            $activeLicense = Shutterstock::activeLicenseforimage($licenses, $license_type);
+            $activeLicense = Shutterstock::activeLicenseForImage($licenses, $license_type);
 
             if (empty($activeLicense)) {
                 $isBought = true;

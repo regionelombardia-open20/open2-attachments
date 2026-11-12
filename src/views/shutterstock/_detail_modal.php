@@ -104,7 +104,7 @@ foreach ($model->assets as $key => $assetsImage) {
             <?php if (!$isInDatabankImages) { ?>
                 <?= FileModule::t('amosattachments', "Seleziona formato da inserire") ?>
                 <select id="licenceImageType-id" name="licenceImageType-<?= $attribute ?>" class="form-control">
-                    <?php foreach ($licensableImages as $type => $licenseimage) {
+                    <?php foreach ($licensableImages as $type => $licenseImage) {
                         $value = Shutterstock::licensableImages($type);
                         $selected = '';
                         if ($value == 'huge') {
@@ -112,7 +112,7 @@ foreach ($model->assets as $key => $assetsImage) {
                         }
                         ?>
                         <option <?= $selected ?>
-                                value="<?= $value ?>"><?= Shutterstock::labelSizeFormat($licenseimage, true) ?></option>
+                                value="<?= $value ?>"><?= Shutterstock::labelSizeFormat($licenseImage, true) ?></option>
                     <?php } ?>
                 </select>
                 <?php
