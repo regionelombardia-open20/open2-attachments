@@ -367,34 +367,34 @@ class Shutterstock extends Model
     /**
      * @param $id_image
      * @param $attribute
-     * @param $proscriptions
+     * @param $licenses
      * @param $isBought
      * @param $name
      * @param $module
      * @param $csrf
      * @return array|int
      */
-    public static function saveAttachmentFromShutterstock($id_image, $attribute, $activeProscription, $isBought, $name, $module, $csrf)
+    public static function saveAttachmentFromShutterstock($id_image, $attribute, $activeLicense, $isBought, $name, $module, $csrf)
     {
 
         $message = '';
         $dataError = '';
         try {
-            if (!empty($activeProscription)) {
-                $proscription = $activeProscription;
+            if (!empty($activeLicense)) {
+                $license = $activeLicense;
                 $shutterstock = new ShutterstockClient();
 
                 //se non è stata appena creata la licenza, recupero l'url tramite l'id licenza
                 if (!$isBought) {
-                    if (!empty($proscription->image->format->size)) {
-                        $downloadUrl = $shutterstock->downloadImage($proscription->id, ['size' => $proscription->image->format->size]);
+                    if (!empty($license->image->format->size)) {
+                        $downloadUrl = $shutterstock->downloadImage($license->id, ['size' => $license->image->format->size]);
                         $message = $shutterstock->errorMessage;
-//                        $message .= $proscription->id . ' ' . $downloadUrl;
+//                        $message .= $license->id . ' ' . $downloadUrl;
                     } else {
                         $message .= "Licenza per l'immagine $id_image non valida";
                     }
                 } else {
-                    $downloadUrl = $proscription->download->url;
+                    $downloadUrl = $license->download->url;
                 }
                 //altrimenti se stata appena comprata ho direttmaente l'url
                 if (!empty($downloadUrl)) {
@@ -468,15 +468,15 @@ class Shutterstock extends Model
     }
 
     /**
-     * @param $proscriptions
+     * @param $licenses
      * @param $format_type
      * @return mixed|null
      */
-    public static function activeProscriptionForImage($proscriptions, $format_type)
+    public static function activeLicenseforimage($licenses, $format_type)
     {
-        foreach ($proscriptions->data as $proscription) {
-            if ($proscription->image->format->size == $format_type && $proscription->is_downloadable) {
-                return $proscription;
+        foreach ($licenses->data as $license) {
+            if ($license->image->format->size == $format_type && $license->is_downloadable) {
+                return $license;
             }
         }
         return null;

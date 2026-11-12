@@ -70,7 +70,7 @@ class ShutterstockClient extends Model
                 CURLOPT_FOLLOWLOCATION, true
             ])
             ->setData([
-                "scope" => "proscriptions.create,proscriptions.view,purchases.view",
+                "scope" => "licenses.create,licenses.view,purchases.view",
                 "state" => "done_" . microtime(true),
                 "response_type" => "code",
 //                "redirect_uri" => str_replace('https://','',\Yii::$app->params['platform']['frontendUrl'] . '/attachments/shutterstock/auth'),
@@ -301,10 +301,10 @@ class ShutterstockClient extends Model
      * @param $params
      * @return array|mixed
      */
-    public function getProscriptions($params = [])
+    public function getLicenses($params = [])
     {
 //        $params['image_id'] ='';
-        $content = $this->callApi('/images/proscriptions', 'GET', $params, true);
+        $content = $this->callApi('/images/licenses', 'GET', $params, true);
         return $content;
     }
 
@@ -322,23 +322,23 @@ class ShutterstockClient extends Model
      * @param $params
      * @return array|mixed
      */
-    public function buyProscriptions($params = [])
+    public function buyLicenses($params = [])
     {
 
-        $content = $this->callApi("/images/proscriptions", 'POST', $params, true);
+        $content = $this->callApi("/images/licenses", 'POST', $params, true);
         return $content;
     }
 
     /**
-     * @param $proscription_id
+     * @param $license_id
      * @param $params
      * @return string
      */
-    public function downloadImage($proscription_id, $params = [])
+    public function downloadImage($license_id, $params = [])
     {
-//        $proscription_id = '062586c0-6175-4431-8290-e8503fda1dad';
+//        $license_id = '062586c0-6175-4431-8290-e8503fda1dad';
 //        $params = ['size' => 'huge'];
-        $content = $this->callApi("/images/proscriptions/$proscription_id/downloads", 'POST', $params, true);
+        $content = $this->callApi("/images/licenses/$license_id/downloads", 'POST', $params, true);
         if (!empty($content->url)) {
             return $content->url;
         }

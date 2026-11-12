@@ -155,10 +155,10 @@ class ShutterstockController extends CrudController
 //        $categories = $shutterstockClient->searchImageCategories();
 //        $id = Shutterstock::getSubscriptionId();
 //        $sub = $shutterstockClient->getSubscriptions();
-//        $proscription = $shutterstockClient->getProscriptions();
+//        $license = $shutterstockClient->getLicenses();
 //pr($id);
 //        pr($sub);
-//pr($proscription,'FFF');
+//pr($license,'FFF');
 //        $a= [
 //                 "images" => [
 //                     [
@@ -168,11 +168,11 @@ class ShutterstockController extends CrudController
 //                     ]
 //                 ]
 //             ];
-//        $proscription = $shutterstockClient->buyProscriptions($a);
+//        $license = $shutterstockClient->buyLicenses($a);
 //        $down = $shutterstockClient->downloadImage('f4052e15-0e28-4899-8ce5-f00298412e0d');
 //        pr($shutterstockClient->errorMessage, 'error');
 
-//        $a = $shutterstockClient->getProscriptions(['image_id' => '1458224861']);
+//        $a = $shutterstockClient->getLicenses(['image_id' => '1458224861']);
 //        if (!empty($a->data)) {
 //            pr($a->data[0]);
 //            pr("c'è");
@@ -286,7 +286,7 @@ class ShutterstockController extends CrudController
      * @param $csrf
      * @return array
      */
-    public function actionUploadFromGalleryAjax($id, $attribute = null, $proscription_type = null, $name = null, $csrf = null)
+    public function actionUploadFromGalleryAjax($id, $attribute = null, $license_type = null, $name = null, $csrf = null)
     {
         try {
             \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
@@ -310,31 +310,31 @@ class ShutterstockController extends CrudController
             $subscriptionId = Shutterstock::getSubscriptionId();
             $shutterstock = new ShutterstockClient();
 
-            //if is bought the proscription don't buy it again
+            //if is bought the license don't buy it again
             $isBought = false;
-            $proscriptions = $shutterstock->getProscriptions(['image_id' => $id]);
+            $licenses = $shutterstock->getLicenses(['image_id' => $id]);
             $msg = $shutterstock->errorMessage;
-            $activeProscription = Shutterstock::activeProscriptionForImage($proscriptions, $proscription_type);
+            $activeLicense = Shutterstock::activeLicenseforimage($licenses, $license_type);
 
-            if (empty($activeProscription)) {
+            if (empty($activeLicense)) {
                 $isBought = true;
                 $params = [
                     "images" => [
                         [
-                            "size" => $proscription_type,
+                            "size" => $license_type,
                             "image_id" => $id,
                             "subscription_id" => $subscriptionId,
                         ]
                     ]
                 ];
-                $proscriptions = $shutterstock->buyProscriptions($params);
-                if (!empty($proscriptions->data)) {
-                    $activeProscription = $proscriptions->data[0];
+                $licenses = $shutterstock->buyLicenses($params);
+                if (!empty($licenses->data)) {
+                    $activeLicense = $licenses->data[0];
                     Shutterstock::getSubscriptionId(); // salva i dati delle immagini scaricabili rimanenti
                 }
             }
-            //use proscription to get the download url and save file on databank gallery
-            $attachGalleryImage = Shutterstock::saveAttachmentFromShutterstock($id, $attribute, $activeProscription, $isBought, $name, $module, $csrf);
+            //use license to get the download url and save file on databank gallery
+            $attachGalleryImage = Shutterstock::saveAttachmentFromShutterstock($id, $attribute, $activeLicense, $isBought, $name, $module, $csrf);
             if (!empty($attachGalleryImage['error'])) {
                 return [
                     'success' => false,

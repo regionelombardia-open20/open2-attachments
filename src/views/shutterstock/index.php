@@ -45,14 +45,14 @@ $js = <<<JS
             $('.loading').show();
             var csrf = '';
             var id_image = $(this).attr('data-key');
-            var proscription_type = $('#licenceImageType-id').val();
+            var license_type = $('#licenceImageType-id').val();
             var src_image = $(this).attr('data-src');
             var name_image = $(this).attr('data-name');
             var tag_img = "<img class='img-responsive' src='"+src_image+"' style='display:block;width:100%;height:auto; 'min-width:0!important;min-height:0!important; max-width:none!important;max-height:none!important; image-orientation:0deg!important;'>";
               $.ajax({
               method: 'get',
               url: "/attachments/shutterstock/upload-from-gallery-ajax",
-              data: {id: id_image, proscription_type: proscription_type, name:name_image },
+              data: {id: id_image, license_type: license_type, name:name_image },
               success: function(data){
                  $('.loading').hide();
                   if(data.success == true){

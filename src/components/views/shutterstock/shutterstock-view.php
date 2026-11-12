@@ -85,7 +85,7 @@ if(!loadedOnce){
         var csrf = $('form input[name="$csrfParam"]').val();
          
         var id_image = $(this).attr('data-key');
-        var proscription_type = $('#licenceImageType-id-$attribute').val();
+        var license_type = $('#licenceImageType-id-$attribute').val();
         var attribute = $(this).attr('data-attribute');
         var src_image = $(this).attr('data-src');
         var name_image = $(this).attr('data-name');
@@ -93,7 +93,7 @@ if(!loadedOnce){
           $.ajax({
           method: 'get',
           url: "/attachments/shutterstock/upload-from-gallery-ajax",
-          data: {id: id_image, proscription_type: proscription_type, attribute: attribute, name:name_image, csrf: csrf},
+          data: {id: id_image, license_type: license_type, attribute: attribute, name:name_image, csrf: csrf},
           success: function(data){
             $('.loading').hide();
             if(data.success == true){
